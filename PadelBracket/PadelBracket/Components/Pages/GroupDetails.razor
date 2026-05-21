@@ -3,6 +3,7 @@
 @using PadelBracket.Services
 @inject TournamentService TournamentService
 @inject StandingService StandingService
+@inject QualificationService QualificationService
 @rendermode InteractiveServer
 
 <PageTitle>Group details</PageTitle>
@@ -258,6 +259,7 @@ else
                     <th>GC</th>
                     <th>DG</th>
                     <th>Pts</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -278,6 +280,22 @@ else
                         <td>@standing.GamesAgainst</td>
                         <td>@standing.GameDifference</td>
                         <td><strong>@standing.Points</strong></td>
+                        <td>
+                            @if (qualificationByPairId.ContainsKey(standing.Pair.Id))
+                            {
+                                var status = qualificationByPairId[standing.Pair.Id].Status;
+
+                                <span class="badge @GetQualificationBadgeClass(status)">
+                                    @GetQualificationLabel(status)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark">
+                                    -
+                                </span>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -286,6 +304,8 @@ else
 }
 
 @code {
+    private const int QualifiedPairsCount = 2;
+
     [Parameter]
     public Guid TournamentId { get; set; }
 
@@ -294,7 +314,10 @@ else
 
     private Tournament? tournament;
     private Group? group;
+
     private List<Standing> standings = new();
+    private List<PairQualification> qualifications = new();
+    private Dictionary<Guid, PairQualification> qualificationByPairId = new();
 
     private string playerOneName = string.Empty;
     private string playerTwoName = string.Empty;
@@ -331,10 +354,28 @@ else
         if (group == null)
         {
             standings = new List<Standing>();
+            qualifications = new List<PairQualification>();
+            qualificationByPairId = new Dictionary<Guid, PairQualification>();
             return;
         }
 
         standings = StandingService.CalculateStandings(group);
+
+        if (group.Pairs.Count > QualifiedPairsCount && group.Matches.Any())
+        {
+            qualifications = QualificationService.CalculateQualifications(
+                group,
+                QualifiedPairsCount
+            );
+
+            qualificationByPairId = qualifications
+                .ToDictionary(qualification => qualification.Pair.Id);
+        }
+        else
+        {
+            qualifications = new List<PairQualification>();
+            qualificationByPairId = new Dictionary<Guid, PairQualification>();
+        }
     }
 
     private void AddPair()
@@ -431,6 +472,30 @@ else
         {
             errorMessage = ex.Message;
         }
+    }
+
+    private string GetQualificationLabel(QualificationStatus status)
+    {
+        return status switch
+        {
+            QualificationStatus.MathematicallyQualified => "Qualified",
+            QualificationStatus.InQualificationZone => "In zone",
+            QualificationStatus.Alive => "Alive",
+            QualificationStatus.MathematicallyEliminated => "Eliminated",
+            _ => "Unknown"
+        };
+    }
+
+    private string GetQualificationBadgeClass(QualificationStatus status)
+    {
+        return status switch
+        {
+            QualificationStatus.MathematicallyQualified => "bg-success",
+            QualificationStatus.InQualificationZone => "bg-primary",
+            QualificationStatus.Alive => "bg-secondary",
+            QualificationStatus.MathematicallyEliminated => "bg-danger",
+            _ => "bg-dark"
+        };
     }
 
     private class MatchInput

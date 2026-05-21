@@ -7,9 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Services
+// Service
 builder.Services.AddSingleton<TournamentService>();
 builder.Services.AddSingleton<StandingService>();
+builder.Services.AddSingleton<QualificationService>();
 
 var app = builder.Build();
 
