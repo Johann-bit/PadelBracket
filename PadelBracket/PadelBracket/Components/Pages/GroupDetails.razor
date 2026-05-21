@@ -182,12 +182,14 @@ else
                                 <div class="d-flex gap-2 align-items-center">
                                     <input type="number"
                                            min="0"
+                                           max="7"
                                            class="form-control"
                                            style="width: 75px;"
                                            @bind="input.SetOnePairOne" />
                                     <span>-</span>
                                     <input type="number"
                                            min="0"
+                                           max="7"
                                            class="form-control"
                                            style="width: 75px;"
                                            @bind="input.SetOnePairTwo" />
@@ -198,12 +200,14 @@ else
                                 <div class="d-flex gap-2 align-items-center">
                                     <input type="number"
                                            min="0"
+                                           max="7"
                                            class="form-control"
                                            style="width: 75px;"
                                            @bind="input.SetTwoPairOne" />
                                     <span>-</span>
                                     <input type="number"
                                            min="0"
+                                           max="7"
                                            class="form-control"
                                            style="width: 75px;"
                                            @bind="input.SetTwoPairTwo" />
@@ -211,30 +215,39 @@ else
                             </td>
 
                             <td>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input"
-                                           type="checkbox"
-                                           @bind="input.UseSuperTieBreak" />
-                                    <label class="form-check-label">
-                                        Usar STB
-                                    </label>
-                                </div>
-
-                                @if (input.UseSuperTieBreak)
+                                @if (FirstTwoSetsAreSplit(input))
                                 {
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <input type="number"
-                                               min="0"
-                                               class="form-control"
-                                               style="width: 75px;"
-                                               @bind="input.SuperTieBreakPairOne" />
-                                        <span>-</span>
-                                        <input type="number"
-                                               min="0"
-                                               class="form-control"
-                                               style="width: 75px;"
-                                               @bind="input.SuperTieBreakPairTwo" />
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               @bind="input.UseSuperTieBreak" />
+                                        <label class="form-check-label">
+                                            Usar STB
+                                        </label>
                                     </div>
+
+                                    @if (input.UseSuperTieBreak)
+                                    {
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <input type="number"
+                                                   min="0"
+                                                   class="form-control"
+                                                   style="width: 75px;"
+                                                   @bind="input.SuperTieBreakPairOne" />
+                                            <span>-</span>
+                                            <input type="number"
+                                                   min="0"
+                                                   class="form-control"
+                                                   style="width: 75px;"
+                                                   @bind="input.SuperTieBreakPairTwo" />
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        No aplica
+                                    </span>
                                 }
                             </td>
 
@@ -505,7 +518,7 @@ else
                 new MatchSet(input.SetTwoPairOne, input.SetTwoPairTwo)
             };
 
-            if (input.UseSuperTieBreak)
+            if (ShouldUseSuperTieBreak(input))
             {
                 sets.Add(new MatchSet(
                     input.SuperTieBreakPairOne,
@@ -527,6 +540,26 @@ else
         {
             errorMessage = ex.Message;
         }
+    }
+
+    private bool ShouldUseSuperTieBreak(MatchInput input)
+    {
+        if (!input.UseSuperTieBreak)
+            return false;
+
+        return FirstTwoSetsAreSplit(input);
+    }
+
+    private bool FirstTwoSetsAreSplit(MatchInput input)
+    {
+        var pairOneWonSetOne = input.SetOnePairOne > input.SetOnePairTwo;
+        var pairTwoWonSetOne = input.SetOnePairTwo > input.SetOnePairOne;
+
+        var pairOneWonSetTwo = input.SetTwoPairOne > input.SetTwoPairTwo;
+        var pairTwoWonSetTwo = input.SetTwoPairTwo > input.SetTwoPairOne;
+
+        return (pairOneWonSetOne && pairTwoWonSetTwo) ||
+               (pairTwoWonSetOne && pairOneWonSetTwo);
     }
 
     private string GetQualificationLabel(QualificationStatus status)
