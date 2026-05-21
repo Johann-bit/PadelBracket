@@ -85,6 +85,56 @@ public class TournamentServiceTests
     }
 
     [TestMethod]
+    public void GenerateGroupMatches_WhenMatchesAlreadyExist_ThrowsExceptionAndKeepsExistingMatches()
+    {
+        var service = new TournamentService();
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A");
+
+        service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
+        service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
+        service.AddPairToGroup(tournament.Id, group.Id, "Lucas", "Mati");
+
+        service.GenerateGroupMatches(tournament.Id, group.Id);
+
+        var originalMatchesCount = group.Matches.Count;
+        var originalMatchIds = group.Matches.Select(match => match.Id).ToList();
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            service.GenerateGroupMatches(tournament.Id, group.Id)
+        );
+
+        Assert.AreEqual(originalMatchesCount, group.Matches.Count);
+        CollectionAssert.AreEqual(originalMatchIds, group.Matches.Select(match => match.Id).ToList());
+    }
+
+    [TestMethod]
+    public void AddPairToGroup_WhenMatchesAlreadyExist_ThrowsException()
+    {
+        var service = new TournamentService();
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A");
+
+        service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
+        service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
+
+        service.GenerateGroupMatches(tournament.Id, group.Id);
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            service.AddPairToGroup(
+                tournament.Id,
+                group.Id,
+                "Lucas",
+                "Mati"
+            )
+        );
+
+        Assert.AreEqual(2, group.Pairs.Count);
+    }
+
+    [TestMethod]
     public void RegisterMatchResult_WhenMatchExists_SavesResult()
     {
         var service = new TournamentService();

@@ -38,6 +38,7 @@ else
                     <label class="form-label">Player one</label>
                     <input class="form-control"
                            placeholder="Example: Juan"
+                           disabled="@group.Matches.Any()"
                            @bind="playerOneName" />
                 </div>
 
@@ -45,13 +46,23 @@ else
                     <label class="form-label">Player two</label>
                     <input class="form-control"
                            placeholder="Example: Pedro"
+                           disabled="@group.Matches.Any()"
                            @bind="playerTwoName" />
                 </div>
             </div>
 
-            <button class="btn btn-primary" @onclick="AddPair">
+            <button class="btn btn-primary"
+                    disabled="@group.Matches.Any()"
+                    @onclick="AddPair">
                 Add pair
             </button>
+
+            @if (group.Matches.Any())
+            {
+                <small class="text-muted ms-2">
+                    Pairs cannot be added after matches have been generated.
+                </small>
+            }
 
             @if (!string.IsNullOrWhiteSpace(errorMessage))
             {
@@ -84,7 +95,7 @@ else
 
     <div class="mb-4">
         <button class="btn btn-success"
-                disabled="@(group.Pairs.Count < 2)"
+                disabled="@(group.Pairs.Count < 2 || group.Matches.Any())"
                 @onclick="GenerateMatches">
             Generate group matches
         </button>
@@ -93,6 +104,13 @@ else
         {
             <small class="text-muted ms-2">
                 Add at least 2 pairs to generate matches.
+            </small>
+        }
+
+        @if (group.Matches.Any())
+        {
+            <small class="text-muted ms-2">
+                Matches have already been generated.
             </small>
         }
     </div>

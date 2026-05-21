@@ -23,6 +23,9 @@ public class Group
         if (pair == null)
             throw new ArgumentNullException(nameof(pair));
 
+        if (Matches.Any())
+            throw new InvalidOperationException("Cannot add pairs after matches have been generated.");
+
         if (Pairs.Any(p => p.Id == pair.Id))
             throw new ArgumentException("This pair is already in the group.");
 
@@ -31,7 +34,11 @@ public class Group
 
     public void GenerateMatches()
     {
-        Matches.Clear();
+        if (Pairs.Count < 2)
+            throw new InvalidOperationException("At least two pairs are required to generate matches.");
+
+        if (Matches.Any())
+            throw new InvalidOperationException("Matches have already been generated for this group.");
 
         for (int i = 0; i < Pairs.Count; i++)
         {
