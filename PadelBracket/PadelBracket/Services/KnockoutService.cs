@@ -101,11 +101,12 @@ public class KnockoutService
         if (!match.IsReadyToPlay)
             throw new InvalidOperationException("No se puede cargar resultado en un partido que todavía no tiene ambas parejas.");
 
-        if (WouldBreakNextRounds(bracket, match))
+        if (sets == null)
+            throw new ArgumentNullException(nameof(sets));
+
+        if (match.HasResult)
         {
-            throw new InvalidOperationException(
-                "No se puede modificar este resultado porque ya hay resultados cargados en rondas siguientes."
-            );
+            ClearNextRoundsFromMatch(bracket, match);
         }
 
         var result = new MatchResult(sets);
@@ -113,6 +114,26 @@ public class KnockoutService
         match.RegisterResult(result);
 
         AdvanceWinnerToNextRound(bracket, match);
+    }
+
+    public void ClearMatchResult(
+        Guid tournamentId,
+        int category,
+        Guid knockoutMatchId)
+    {
+        var bracket = GetBracket(tournamentId, category);
+
+        if (bracket == null)
+            throw new InvalidOperationException("No existe una llave generada para esta categoría.");
+
+        var match = bracket.Matches.FirstOrDefault(match => match.Id == knockoutMatchId);
+
+        if (match == null)
+            throw new ArgumentException("No se encontró el partido de la llave.");
+
+        ClearNextRoundsFromMatch(bracket, match);
+
+        match.ClearResult();
     }
 
     public List<KnockoutMatch> GenerateSemifinals(
@@ -290,43 +311,49 @@ public class KnockoutService
         }
     }
 
-    private static bool WouldBreakNextRounds(KnockoutBracket bracket, KnockoutMatch match)
+    private static void ClearNextRoundsFromMatch(KnockoutBracket bracket, KnockoutMatch completedMatch)
     {
-        if (!match.HasResult)
-            return false;
-
         var rounds = GetRounds(bracket);
 
         var currentRoundIndex = rounds.FindIndex(round =>
-            round.Matches.Any(currentMatch => currentMatch.Id == match.Id)
+            round.Matches.Any(match => match.Id == completedMatch.Id)
         );
 
         if (currentRoundIndex < 0)
-            return false;
+            return;
 
         var nextRoundIndex = currentRoundIndex + 1;
 
         if (nextRoundIndex >= rounds.Count)
-            return false;
+            return;
 
         var currentRound = rounds[currentRoundIndex];
         var nextRound = rounds[nextRoundIndex];
 
-        var matchIndex = currentRound.Matches.FindIndex(currentMatch =>
-            currentMatch.Id == match.Id
+        var completedMatchIndex = currentRound.Matches.FindIndex(match =>
+            match.Id == completedMatch.Id
         );
 
-        if (matchIndex < 0)
-            return false;
+        if (completedMatchIndex < 0)
+            return;
 
-        var nextMatchIndex = matchIndex / 2;
+        var nextMatchIndex = completedMatchIndex / 2;
 
         if (nextMatchIndex >= nextRound.Matches.Count)
-            return false;
+            return;
 
         var nextMatch = nextRound.Matches[nextMatchIndex];
 
-        return nextMatch.HasResult;
+        if (completedMatchIndex % 2 == 0)
+        {
+            nextMatch.ClearPairOne();
+        }
+        else
+        {
+            nextMatch.ClearPairTwo();
+        }
+
+        ClearNextRoundsFromMatch(bracket, nextMatch);
     }
 
     private static List<RoundData> GetRounds(KnockoutBracket bracket)

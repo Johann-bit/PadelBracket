@@ -54,6 +54,11 @@ public class KnockoutMatch
         Result = result ?? throw new ArgumentNullException(nameof(result));
     }
 
+    public void ClearResult()
+    {
+        Result = null;
+    }
+
     public void AssignPairOne(Pair pair)
     {
         PairOne = pair ?? throw new ArgumentNullException(nameof(pair));
@@ -62,5 +67,17 @@ public class KnockoutMatch
     public void AssignPairTwo(Pair pair)
     {
         PairTwo = pair ?? throw new ArgumentNullException(nameof(pair));
+    }
+
+    public void ClearPairOne()
+    {
+        PairOne = null;
+        Result = null;
+    }
+
+    public void ClearPairTwo()
+    {
+        PairTwo = null;
+        Result = null;
     }
 }
