@@ -159,7 +159,7 @@ else
     else
     {
         <div class="table-responsive mb-5">
-            <table class="table table-striped align-middle">
+            <table class="table table-striped align-middle match-table">
                 <thead class="table-light">
                     <tr>
                         <th>Pareja 1</th>
@@ -194,15 +194,13 @@ else
                                         <input type="number"
                                                min="0"
                                                max="7"
-                                               class="form-control"
-                                               style="width: 75px;"
+                                               class="form-control score-input"
                                                @bind="input.SetOnePairOne" />
                                         <span>-</span>
                                         <input type="number"
                                                min="0"
                                                max="7"
-                                               class="form-control"
-                                               style="width: 75px;"
+                                               class="form-control score-input"
                                                @bind="input.SetOnePairTwo" />
                                     </div>
                                 </td>
@@ -212,15 +210,13 @@ else
                                         <input type="number"
                                                min="0"
                                                max="7"
-                                               class="form-control"
-                                               style="width: 75px;"
+                                               class="form-control score-input"
                                                @bind="input.SetTwoPairOne" />
                                         <span>-</span>
                                         <input type="number"
                                                min="0"
                                                max="7"
-                                               class="form-control"
-                                               style="width: 75px;"
+                                               class="form-control score-input"
                                                @bind="input.SetTwoPairTwo" />
                                     </div>
                                 </td>
@@ -242,14 +238,12 @@ else
                                             <div class="d-flex gap-2 align-items-center">
                                                 <input type="number"
                                                        min="0"
-                                                       class="form-control"
-                                                       style="width: 75px;"
+                                                       class="form-control score-input"
                                                        @bind="input.SuperTieBreakPairOne" />
                                                 <span>-</span>
                                                 <input type="number"
                                                        min="0"
-                                                       class="form-control"
-                                                       style="width: 75px;"
+                                                       class="form-control score-input"
                                                        @bind="input.SuperTieBreakPairTwo" />
                                             </div>
                                         }

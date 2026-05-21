@@ -1,18 +1,20 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
+<div class="app-shell">
+    <aside class="app-sidebar">
         <NavMenu />
-    </div>
+    </aside>
 
-    <main>
-        <div class="top-row px-4">
-            <span class="text-muted">Panel de torneos</span>
-        </div>
+    <main class="app-main">
+        <header class="app-topbar">
+            <div>
+                <span class="app-topbar-kicker">Panel de torneos</span>
+            </div>
+        </header>
 
-        <article class="content px-4">
+        <section class="app-content">
             @Body
-        </article>
+        </section>
     </main>
 </div>
 

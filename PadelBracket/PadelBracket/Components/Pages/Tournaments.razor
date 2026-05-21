@@ -6,11 +6,14 @@
 
 <PageTitle>Torneos</PageTitle>
 
-<h1 class="mb-4">PadelBracket</h1>
-
-<p class="text-muted">
-    Gestioná torneos de pádel, grupos, tablas de posiciones y llaves eliminatorias.
-</p>
+<div class="page-header">
+    <div class="page-eyebrow">Panel de torneos</div>
+    <h1 class="page-title">PadelBracket</h1>
+    <p class="page-subtitle">
+        Gestioná torneos de pádel, grupos, tablas de posiciones y llaves eliminatorias
+        desde un panel simple y ordenado.
+    </p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
@@ -19,9 +22,30 @@
     </div>
 }
 
-<div class="card mb-4 shadow-sm">
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Torneos creados</div>
+        <div class="stat-value">@tournaments.Count</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Estado</div>
+        <div class="stat-value">Activo</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Modo</div>
+        <div class="stat-value">Local</div>
+    </div>
+</div>
+
+<div class="card mb-4">
     <div class="card-body">
-        <h4 class="card-title">Crear torneo</h4>
+        <h4 class="card-title mb-2">Crear torneo</h4>
+
+        <p class="text-muted mb-4">
+            Elegí un nombre claro para identificar el torneo dentro del panel.
+        </p>
 
         <div class="mb-3">
             <label class="form-label">Nombre del torneo</label>
@@ -37,7 +61,12 @@
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">Torneos creados</h3>
+    <div>
+        <h3 class="mb-1">Torneos creados</h3>
+        <p class="text-muted mb-0">
+            Abrí un torneo para cargar grupos, parejas y resultados.
+        </p>
+    </div>
 
     <span class="badge bg-secondary">
         @tournaments.Count total
@@ -46,15 +75,18 @@
 
 @if (!tournaments.Any())
 {
-    <div class="alert alert-info">
-        Todavía no hay torneos creados.
+    <div class="empty-state">
+        <div class="empty-state-title">Todavía no hay torneos creados.</div>
+        <div>
+            Creá el primero y arrancá a cargar grupos por categoría.
+        </div>
     </div>
 }
 else
 {
     <div class="table-responsive">
         <table class="table table-striped align-middle">
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>Nombre</th>
                     <th>Creado</th>
@@ -70,7 +102,11 @@ else
                             <strong>@tournament.Name</strong>
                         </td>
                         <td>@tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@tournament.Groups.Count</td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                @tournament.Groups.Count grupos
+                            </span>
+                        </td>
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-primary"
                                href="@($"/tournaments/{tournament.Id}")">
