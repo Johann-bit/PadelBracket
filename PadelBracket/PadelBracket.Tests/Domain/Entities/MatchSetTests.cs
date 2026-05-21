@@ -22,11 +22,13 @@ public class MatchSetTests
     }
 
     [TestMethod]
-    public void Constructor_WhenRegularSetEndsSixFive_ThrowsArgumentException()
+    public void Constructor_WhenRegularSetEndsSixFive_IsValid()
     {
-        Assert.ThrowsException<ArgumentException>(() =>
-            new MatchSet(6, 5)
-        );
+        var set = new MatchSet(6, 5);
+
+        Assert.AreEqual(6, set.PairOneScore);
+        Assert.AreEqual(5, set.PairTwoScore);
+        Assert.IsFalse(set.IsSuperTieBreak);
     }
 
     [TestMethod]

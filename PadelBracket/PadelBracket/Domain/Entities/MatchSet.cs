@@ -49,14 +49,14 @@ public class MatchSet
         if (winnerScore < 6)
             throw new ArgumentException("A regular set must be won with 6 or 7 games.");
 
-        var isValidSixGameSet = winnerScore == 6 && loserScore <= 4;
+        var isValidSixGameSet = winnerScore == 6 && loserScore <= 5;
         var isValidSevenFiveSet = winnerScore == 7 && loserScore == 5;
         var isValidSevenSixSet = winnerScore == 7 && loserScore == 6;
 
         if (!isValidSixGameSet && !isValidSevenFiveSet && !isValidSevenSixSet)
         {
             throw new ArgumentException(
-                "Invalid regular set score. Valid examples: 6-0, 6-4, 7-5 or 7-6."
+                "Invalid regular set score. Valid examples: 6-0, 6-4, 6-5, 7-5 or 7-6."
             );
         }
     }
