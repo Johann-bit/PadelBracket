@@ -1,0 +1,124 @@
+﻿@page "/tournaments/{TournamentId:guid}"
+@using PadelBracket.Domain.Entities
+@using PadelBracket.Services
+@inject TournamentService TournamentService
+@rendermode InteractiveServer
+
+<PageTitle>Tournament details</PageTitle>
+
+@if (tournament == null)
+{
+    <div class="alert alert-danger">
+        Tournament not found.
+    </div>
+
+    <a class="btn btn-secondary" href="/tournaments">
+        Back to tournaments
+    </a>
+}
+else
+{
+    <a class="btn btn-link px-0" href="/tournaments">
+        ← Back to tournaments
+    </a>
+
+    <h1>@tournament.Name</h1>
+
+    <p class="text-muted">
+        Created at @tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+    </p>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Create group</h4>
+
+            <div class="mb-3">
+                <label class="form-label">Group name</label>
+                <input class="form-control"
+                       placeholder="Example: Group A"
+                       @bind="newGroupName" />
+            </div>
+
+            <button class="btn btn-primary" @onclick="CreateGroup">
+                Create group
+            </button>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger mt-3">
+                    @errorMessage
+                </div>
+            }
+        </div>
+    </div>
+
+    <h3>Groups</h3>
+
+    @if (!tournament.Groups.Any())
+    {
+        <div class="alert alert-info">
+            This tournament does not have groups yet.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var group in tournament.Groups)
+            {
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@group.Name</h5>
+
+                            <p class="card-text">
+                                Pairs: @group.Pairs.Count
+                            </p>
+
+                            <p class="card-text">
+                                Matches: @group.Matches.Count
+                            </p>
+
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@($"/tournaments/{tournament.Id}/groups/{group.Id}")">
+                                Open group
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid TournamentId { get; set; }
+
+    private Tournament? tournament;
+    private string newGroupName = string.Empty;
+    private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        tournament = TournamentService.GetTournamentById(TournamentId);
+    }
+
+    private void CreateGroup()
+    {
+        if (tournament == null)
+            return;
+
+        errorMessage = null;
+
+        try
+        {
+            TournamentService.AddGroupToTournament(tournament.Id, newGroupName);
+            newGroupName = string.Empty;
+            tournament = TournamentService.GetTournamentById(TournamentId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

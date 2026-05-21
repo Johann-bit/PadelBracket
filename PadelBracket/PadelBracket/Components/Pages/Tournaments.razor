@@ -1,0 +1,102 @@
+﻿@page "/tournaments"
+@using PadelBracket.Domain.Entities
+@using PadelBracket.Services
+@inject TournamentService TournamentService
+@rendermode InteractiveServer
+
+<PageTitle>Tournaments</PageTitle>
+
+<h1 class="mb-4">PadelBracket</h1>
+
+<p class="text-muted">
+    Manage padel tournaments, groups, standings and knockout brackets.
+</p>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title">Create tournament</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Tournament name</label>
+            <input class="form-control"
+                   placeholder="Example: Torneo Apertura 2026"
+                   @bind="newTournamentName" />
+        </div>
+
+        <button class="btn btn-primary" @onclick="CreateTournament">
+            Create tournament
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="alert alert-danger mt-3">
+                @errorMessage
+            </div>
+        }
+    </div>
+</div>
+
+<h3>Created tournaments</h3>
+
+@if (!tournaments.Any())
+{
+    <div class="alert alert-info">
+        No tournaments created yet.
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Created at</th>
+                <th>Groups</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tournament in tournaments)
+            {
+                <tr>
+                    <td>@tournament.Name</td>
+                    <td>@tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@tournament.Groups.Count</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="@($"/tournaments/{tournament.Id}")">
+                            Open
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private string newTournamentName = string.Empty;
+    private string? errorMessage;
+    private List<Tournament> tournaments = new();
+
+    protected override void OnInitialized()
+    {
+        tournaments = TournamentService.GetAllTournaments();
+    }
+
+    private void CreateTournament()
+    {
+        errorMessage = null;
+
+        try
+        {
+            TournamentService.CreateTournament(newTournamentName);
+            newTournamentName = string.Empty;
+            tournaments = TournamentService.GetAllTournaments();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}
