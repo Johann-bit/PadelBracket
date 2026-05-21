@@ -11,6 +11,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<TournamentService>();
 builder.Services.AddSingleton<StandingService>();
 builder.Services.AddSingleton<QualificationService>();
+builder.Services.AddSingleton<KnockoutService>();
 
 var app = builder.Build();
 
