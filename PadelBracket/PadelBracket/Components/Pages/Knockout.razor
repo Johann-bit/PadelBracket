@@ -52,6 +52,13 @@ else
         </div>
     }
 
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
     @if (bracket == null)
     {
         <div class="card shadow-sm">
@@ -77,9 +84,48 @@ else
     }
     else
     {
-        <div class="alert alert-success">
-            Llave generada el @bracket.CreatedAt.ToString("dd/MM/yyyy HH:mm").
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="alert alert-success mb-0 flex-grow-1 me-3">
+                Llave generada el @bracket.CreatedAt.ToString("dd/MM/yyyy HH:mm").
+            </div>
+
+            <button class="btn btn-outline-danger"
+                    @onclick="ToggleDeleteConfirmation">
+                Eliminar llave
+            </button>
         </div>
+
+        @if (showDeleteConfirmation)
+        {
+            <div class="alert alert-danger">
+                <h5>¿Eliminar esta llave?</h5>
+
+                @if (BracketHasResults())
+                {
+                    <p class="mb-2">
+                        Esta llave ya tiene resultados cargados. Si la eliminás, también se pierden esos resultados y los avances de ronda.
+                    </p>
+                }
+                else
+                {
+                    <p class="mb-2">
+                        Esta llave no tiene resultados cargados todavía.
+                    </p>
+                }
+
+                <p class="mb-3">
+                    Después podrás generar una nueva llave con los clasificados actuales.
+                </p>
+
+                <button class="btn btn-danger me-2" @onclick="DeleteBracket">
+                    Sí, eliminar llave
+                </button>
+
+                <button class="btn btn-secondary" @onclick="CancelDeleteConfirmation">
+                    Cancelar
+                </button>
+            </div>
+        }
 
         @foreach (var round in GetRounds())
         {
@@ -256,6 +302,8 @@ else
     private Tournament? tournament;
     private KnockoutBracket? bracket;
     private string? errorMessage;
+    private string? successMessage;
+    private bool showDeleteConfirmation;
 
     private Dictionary<Guid, MatchInput> matchInputs = new();
 
@@ -277,16 +325,64 @@ else
             return;
 
         errorMessage = null;
+        successMessage = null;
+        showDeleteConfirmation = false;
 
         try
         {
             bracket = KnockoutService.GenerateBracket(tournament, Category);
             InitializeMatchInputs();
+
+            successMessage = "Llave generada correctamente.";
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
         }
+    }
+
+    private void DeleteBracket()
+    {
+        if (tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            KnockoutService.DeleteBracket(tournament.Id, Category);
+
+            bracket = null;
+            matchInputs = new Dictionary<Guid, MatchInput>();
+            showDeleteConfirmation = false;
+
+            successMessage = "Llave eliminada correctamente. Ahora podés corregir los grupos y generar una nueva.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void ToggleDeleteConfirmation()
+    {
+        showDeleteConfirmation = !showDeleteConfirmation;
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelDeleteConfirmation()
+    {
+        showDeleteConfirmation = false;
+    }
+
+    private bool BracketHasResults()
+    {
+        if (tournament == null)
+            return false;
+
+        return KnockoutService.BracketHasResults(tournament.Id, Category);
     }
 
     private void RegisterResult(Guid matchId)
@@ -295,6 +391,7 @@ else
             return;
 
         errorMessage = null;
+        successMessage = null;
 
         try
         {
@@ -325,6 +422,8 @@ else
             bracket = KnockoutService.GetBracket(tournament.Id, Category);
 
             InitializeMatchInputs();
+
+            successMessage = "Resultado guardado correctamente.";
         }
         catch (Exception ex)
         {

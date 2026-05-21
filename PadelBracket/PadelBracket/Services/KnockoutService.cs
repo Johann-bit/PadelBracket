@@ -62,6 +62,26 @@ public class KnockoutService
         return bracket;
     }
 
+    public void DeleteBracket(Guid tournamentId, int category)
+    {
+        var bracket = GetBracket(tournamentId, category);
+
+        if (bracket == null)
+            throw new InvalidOperationException("No existe una llave generada para esta categoría.");
+
+        _brackets.Remove(bracket);
+    }
+
+    public bool BracketHasResults(Guid tournamentId, int category)
+    {
+        var bracket = GetBracket(tournamentId, category);
+
+        if (bracket == null)
+            return false;
+
+        return bracket.Matches.Any(match => match.HasResult);
+    }
+
     public void RegisterMatchResult(
         Guid tournamentId,
         int category,
