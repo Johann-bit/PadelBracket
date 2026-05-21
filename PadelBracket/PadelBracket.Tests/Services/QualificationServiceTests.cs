@@ -205,7 +205,7 @@ public class QualificationServiceTests
 
     private static Group CreateGroupWithPairs(int pairCount)
     {
-        var group = new Group("Grupo A");
+        var group = new Group("Grupo A", 5);
 
         for (int i = 1; i <= pairCount; i++)
         {

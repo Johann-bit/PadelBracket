@@ -9,7 +9,7 @@ public class StandingServiceTests
     [TestMethod]
     public void CalculateStandings_WhenGroupHasPairs_ReturnsOneStandingPerPair()
     {
-        var group = new Group("Group A");
+        var group = CreateGroup();
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
@@ -27,7 +27,7 @@ public class StandingServiceTests
     [TestMethod]
     public void CalculateStandings_WhenMatchHasResult_UpdatesPlayedWonLostAndPoints()
     {
-        var group = new Group("Group A");
+        var group = CreateGroup();
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
@@ -65,7 +65,7 @@ public class StandingServiceTests
     [TestMethod]
     public void CalculateStandings_WhenMatchHasResult_UpdatesSetsCorrectly()
     {
-        var group = new Group("Group A");
+        var group = CreateGroup();
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
@@ -101,7 +101,7 @@ public class StandingServiceTests
     [TestMethod]
     public void CalculateStandings_WhenMatchHasResult_UpdatesGamesCorrectly()
     {
-        var group = new Group("Group A");
+        var group = CreateGroup();
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
@@ -137,7 +137,7 @@ public class StandingServiceTests
     [TestMethod]
     public void CalculateStandings_WhenMultipleMatchesExist_OrdersByPointsSetDifferenceAndGameDifference()
     {
-        var group = new Group("Group A");
+        var group = CreateGroup();
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
@@ -179,7 +179,7 @@ public class StandingServiceTests
     [TestMethod]
     public void CalculateStandings_WhenMatchHasNoResult_IgnoresMatch()
     {
-        var group = new Group("Group A");
+        var group = CreateGroup();
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
@@ -198,6 +198,11 @@ public class StandingServiceTests
         Assert.IsTrue(standings.All(s => s.SetsAgainst == 0));
         Assert.IsTrue(standings.All(s => s.GamesFor == 0));
         Assert.IsTrue(standings.All(s => s.GamesAgainst == 0));
+    }
+
+    private static Group CreateGroup()
+    {
+        return new Group("Group A", 5);
     }
 
     private static Pair CreatePair(string playerOneName, string playerTwoName)

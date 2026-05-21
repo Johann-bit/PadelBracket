@@ -24,11 +24,11 @@ public class TournamentService
         return _tournaments.FirstOrDefault(t => t.Id == tournamentId);
     }
 
-    public Group AddGroupToTournament(Guid tournamentId, string groupName)
+    public Group AddGroupToTournament(Guid tournamentId, string groupName, int category)
     {
         var tournament = GetTournamentOrThrow(tournamentId);
 
-        var group = new Group(groupName);
+        var group = new Group(groupName, category);
         tournament.AddGroup(group);
 
         return group;

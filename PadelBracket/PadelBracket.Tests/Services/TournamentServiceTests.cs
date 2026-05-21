@@ -40,11 +40,49 @@ public class TournamentServiceTests
 
         var tournament = service.CreateTournament("Torneo Apertura");
 
-        var group = service.AddGroupToTournament(tournament.Id, "Group A");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
 
         Assert.AreEqual(1, tournament.Groups.Count);
         Assert.AreEqual(group.Id, tournament.Groups[0].Id);
         Assert.AreEqual("Group A", tournament.Groups[0].Name);
+        Assert.AreEqual(5, tournament.Groups[0].Category);
+    }
+
+    [TestMethod]
+    public void AddGroupToTournament_WhenCategoryIsValid_AddsGroupWithCategory()
+    {
+        var service = new TournamentService();
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+
+        var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
+
+        Assert.AreEqual(5, group.Category);
+        Assert.AreEqual("5ta categoría", group.CategoryLabel);
+    }
+
+    [TestMethod]
+    public void AddGroupToTournament_WhenCategoryIsLowerThanOne_ThrowsArgumentException()
+    {
+        var service = new TournamentService();
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            service.AddGroupToTournament(tournament.Id, "Group A", 0)
+        );
+    }
+
+    [TestMethod]
+    public void AddGroupToTournament_WhenCategoryIsGreaterThanEight_ThrowsArgumentException()
+    {
+        var service = new TournamentService();
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            service.AddGroupToTournament(tournament.Id, "Group A", 9)
+        );
     }
 
     [TestMethod]
@@ -53,7 +91,7 @@ public class TournamentServiceTests
         var service = new TournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
-        var group = service.AddGroupToTournament(tournament.Id, "Group A");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
 
         var pair = service.AddPairToGroup(
             tournament.Id,
@@ -73,7 +111,7 @@ public class TournamentServiceTests
         var service = new TournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
-        var group = service.AddGroupToTournament(tournament.Id, "Group A");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
 
         service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
         service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
@@ -90,7 +128,7 @@ public class TournamentServiceTests
         var service = new TournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
-        var group = service.AddGroupToTournament(tournament.Id, "Group A");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
 
         service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
         service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
@@ -106,7 +144,10 @@ public class TournamentServiceTests
         );
 
         Assert.AreEqual(originalMatchesCount, group.Matches.Count);
-        CollectionAssert.AreEqual(originalMatchIds, group.Matches.Select(match => match.Id).ToList());
+        CollectionAssert.AreEqual(
+            originalMatchIds,
+            group.Matches.Select(match => match.Id).ToList()
+        );
     }
 
     [TestMethod]
@@ -115,7 +156,7 @@ public class TournamentServiceTests
         var service = new TournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
-        var group = service.AddGroupToTournament(tournament.Id, "Group A");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
 
         service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
         service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
@@ -140,7 +181,7 @@ public class TournamentServiceTests
         var service = new TournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
-        var group = service.AddGroupToTournament(tournament.Id, "Group A");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
 
         service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
         service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
@@ -174,7 +215,7 @@ public class TournamentServiceTests
         var service = new TournamentService();
 
         Assert.ThrowsException<ArgumentException>(() =>
-            service.AddGroupToTournament(Guid.NewGuid(), "Group A")
+            service.AddGroupToTournament(Guid.NewGuid(), "Group A", 5)
         );
     }
 

@@ -32,6 +32,9 @@ else
             <p class="text-muted mb-0">
                 Torneo: <strong>@tournament.Name</strong>
             </p>
+            <p class="text-muted mb-0">
+                Categoría: <strong>@group.CategoryLabel</strong>
+            </p>
         </div>
 
         <div class="text-end">
@@ -273,6 +276,13 @@ else
     }
     else
     {
+        @if (!HasAnyResult && group.Matches.Any())
+        {
+            <div class="alert alert-warning">
+                Todavía no hay resultados cargados. La clasificación se calculará cuando se guarde el primer partido.
+            </div>
+        }
+
         <div class="table-responsive">
             <table class="table table-bordered table-hover align-middle">
                 <thead class="table-light">
@@ -328,7 +338,7 @@ else
                                 else
                                 {
                                     <span class="badge bg-light text-dark">
-                                        -
+                                        Sin partidos
                                     </span>
                                 }
                             </td>
@@ -357,6 +367,8 @@ else
 
     private Tournament? tournament;
     private Group? group;
+
+    private bool HasAnyResult => group?.Matches.Any(match => match.HasResult) == true;
 
     private List<Standing> standings = new();
     private List<PairQualification> qualifications = new();
@@ -404,7 +416,7 @@ else
 
         standings = StandingService.CalculateStandings(group);
 
-        if (group.Pairs.Count > QualifiedPairsCount && group.Matches.Any())
+        if (group.Pairs.Count > QualifiedPairsCount && HasAnyResult)
         {
             qualifications = QualificationService.CalculateQualifications(
                 group,
@@ -543,6 +555,9 @@ else
 
     private string GetStandingRowClass(int index)
     {
+        if (!HasAnyResult)
+            return string.Empty;
+
         return index < QualifiedPairsCount ? "table-success" : string.Empty;
     }
 

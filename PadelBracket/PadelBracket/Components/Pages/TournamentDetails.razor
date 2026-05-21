@@ -51,11 +51,27 @@ else
         <div class="card-body">
             <h4 class="card-title">Crear grupo</h4>
 
-            <div class="mb-3">
-                <label class="form-label">Nombre del grupo</label>
-                <input class="form-control"
-                       placeholder="Ejemplo: Grupo A"
-                       @bind="newGroupName" />
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Nombre del grupo</label>
+                    <input class="form-control"
+                           placeholder="Ejemplo: Grupo A"
+                           @bind="newGroupName" />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Categoría</label>
+                    <select class="form-select" @bind="selectedCategory">
+                        <option value="8">8va categoría</option>
+                        <option value="7">7ma categoría</option>
+                        <option value="6">6ta categoría</option>
+                        <option value="5">5ta categoría</option>
+                        <option value="4">4ta categoría</option>
+                        <option value="3">3ra categoría</option>
+                        <option value="2">2da categoría</option>
+                        <option value="1">1ra categoría</option>
+                    </select>
+                </div>
             </div>
 
             <button class="btn btn-primary" @onclick="CreateGroup">
@@ -65,7 +81,7 @@ else
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">Grupos</h3>
+        <h3 class="mb-0">Grupos por categoría</h3>
 
         <span class="badge bg-secondary">
             @tournament.Groups.Count total
@@ -80,31 +96,81 @@ else
     }
     else
     {
-        <div class="row">
-            @foreach (var group in tournament.Groups)
-            {
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">@group.Name</h5>
+        @foreach (var categoryGroup in tournament.Groups
+                    .GroupBy(g => g.Category)
+                    .OrderByDescending(g => g.Key))
+        {
+            <section class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">
+                        @GetCategoryLabel(categoryGroup.Key)
+                    </h4>
 
-                            <p class="card-text mb-1">
-                                Parejas: <strong>@group.Pairs.Count</strong>
-                            </p>
-
-                            <p class="card-text">
-                                Partidos: <strong>@group.Matches.Count</strong>
-                            </p>
-
-                            <a class="btn btn-sm btn-outline-primary"
-                               href="@($"/tournaments/{tournament.Id}/groups/{group.Id}")">
-                                Abrir grupo
-                            </a>
-                        </div>
-                    </div>
+                    <span class="badge bg-dark">
+                        @categoryGroup.Count() grupos
+                    </span>
                 </div>
-            }
-        </div>
+
+                <div class="row">
+                    @foreach (var group in categoryGroup.OrderBy(g => g.Name))
+                    {
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">@group.Name</h5>
+
+                                        <span class="badge bg-primary">
+                                            @group.CategoryLabel
+                                        </span>
+                                    </div>
+
+                                    <p class="card-text mb-1">
+                                        Parejas: <strong>@group.Pairs.Count</strong>
+                                    </p>
+
+                                    <p class="card-text mb-3">
+                                        Partidos: <strong>@group.Matches.Count</strong>
+                                    </p>
+
+                                    @if (group.Pairs.Any())
+                                    {
+                                        <div class="mb-3">
+                                            <small class="text-muted d-block mb-1">
+                                                Participantes:
+                                            </small>
+
+                                            <ul class="list-unstyled mb-0">
+                                                @foreach (var pair in group.Pairs.Take(4))
+                                                {
+                                                    <li>
+                                                        <small>• @pair.DisplayName</small>
+                                                    </li>
+                                                }
+
+                                                @if (group.Pairs.Count > 4)
+                                                {
+                                                    <li>
+                                                        <small class="text-muted">
+                                                            + @(group.Pairs.Count - 4) más
+                                                        </small>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="@($"/tournaments/{tournament.Id}/groups/{group.Id}")">
+                                        Abrir grupo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
     }
 }
 
@@ -114,6 +180,7 @@ else
 
     private Tournament? tournament;
     private string newGroupName = string.Empty;
+    private int selectedCategory = 5;
     private string? errorMessage;
 
     protected override void OnInitialized()
@@ -130,13 +197,35 @@ else
 
         try
         {
-            TournamentService.AddGroupToTournament(tournament.Id, newGroupName);
+            TournamentService.AddGroupToTournament(
+                tournament.Id,
+                newGroupName,
+                selectedCategory
+            );
+
             newGroupName = string.Empty;
+            selectedCategory = 5;
             tournament = TournamentService.GetTournamentById(TournamentId);
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
         }
+    }
+
+    private string GetCategoryLabel(int category)
+    {
+        return category switch
+        {
+            1 => "1ra categoría",
+            2 => "2da categoría",
+            3 => "3ra categoría",
+            4 => "4ta categoría",
+            5 => "5ta categoría",
+            6 => "6ta categoría",
+            7 => "7ma categoría",
+            8 => "8va categoría",
+            _ => $"{category} categoría"
+        };
     }
 }

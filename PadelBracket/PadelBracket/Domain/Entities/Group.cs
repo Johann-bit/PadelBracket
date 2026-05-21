@@ -4,16 +4,23 @@ public class Group
 {
     public Guid Id { get; private set; }
     public string Name { get; private set; }
+    public int Category { get; private set; }
     public List<Pair> Pairs { get; private set; }
     public List<Match> Matches { get; private set; }
 
-    public Group(string name)
+    public string CategoryLabel => GetCategoryLabel(Category);
+
+    public Group(string name, int category)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Group name is required.");
 
+        if (category < 1 || category > 8)
+            throw new ArgumentException("Category must be between 1 and 8.");
+
         Id = Guid.NewGuid();
         Name = name.Trim();
+        Category = category;
         Pairs = new List<Pair>();
         Matches = new List<Match>();
     }
@@ -47,5 +54,21 @@ public class Group
                 Matches.Add(new Match(Pairs[i], Pairs[j]));
             }
         }
+    }
+
+    private static string GetCategoryLabel(int category)
+    {
+        return category switch
+        {
+            1 => "1ra categoría",
+            2 => "2da categoría",
+            3 => "3ra categoría",
+            4 => "4ta categoría",
+            5 => "5ta categoría",
+            6 => "6ta categoría",
+            7 => "7ma categoría",
+            8 => "8va categoría",
+            _ => $"{category} categoría"
+        };
     }
 }
