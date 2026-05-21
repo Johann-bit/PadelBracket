@@ -62,6 +62,39 @@ public class KnockoutService
         return bracket;
     }
 
+    public void RegisterMatchResult(
+        Guid tournamentId,
+        int category,
+        Guid knockoutMatchId,
+        List<MatchSet> sets)
+    {
+        var bracket = GetBracket(tournamentId, category);
+
+        if (bracket == null)
+            throw new InvalidOperationException("No existe una llave generada para esta categoría.");
+
+        var match = bracket.Matches.FirstOrDefault(match => match.Id == knockoutMatchId);
+
+        if (match == null)
+            throw new ArgumentException("No se encontró el partido de la llave.");
+
+        if (!match.IsReadyToPlay)
+            throw new InvalidOperationException("No se puede cargar resultado en un partido que todavía no tiene ambas parejas.");
+
+        if (WouldBreakNextRounds(bracket, match))
+        {
+            throw new InvalidOperationException(
+                "No se puede modificar este resultado porque ya hay resultados cargados en rondas siguientes."
+            );
+        }
+
+        var result = new MatchResult(sets);
+
+        match.RegisterResult(result);
+
+        AdvanceWinnerToNextRound(bracket, match);
+    }
+
     public List<KnockoutMatch> GenerateSemifinals(
         Tournament tournament,
         int category,
@@ -189,6 +222,134 @@ public class KnockoutService
         }
     }
 
+    private static void AdvanceWinnerToNextRound(KnockoutBracket bracket, KnockoutMatch completedMatch)
+    {
+        var winner = completedMatch.Winner;
+
+        if (winner == null)
+            return;
+
+        var rounds = GetRounds(bracket);
+
+        var currentRoundIndex = rounds.FindIndex(round =>
+            round.Matches.Any(match => match.Id == completedMatch.Id)
+        );
+
+        if (currentRoundIndex < 0)
+            return;
+
+        var nextRoundIndex = currentRoundIndex + 1;
+
+        if (nextRoundIndex >= rounds.Count)
+            return;
+
+        var currentRound = rounds[currentRoundIndex];
+        var nextRound = rounds[nextRoundIndex];
+
+        var completedMatchIndex = currentRound.Matches.FindIndex(match =>
+            match.Id == completedMatch.Id
+        );
+
+        if (completedMatchIndex < 0)
+            return;
+
+        var nextMatchIndex = completedMatchIndex / 2;
+
+        if (nextMatchIndex >= nextRound.Matches.Count)
+            return;
+
+        var nextMatch = nextRound.Matches[nextMatchIndex];
+
+        if (completedMatchIndex % 2 == 0)
+        {
+            nextMatch.AssignPairOne(winner);
+        }
+        else
+        {
+            nextMatch.AssignPairTwo(winner);
+        }
+    }
+
+    private static bool WouldBreakNextRounds(KnockoutBracket bracket, KnockoutMatch match)
+    {
+        if (!match.HasResult)
+            return false;
+
+        var rounds = GetRounds(bracket);
+
+        var currentRoundIndex = rounds.FindIndex(round =>
+            round.Matches.Any(currentMatch => currentMatch.Id == match.Id)
+        );
+
+        if (currentRoundIndex < 0)
+            return false;
+
+        var nextRoundIndex = currentRoundIndex + 1;
+
+        if (nextRoundIndex >= rounds.Count)
+            return false;
+
+        var currentRound = rounds[currentRoundIndex];
+        var nextRound = rounds[nextRoundIndex];
+
+        var matchIndex = currentRound.Matches.FindIndex(currentMatch =>
+            currentMatch.Id == match.Id
+        );
+
+        if (matchIndex < 0)
+            return false;
+
+        var nextMatchIndex = matchIndex / 2;
+
+        if (nextMatchIndex >= nextRound.Matches.Count)
+            return false;
+
+        var nextMatch = nextRound.Matches[nextMatchIndex];
+
+        return nextMatch.HasResult;
+    }
+
+    private static List<RoundData> GetRounds(KnockoutBracket bracket)
+    {
+        return bracket.Matches
+            .GroupBy(match => GetRoundGroupName(match.RoundName))
+            .OrderBy(group => GetRoundOrder(group.Key))
+            .Select(group => new RoundData(
+                group.Key,
+                group.ToList()
+            ))
+            .ToList();
+    }
+
+    private static string GetRoundGroupName(string roundName)
+    {
+        if (roundName.StartsWith("Octavo de final"))
+            return "Octavos de final";
+
+        if (roundName.StartsWith("Cuarto de final"))
+            return "Cuartos de final";
+
+        if (roundName.StartsWith("Semifinal"))
+            return "Semifinales";
+
+        if (roundName.StartsWith("Final"))
+            return "Final";
+
+        return roundName;
+    }
+
+    private static int GetRoundOrder(string roundName)
+    {
+        return roundName switch
+        {
+            "Octavos de final" => 1,
+            "Cuartos de final" => 2,
+            "Semifinales" => 3,
+            "Final" => 4,
+            _ => 99
+        };
+    }
+
     private static string GetFirstRoundName(int totalQualifiedPairs)
     {
         return totalQualifiedPairs switch
@@ -223,6 +384,18 @@ public class KnockoutService
             Group = group;
             Pair = pair;
             Position = position;
+        }
+    }
+
+    private class RoundData
+    {
+        public string Name { get; }
+        public List<KnockoutMatch> Matches { get; }
+
+        public RoundData(string name, List<KnockoutMatch> matches)
+        {
+            Name = name;
+            Matches = matches;
         }
     }
 }
