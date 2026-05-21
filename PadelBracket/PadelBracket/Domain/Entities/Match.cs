@@ -23,6 +23,11 @@ public class Match
         Result = result ?? throw new ArgumentNullException(nameof(result));
     }
 
+    public void ClearResult()
+    {
+        Result = null;
+    }
+
     public bool HasResult => Result is not null;
 
     public Pair? Winner

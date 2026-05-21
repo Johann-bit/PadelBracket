@@ -51,6 +51,13 @@ else
         </div>
     }
 
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
             <h4 class="card-title mb-3">Agregar pareja</h4>
@@ -168,6 +175,8 @@ else
                     @foreach (var match in group.Matches)
                     {
                         var input = GetMatchInput(match.Id);
+                        var isEditing = IsEditingMatch(match.Id);
+                        var showInputs = !match.HasResult || isEditing;
 
                         <tr>
                             <td>
@@ -178,78 +187,89 @@ else
                                 <strong>@match.PairTwo.DisplayName</strong>
                             </td>
 
-                            <td>
-                                <div class="d-flex gap-2 align-items-center">
-                                    <input type="number"
-                                           min="0"
-                                           max="7"
-                                           class="form-control"
-                                           style="width: 75px;"
-                                           @bind="input.SetOnePairOne" />
-                                    <span>-</span>
-                                    <input type="number"
-                                           min="0"
-                                           max="7"
-                                           class="form-control"
-                                           style="width: 75px;"
-                                           @bind="input.SetOnePairTwo" />
-                                </div>
-                            </td>
-
-                            <td>
-                                <div class="d-flex gap-2 align-items-center">
-                                    <input type="number"
-                                           min="0"
-                                           max="7"
-                                           class="form-control"
-                                           style="width: 75px;"
-                                           @bind="input.SetTwoPairOne" />
-                                    <span>-</span>
-                                    <input type="number"
-                                           min="0"
-                                           max="7"
-                                           class="form-control"
-                                           style="width: 75px;"
-                                           @bind="input.SetTwoPairTwo" />
-                                </div>
-                            </td>
-
-                            <td>
-                                @if (FirstTwoSetsAreSplit(input))
-                                {
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input"
-                                               type="checkbox"
-                                               @bind="input.UseSuperTieBreak" />
-                                        <label class="form-check-label">
-                                            Usar STB
-                                        </label>
+                            @if (showInputs)
+                            {
+                                <td>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <input type="number"
+                                               min="0"
+                                               max="7"
+                                               class="form-control"
+                                               style="width: 75px;"
+                                               @bind="input.SetOnePairOne" />
+                                        <span>-</span>
+                                        <input type="number"
+                                               min="0"
+                                               max="7"
+                                               class="form-control"
+                                               style="width: 75px;"
+                                               @bind="input.SetOnePairTwo" />
                                     </div>
+                                </td>
 
-                                    @if (input.UseSuperTieBreak)
+                                <td>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <input type="number"
+                                               min="0"
+                                               max="7"
+                                               class="form-control"
+                                               style="width: 75px;"
+                                               @bind="input.SetTwoPairOne" />
+                                        <span>-</span>
+                                        <input type="number"
+                                               min="0"
+                                               max="7"
+                                               class="form-control"
+                                               style="width: 75px;"
+                                               @bind="input.SetTwoPairTwo" />
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @if (FirstTwoSetsAreSplit(input))
                                     {
-                                        <div class="d-flex gap-2 align-items-center">
-                                            <input type="number"
-                                                   min="0"
-                                                   class="form-control"
-                                                   style="width: 75px;"
-                                                   @bind="input.SuperTieBreakPairOne" />
-                                            <span>-</span>
-                                            <input type="number"
-                                                   min="0"
-                                                   class="form-control"
-                                                   style="width: 75px;"
-                                                   @bind="input.SuperTieBreakPairTwo" />
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   @bind="input.UseSuperTieBreak" />
+                                            <label class="form-check-label">
+                                                Usar STB
+                                            </label>
                                         </div>
+
+                                        @if (input.UseSuperTieBreak)
+                                        {
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <input type="number"
+                                                       min="0"
+                                                       class="form-control"
+                                                       style="width: 75px;"
+                                                       @bind="input.SuperTieBreakPairOne" />
+                                                <span>-</span>
+                                                <input type="number"
+                                                       min="0"
+                                                       class="form-control"
+                                                       style="width: 75px;"
+                                                       @bind="input.SuperTieBreakPairTwo" />
+                                            </div>
+                                        }
                                     }
-                                }
-                                else
-                                {
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            No aplica
+                                        </span>
+                                    }
+                                </td>
+                            }
+                            else
+                            {
+                                <td colspan="3">
                                     <span class="text-muted">
-                                        No aplica
+                                        Resultado cargado. Podés editarlo o limpiarlo.
                                     </span>
-                                }
-                            </td>
+                                </td>
+                            }
 
                             <td>
                                 @if (match.HasResult && match.Result != null)
@@ -267,10 +287,33 @@ else
                             </td>
 
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary"
-                                        @onclick="() => RegisterResult(match.Id)">
-                                    Guardar
-                                </button>
+                                @if (showInputs)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary me-2"
+                                            @onclick="() => RegisterResult(match.Id)">
+                                        @(isEditing ? "Guardar cambios" : "Guardar")
+                                    </button>
+
+                                    @if (isEditing)
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary"
+                                                @onclick="() => CancelEditResult(match.Id)">
+                                            Cancelar
+                                        </button>
+                                    }
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-primary me-2"
+                                            @onclick="() => StartEditResult(match.Id)">
+                                        Editar
+                                    </button>
+
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            @onclick="() => ClearResult(match.Id)">
+                                        Limpiar
+                                    </button>
+                                }
                             </td>
                         </tr>
                     }
@@ -390,8 +433,10 @@ else
     private string playerOneName = string.Empty;
     private string playerTwoName = string.Empty;
     private string? errorMessage;
+    private string? successMessage;
 
     private Dictionary<Guid, MatchInput> matchInputs = new();
+    private HashSet<Guid> editingMatchIds = new();
 
     protected override void OnInitialized()
     {
@@ -452,6 +497,7 @@ else
             return;
 
         errorMessage = null;
+        successMessage = null;
 
         try
         {
@@ -466,6 +512,8 @@ else
             playerTwoName = string.Empty;
 
             LoadData();
+
+            successMessage = "Pareja agregada correctamente.";
         }
         catch (Exception ex)
         {
@@ -479,11 +527,14 @@ else
             return;
 
         errorMessage = null;
+        successMessage = null;
 
         try
         {
             TournamentService.GenerateGroupMatches(tournament.Id, group.Id);
             LoadData();
+
+            successMessage = "Partidos generados correctamente.";
         }
         catch (Exception ex)
         {
@@ -501,12 +552,82 @@ else
         return matchInputs[matchId];
     }
 
+    private bool IsEditingMatch(Guid matchId)
+    {
+        return editingMatchIds.Contains(matchId);
+    }
+
+    private void StartEditResult(Guid matchId)
+    {
+        if (group == null)
+            return;
+
+        var match = group.Matches.FirstOrDefault(match => match.Id == matchId);
+
+        if (match == null || match.Result == null)
+            return;
+
+        FillInputFromResult(match);
+        editingMatchIds.Add(matchId);
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelEditResult(Guid matchId)
+    {
+        editingMatchIds.Remove(matchId);
+
+        if (group == null)
+            return;
+
+        var match = group.Matches.FirstOrDefault(match => match.Id == matchId);
+
+        if (match?.Result != null)
+        {
+            FillInputFromResult(match);
+        }
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void ClearResult(Guid matchId)
+    {
+        if (tournament == null || group == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.ClearMatchResult(
+                tournament.Id,
+                group.Id,
+                matchId
+            );
+
+            matchInputs[matchId] = new MatchInput();
+            editingMatchIds.Remove(matchId);
+
+            LoadData();
+
+            successMessage = "Resultado limpiado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
     private void RegisterResult(Guid matchId)
     {
         if (tournament == null || group == null)
             return;
 
         errorMessage = null;
+        successMessage = null;
 
         try
         {
@@ -534,11 +655,43 @@ else
                 sets
             );
 
+            editingMatchIds.Remove(matchId);
+
             LoadData();
+
+            successMessage = "Resultado guardado correctamente.";
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
+        }
+    }
+
+    private void FillInputFromResult(Match match)
+    {
+        if (match.Result == null)
+            return;
+
+        var input = GetMatchInput(match.Id);
+        var sets = match.Result.Sets;
+
+        input.SetOnePairOne = sets[0].PairOneScore;
+        input.SetOnePairTwo = sets[0].PairTwoScore;
+
+        input.SetTwoPairOne = sets[1].PairOneScore;
+        input.SetTwoPairTwo = sets[1].PairTwoScore;
+
+        if (sets.Count == 3)
+        {
+            input.UseSuperTieBreak = true;
+            input.SuperTieBreakPairOne = sets[2].PairOneScore;
+            input.SuperTieBreakPairTwo = sets[2].PairTwoScore;
+        }
+        else
+        {
+            input.UseSuperTieBreak = false;
+            input.SuperTieBreakPairOne = 0;
+            input.SuperTieBreakPairTwo = 0;
         }
     }
 

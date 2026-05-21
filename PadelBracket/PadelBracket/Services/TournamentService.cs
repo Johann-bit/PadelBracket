@@ -65,16 +65,21 @@ public class TournamentService
         Guid matchId,
         List<MatchSet> sets)
     {
-        var group = GetGroupOrThrow(tournamentId, groupId);
-
-        var match = group.Matches.FirstOrDefault(m => m.Id == matchId);
-
-        if (match == null)
-            throw new ArgumentException("Match not found.");
+        var match = GetMatchOrThrow(tournamentId, groupId, matchId);
 
         var result = new MatchResult(sets);
 
         match.RegisterResult(result);
+    }
+
+    public void ClearMatchResult(
+        Guid tournamentId,
+        Guid groupId,
+        Guid matchId)
+    {
+        var match = GetMatchOrThrow(tournamentId, groupId, matchId);
+
+        match.ClearResult();
     }
 
     private Tournament GetTournamentOrThrow(Guid tournamentId)
@@ -97,5 +102,17 @@ public class TournamentService
             throw new ArgumentException("Group not found.");
 
         return group;
+    }
+
+    private Match GetMatchOrThrow(Guid tournamentId, Guid groupId, Guid matchId)
+    {
+        var group = GetGroupOrThrow(tournamentId, groupId);
+
+        var match = group.Matches.FirstOrDefault(m => m.Id == matchId);
+
+        if (match == null)
+            throw new ArgumentException("Match not found.");
+
+        return match;
     }
 }
