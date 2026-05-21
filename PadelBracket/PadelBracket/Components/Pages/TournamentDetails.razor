@@ -102,13 +102,26 @@ else
         {
             <section class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">
-                        @GetCategoryLabel(categoryGroup.Key)
-                    </h4>
+                    <div>
+                        <h4 class="mb-0">
+                            @GetCategoryLabel(categoryGroup.Key)
+                        </h4>
 
-                    <span class="badge bg-dark">
-                        @categoryGroup.Count() grupos
-                    </span>
+                        <small class="text-muted">
+                            Grupos y participantes de esta categoría
+                        </small>
+                    </div>
+
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-dark">
+                            @categoryGroup.Count() grupos
+                        </span>
+
+                        <a class="btn btn-sm btn-outline-success"
+                           href="@($"/tournaments/{tournament.Id}/categories/{categoryGroup.Key}/knockout")">
+                            Ver llave
+                        </a>
+                    </div>
                 </div>
 
                 <div class="row">

@@ -1,0 +1,267 @@
+﻿@page "/tournaments/{TournamentId:guid}/categories/{Category:int}/knockout"
+@using PadelBracket.Domain.Entities
+@using PadelBracket.Services
+@inject TournamentService TournamentService
+@inject KnockoutService KnockoutService
+@rendermode InteractiveServer
+
+<PageTitle>Llave eliminatoria</PageTitle>
+
+@if (tournament == null)
+{
+    <div class="alert alert-danger">
+        No se encontró el torneo.
+    </div>
+
+    <a class="btn btn-secondary" href="/tournaments">
+        Volver a torneos
+    </a>
+}
+else
+{
+    <div class="mb-3">
+        <a class="btn btn-link px-0" href="@($"/tournaments/{tournament.Id}")">
+            ← Volver al torneo
+        </a>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="mb-1">Llave eliminatoria</h1>
+
+            <p class="text-muted mb-0">
+                Torneo: <strong>@tournament.Name</strong>
+            </p>
+
+            <p class="text-muted mb-0">
+                Categoría: <strong>@GetCategoryLabel(Category)</strong>
+            </p>
+        </div>
+
+        <div class="text-end">
+            <span class="badge bg-dark fs-6">
+                @GetCategoryGroupCount() grupos
+            </span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-warning">
+            @errorMessage
+        </div>
+    }
+
+    @if (bracket == null)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title">Generar llave</h4>
+
+                <p class="text-muted">
+                    La llave se genera con los clasificados de los grupos de esta categoría.
+                    Por ahora clasifican 2 parejas por grupo.
+                </p>
+
+                <ul class="text-muted">
+                    <li>2 grupos generan semifinales.</li>
+                    <li>4 grupos generan cuartos de final.</li>
+                    <li>8 grupos generan octavos de final.</li>
+                </ul>
+
+                <button class="btn btn-success" @onclick="GenerateBracket">
+                    Generar llave
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            Llave generada el @bracket.CreatedAt.ToString("dd/MM/yyyy HH:mm").
+        </div>
+
+        @foreach (var round in GetRounds())
+        {
+            <section class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">@round.Name</h3>
+
+                    <span class="badge bg-secondary">
+                        @round.Matches.Count partidos
+                    </span>
+                </div>
+
+                <div class="row">
+                    @foreach (var match in round.Matches)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-dark text-white">
+                                    <strong>@match.RoundName</strong>
+                                </div>
+
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span>@GetPairName(match.PairOne)</span>
+                                        <span class="badge bg-secondary">Pareja 1</span>
+                                    </div>
+
+                                    <div class="text-center text-muted mb-3">
+                                        vs
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>@GetPairName(match.PairTwo)</span>
+                                        <span class="badge bg-secondary">Pareja 2</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer text-muted">
+                                    @if (match.HasResult && match.Result != null)
+                                    {
+                                        <span class="badge bg-success">
+                                            @match.Result.DisplayScore
+                                        </span>
+                                    }
+                                    else if (match.IsReadyToPlay)
+                                    {
+                                        <span>Resultado pendiente</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Esperando ganadores</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid TournamentId { get; set; }
+
+    [Parameter]
+    public int Category { get; set; }
+
+    private Tournament? tournament;
+    private KnockoutBracket? bracket;
+    private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        tournament = TournamentService.GetTournamentById(TournamentId);
+
+        if (tournament == null)
+            return;
+
+        bracket = KnockoutService.GetBracket(tournament.Id, Category);
+    }
+
+    private void GenerateBracket()
+    {
+        if (tournament == null)
+            return;
+
+        errorMessage = null;
+
+        try
+        {
+            bracket = KnockoutService.GenerateBracket(tournament, Category);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private int GetCategoryGroupCount()
+    {
+        if (tournament == null)
+            return 0;
+
+        return tournament.Groups.Count(group => group.Category == Category);
+    }
+
+    private List<RoundViewModel> GetRounds()
+    {
+        if (bracket == null)
+            return new List<RoundViewModel>();
+
+        return bracket.Matches
+            .GroupBy(match => GetRoundGroupName(match.RoundName))
+            .OrderBy(group => GetRoundOrder(group.Key))
+            .Select(group => new RoundViewModel(
+                group.Key,
+                group.ToList()
+            ))
+            .ToList();
+    }
+
+    private string GetRoundGroupName(string roundName)
+    {
+        if (roundName.StartsWith("Octavo de final"))
+            return "Octavos de final";
+
+        if (roundName.StartsWith("Cuarto de final"))
+            return "Cuartos de final";
+
+        if (roundName.StartsWith("Semifinal"))
+            return "Semifinales";
+
+        if (roundName.StartsWith("Final"))
+            return "Final";
+
+        return roundName;
+    }
+
+    private int GetRoundOrder(string roundName)
+    {
+        return roundName switch
+        {
+            "Octavos de final" => 1,
+            "Cuartos de final" => 2,
+            "Semifinales" => 3,
+            "Final" => 4,
+            _ => 99
+        };
+    }
+
+    private string GetPairName(Pair? pair)
+    {
+        return pair?.DisplayName ?? "Pendiente";
+    }
+
+    private string GetCategoryLabel(int category)
+    {
+        return category switch
+        {
+            1 => "1ra categoría",
+            2 => "2da categoría",
+            3 => "3ra categoría",
+            4 => "4ta categoría",
+            5 => "5ta categoría",
+            6 => "6ta categoría",
+            7 => "7ma categoría",
+            8 => "8va categoría",
+            _ => $"{category} categoría"
+        };
+    }
+
+    private class RoundViewModel
+    {
+        public string Name { get; }
+        public List<KnockoutMatch> Matches { get; }
+
+        public RoundViewModel(string name, List<KnockoutMatch> matches)
+        {
+            Name = name;
+            Matches = matches;
+        }
+    }
+}
