@@ -1,4 +1,5 @@
-﻿using PadelBracket.Services;
+﻿using PadelBracket.Domain.Entities;
+using PadelBracket.Services;
 
 namespace PadelBracket.Tests.Services;
 
@@ -102,14 +103,19 @@ public class TournamentServiceTests
             tournament.Id,
             group.Id,
             match.Id,
-            6,
-            3
+            new List<MatchSet>
+            {
+                new MatchSet(6, 3),
+                new MatchSet(6, 4)
+            }
         );
 
         Assert.IsTrue(match.HasResult);
         Assert.IsNotNull(match.Result);
-        Assert.AreEqual(6, match.Result.PairOneGames);
-        Assert.AreEqual(3, match.Result.PairTwoGames);
+        Assert.AreEqual(12, match.Result.PairOneGames);
+        Assert.AreEqual(7, match.Result.PairTwoGames);
+        Assert.AreEqual(2, match.Result.PairOneSetsWon);
+        Assert.AreEqual(0, match.Result.PairTwoSetsWon);
     }
 
     [TestMethod]

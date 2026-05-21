@@ -8,10 +8,14 @@ public class Standing
     public int Won { get; private set; }
     public int Lost { get; private set; }
 
+    public int SetsFor { get; private set; }
+    public int SetsAgainst { get; private set; }
+    public int SetDifference => SetsFor - SetsAgainst;
+
     public int GamesFor { get; private set; }
     public int GamesAgainst { get; private set; }
-
     public int GameDifference => GamesFor - GamesAgainst;
+
     public int Points => Won * 3;
 
     public Standing(Pair pair)
@@ -19,18 +23,26 @@ public class Standing
         Pair = pair ?? throw new ArgumentNullException(nameof(pair));
     }
 
-    public void AddWin(int gamesFor, int gamesAgainst)
+    public void AddWin(int setsFor, int setsAgainst, int gamesFor, int gamesAgainst)
     {
         Played++;
         Won++;
+
+        SetsFor += setsFor;
+        SetsAgainst += setsAgainst;
+
         GamesFor += gamesFor;
         GamesAgainst += gamesAgainst;
     }
 
-    public void AddLoss(int gamesFor, int gamesAgainst)
+    public void AddLoss(int setsFor, int setsAgainst, int gamesFor, int gamesAgainst)
     {
         Played++;
         Lost++;
+
+        SetsFor += setsFor;
+        SetsAgainst += setsAgainst;
+
         GamesFor += gamesFor;
         GamesAgainst += gamesAgainst;
     }

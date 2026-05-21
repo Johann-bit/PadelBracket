@@ -1,0 +1,431 @@
+﻿@page "/tournaments/{TournamentId:guid}/groups/{GroupId:guid}"
+@using PadelBracket.Domain.Entities
+@using PadelBracket.Services
+@inject TournamentService TournamentService
+@inject StandingService StandingService
+@rendermode InteractiveServer
+
+<PageTitle>Group details</PageTitle>
+
+@if (tournament == null || group == null)
+{
+    <div class="alert alert-danger">
+        Group not found.
+    </div>
+
+    <a class="btn btn-secondary" href="/tournaments">
+        Back to tournaments
+    </a>
+}
+else
+{
+    <a class="btn btn-link px-0" href="@($"/tournaments/{tournament.Id}")">
+        ← Back to tournament
+    </a>
+
+    <h1>@group.Name</h1>
+
+    <p class="text-muted">
+        Tournament: @tournament.Name
+    </p>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Add pair</h4>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Player one</label>
+                    <input class="form-control"
+                           placeholder="Example: Juan"
+                           @bind="playerOneName" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Player two</label>
+                    <input class="form-control"
+                           placeholder="Example: Pedro"
+                           @bind="playerTwoName" />
+                </div>
+            </div>
+
+            <button class="btn btn-primary" @onclick="AddPair">
+                Add pair
+            </button>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger mt-3">
+                    @errorMessage
+                </div>
+            }
+        </div>
+    </div>
+
+    <h3>Pairs</h3>
+
+    @if (!group.Pairs.Any())
+    {
+        <div class="alert alert-info">
+            No pairs added yet.
+        </div>
+    }
+    else
+    {
+        <ul class="list-group mb-4">
+            @foreach (var pair in group.Pairs)
+            {
+                <li class="list-group-item">
+                    @pair.DisplayName
+                </li>
+            }
+        </ul>
+    }
+
+    <div class="mb-4">
+        <button class="btn btn-success"
+                disabled="@(group.Pairs.Count < 2)"
+                @onclick="GenerateMatches">
+            Generate group matches
+        </button>
+
+        @if (group.Pairs.Count < 2)
+        {
+            <small class="text-muted ms-2">
+                Add at least 2 pairs to generate matches.
+            </small>
+        }
+    </div>
+
+    <h3>Matches</h3>
+
+    @if (!group.Matches.Any())
+    {
+        <div class="alert alert-info">
+            No matches generated yet.
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Pair one</th>
+                    <th>Pair two</th>
+                    <th>Set 1</th>
+                    <th>Set 2</th>
+                    <th>Super tie-break</th>
+                    <th>Result</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var match in group.Matches)
+                {
+                    var input = GetMatchInput(match.Id);
+
+                    <tr>
+                        <td>@match.PairOne.DisplayName</td>
+                        <td>@match.PairTwo.DisplayName</td>
+
+                        <td>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input type="number"
+                                       min="0"
+                                       class="form-control"
+                                       style="width: 75px;"
+                                       @bind="input.SetOnePairOne" />
+                                <span>-</span>
+                                <input type="number"
+                                       min="0"
+                                       class="form-control"
+                                       style="width: 75px;"
+                                       @bind="input.SetOnePairTwo" />
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input type="number"
+                                       min="0"
+                                       class="form-control"
+                                       style="width: 75px;"
+                                       @bind="input.SetTwoPairOne" />
+                                <span>-</span>
+                                <input type="number"
+                                       min="0"
+                                       class="form-control"
+                                       style="width: 75px;"
+                                       @bind="input.SetTwoPairTwo" />
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       @bind="input.UseSuperTieBreak" />
+                                <label class="form-check-label">
+                                    Use STB
+                                </label>
+                            </div>
+
+                            @if (input.UseSuperTieBreak)
+                            {
+                                <div class="d-flex gap-2 align-items-center">
+                                    <input type="number"
+                                           min="0"
+                                           class="form-control"
+                                           style="width: 75px;"
+                                           @bind="input.SuperTieBreakPairOne" />
+                                    <span>-</span>
+                                    <input type="number"
+                                           min="0"
+                                           class="form-control"
+                                           style="width: 75px;"
+                                           @bind="input.SuperTieBreakPairTwo" />
+                                </div>
+                            }
+                        </td>
+
+                        <td>
+                            @if (match.HasResult && match.Result != null)
+                            {
+                                <span class="badge bg-success">
+                                    @match.Result.DisplayScore
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    Pending
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary"
+                                    @onclick="() => RegisterResult(match.Id)">
+                                Save result
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h3>Standings</h3>
+
+    @if (!standings.Any())
+    {
+        <div class="alert alert-info">
+            Standings will appear here after pairs are added.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Pair</th>
+                    <th>PJ</th>
+                    <th>PG</th>
+                    <th>PP</th>
+                    <th>SF</th>
+                    <th>SC</th>
+                    <th>DS</th>
+                    <th>GF</th>
+                    <th>GC</th>
+                    <th>DG</th>
+                    <th>Pts</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < standings.Count; i++)
+                {
+                    var standing = standings[i];
+
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@standing.Pair.DisplayName</td>
+                        <td>@standing.Played</td>
+                        <td>@standing.Won</td>
+                        <td>@standing.Lost</td>
+                        <td>@standing.SetsFor</td>
+                        <td>@standing.SetsAgainst</td>
+                        <td>@standing.SetDifference</td>
+                        <td>@standing.GamesFor</td>
+                        <td>@standing.GamesAgainst</td>
+                        <td>@standing.GameDifference</td>
+                        <td><strong>@standing.Points</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid TournamentId { get; set; }
+
+    [Parameter]
+    public Guid GroupId { get; set; }
+
+    private Tournament? tournament;
+    private Group? group;
+    private List<Standing> standings = new();
+
+    private string playerOneName = string.Empty;
+    private string playerTwoName = string.Empty;
+    private string? errorMessage;
+
+    private Dictionary<Guid, MatchInput> matchInputs = new();
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        tournament = TournamentService.GetTournamentById(TournamentId);
+        group = tournament?.Groups.FirstOrDefault(g => g.Id == GroupId);
+
+        RefreshStandings();
+
+        if (group != null)
+        {
+            foreach (var match in group.Matches)
+            {
+                if (!matchInputs.ContainsKey(match.Id))
+                {
+                    matchInputs[match.Id] = new MatchInput();
+                }
+            }
+        }
+    }
+
+    private void RefreshStandings()
+    {
+        if (group == null)
+        {
+            standings = new List<Standing>();
+            return;
+        }
+
+        standings = StandingService.CalculateStandings(group);
+    }
+
+    private void AddPair()
+    {
+        if (tournament == null || group == null)
+            return;
+
+        errorMessage = null;
+
+        try
+        {
+            TournamentService.AddPairToGroup(
+                tournament.Id,
+                group.Id,
+                playerOneName,
+                playerTwoName
+            );
+
+            playerOneName = string.Empty;
+            playerTwoName = string.Empty;
+
+            LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void GenerateMatches()
+    {
+        if (tournament == null || group == null)
+            return;
+
+        errorMessage = null;
+
+        try
+        {
+            TournamentService.GenerateGroupMatches(tournament.Id, group.Id);
+            LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private MatchInput GetMatchInput(Guid matchId)
+    {
+        if (!matchInputs.ContainsKey(matchId))
+        {
+            matchInputs[matchId] = new MatchInput();
+        }
+
+        return matchInputs[matchId];
+    }
+
+    private void RegisterResult(Guid matchId)
+    {
+        if (tournament == null || group == null)
+            return;
+
+        errorMessage = null;
+
+        try
+        {
+            var input = GetMatchInput(matchId);
+
+            var sets = new List<MatchSet>
+            {
+                new MatchSet(input.SetOnePairOne, input.SetOnePairTwo),
+                new MatchSet(input.SetTwoPairOne, input.SetTwoPairTwo)
+            };
+
+            if (input.UseSuperTieBreak)
+            {
+                sets.Add(new MatchSet(
+                    input.SuperTieBreakPairOne,
+                    input.SuperTieBreakPairTwo,
+                    true
+                ));
+            }
+
+            TournamentService.RegisterMatchResult(
+                tournament.Id,
+                group.Id,
+                matchId,
+                sets
+            );
+
+            LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private class MatchInput
+    {
+        public int SetOnePairOne { get; set; }
+        public int SetOnePairTwo { get; set; }
+
+        public int SetTwoPairOne { get; set; }
+        public int SetTwoPairTwo { get; set; }
+
+        public bool UseSuperTieBreak { get; set; }
+
+        public int SuperTieBreakPairOne { get; set; }
+        public int SuperTieBreakPairTwo { get; set; }
+    }
+}

@@ -63,8 +63,7 @@ public class TournamentService
         Guid tournamentId,
         Guid groupId,
         Guid matchId,
-        int pairOneGames,
-        int pairTwoGames)
+        List<MatchSet> sets)
     {
         var group = GetGroupOrThrow(tournamentId, groupId);
 
@@ -73,7 +72,7 @@ public class TournamentService
         if (match == null)
             throw new ArgumentException("Match not found.");
 
-        var result = new MatchResult(pairOneGames, pairTwoGames);
+        var result = new MatchResult(sets);
 
         match.RegisterResult(result);
     }

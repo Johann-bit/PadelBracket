@@ -21,34 +21,46 @@ public class StandingService
             var pairOneStanding = standings[match.PairOne.Id];
             var pairTwoStanding = standings[match.PairTwo.Id];
 
-            if (match.Result.PairOneWon)
+            var result = match.Result;
+
+            if (result.PairOneWon)
             {
                 pairOneStanding.AddWin(
-                    match.Result.PairOneGames,
-                    match.Result.PairTwoGames
+                    result.PairOneSetsWon,
+                    result.PairTwoSetsWon,
+                    result.PairOneGames,
+                    result.PairTwoGames
                 );
 
                 pairTwoStanding.AddLoss(
-                    match.Result.PairTwoGames,
-                    match.Result.PairOneGames
+                    result.PairTwoSetsWon,
+                    result.PairOneSetsWon,
+                    result.PairTwoGames,
+                    result.PairOneGames
                 );
             }
             else
             {
                 pairTwoStanding.AddWin(
-                    match.Result.PairTwoGames,
-                    match.Result.PairOneGames
+                    result.PairTwoSetsWon,
+                    result.PairOneSetsWon,
+                    result.PairTwoGames,
+                    result.PairOneGames
                 );
 
                 pairOneStanding.AddLoss(
-                    match.Result.PairOneGames,
-                    match.Result.PairTwoGames
+                    result.PairOneSetsWon,
+                    result.PairTwoSetsWon,
+                    result.PairOneGames,
+                    result.PairTwoGames
                 );
             }
         }
 
         return standings.Values
             .OrderByDescending(s => s.Points)
+            .ThenByDescending(s => s.SetDifference)
+            .ThenByDescending(s => s.SetsFor)
             .ThenByDescending(s => s.GameDifference)
             .ThenByDescending(s => s.GamesFor)
             .ThenBy(s => s.GamesAgainst)
