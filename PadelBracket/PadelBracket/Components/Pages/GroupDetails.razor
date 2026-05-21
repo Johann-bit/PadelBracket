@@ -6,47 +6,65 @@
 @inject QualificationService QualificationService
 @rendermode InteractiveServer
 
-<PageTitle>Group details</PageTitle>
+<PageTitle>Detalle del grupo</PageTitle>
 
 @if (tournament == null || group == null)
 {
     <div class="alert alert-danger">
-        Group not found.
+        No se encontró el grupo.
     </div>
 
     <a class="btn btn-secondary" href="/tournaments">
-        Back to tournaments
+        Volver a torneos
     </a>
 }
 else
 {
-    <a class="btn btn-link px-0" href="@($"/tournaments/{tournament.Id}")">
-        ← Back to tournament
-    </a>
+    <div class="mb-3">
+        <a class="btn btn-link px-0" href="@($"/tournaments/{tournament.Id}")">
+            ← Volver al torneo
+        </a>
+    </div>
 
-    <h1>@group.Name</h1>
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="mb-1">@group.Name</h1>
+            <p class="text-muted mb-0">
+                Torneo: <strong>@tournament.Name</strong>
+            </p>
+        </div>
 
-    <p class="text-muted">
-        Tournament: @tournament.Name
-    </p>
+        <div class="text-end">
+            <span class="badge bg-dark fs-6">
+                Clasifican @QualifiedPairsCount
+            </span>
+        </div>
+    </div>
 
-    <div class="card mb-4">
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    <div class="card mb-4 shadow-sm">
         <div class="card-body">
-            <h4 class="card-title">Add pair</h4>
+            <h4 class="card-title mb-3">Agregar pareja</h4>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Player one</label>
+                    <label class="form-label">Jugador 1</label>
                     <input class="form-control"
-                           placeholder="Example: Juan"
+                           placeholder="Ejemplo: Juan"
                            disabled="@group.Matches.Any()"
                            @bind="playerOneName" />
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Player two</label>
+                    <label class="form-label">Jugador 2</label>
                     <input class="form-control"
-                           placeholder="Example: Pedro"
+                           placeholder="Ejemplo: Pedro"
                            disabled="@group.Matches.Any()"
                            @bind="playerTwoName" />
                 </div>
@@ -55,251 +73,276 @@ else
             <button class="btn btn-primary"
                     disabled="@group.Matches.Any()"
                     @onclick="AddPair">
-                Add pair
+                Agregar pareja
             </button>
 
             @if (group.Matches.Any())
             {
                 <small class="text-muted ms-2">
-                    Pairs cannot be added after matches have been generated.
+                    No se pueden agregar parejas después de generar los partidos.
                 </small>
-            }
-
-            @if (!string.IsNullOrWhiteSpace(errorMessage))
-            {
-                <div class="alert alert-danger mt-3">
-                    @errorMessage
-                </div>
             }
         </div>
     </div>
 
-    <h3>Pairs</h3>
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Parejas</h3>
 
-    @if (!group.Pairs.Any())
-    {
-        <div class="alert alert-info">
-            No pairs added yet.
-        </div>
-    }
-    else
-    {
-        <ul class="list-group mb-4">
-            @foreach (var pair in group.Pairs)
+                <span class="badge bg-secondary">
+                    @group.Pairs.Count cargadas
+                </span>
+            </div>
+
+            @if (!group.Pairs.Any())
             {
-                <li class="list-group-item">
-                    @pair.DisplayName
-                </li>
+                <div class="alert alert-info mb-0">
+                    Todavía no hay parejas cargadas.
+                </div>
             }
-        </ul>
-    }
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var pair in group.Pairs)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@pair.DisplayName</span>
+                            <span class="badge bg-light text-dark">Pareja</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
 
     <div class="mb-4">
         <button class="btn btn-success"
                 disabled="@(group.Pairs.Count < 2 || group.Matches.Any())"
                 @onclick="GenerateMatches">
-            Generate group matches
+            Generar partidos del grupo
         </button>
 
         @if (group.Pairs.Count < 2)
         {
             <small class="text-muted ms-2">
-                Add at least 2 pairs to generate matches.
+                Agregá al menos 2 parejas para generar partidos.
             </small>
         }
 
         @if (group.Matches.Any())
         {
             <small class="text-muted ms-2">
-                Matches have already been generated.
+                Los partidos ya fueron generados.
             </small>
         }
     </div>
 
-    <h3>Matches</h3>
+    <h3 class="mb-3">Partidos</h3>
 
     @if (!group.Matches.Any())
     {
         <div class="alert alert-info">
-            No matches generated yet.
+            Todavía no hay partidos generados.
         </div>
     }
     else
     {
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Pair one</th>
-                    <th>Pair two</th>
-                    <th>Set 1</th>
-                    <th>Set 2</th>
-                    <th>Super tie-break</th>
-                    <th>Result</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var match in group.Matches)
-                {
-                    var input = GetMatchInput(match.Id);
-
+        <div class="table-responsive mb-5">
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
                     <tr>
-                        <td>@match.PairOne.DisplayName</td>
-                        <td>@match.PairTwo.DisplayName</td>
+                        <th>Pareja 1</th>
+                        <th>Pareja 2</th>
+                        <th>Set 1</th>
+                        <th>Set 2</th>
+                        <th>Super tie-break</th>
+                        <th>Resultado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var match in group.Matches)
+                    {
+                        var input = GetMatchInput(match.Id);
 
-                        <td>
-                            <div class="d-flex gap-2 align-items-center">
-                                <input type="number"
-                                       min="0"
-                                       class="form-control"
-                                       style="width: 75px;"
-                                       @bind="input.SetOnePairOne" />
-                                <span>-</span>
-                                <input type="number"
-                                       min="0"
-                                       class="form-control"
-                                       style="width: 75px;"
-                                       @bind="input.SetOnePairTwo" />
-                            </div>
-                        </td>
+                        <tr>
+                            <td>
+                                <strong>@match.PairOne.DisplayName</strong>
+                            </td>
 
-                        <td>
-                            <div class="d-flex gap-2 align-items-center">
-                                <input type="number"
-                                       min="0"
-                                       class="form-control"
-                                       style="width: 75px;"
-                                       @bind="input.SetTwoPairOne" />
-                                <span>-</span>
-                                <input type="number"
-                                       min="0"
-                                       class="form-control"
-                                       style="width: 75px;"
-                                       @bind="input.SetTwoPairTwo" />
-                            </div>
-                        </td>
+                            <td>
+                                <strong>@match.PairTwo.DisplayName</strong>
+                            </td>
 
-                        <td>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       @bind="input.UseSuperTieBreak" />
-                                <label class="form-check-label">
-                                    Use STB
-                                </label>
-                            </div>
-
-                            @if (input.UseSuperTieBreak)
-                            {
+                            <td>
                                 <div class="d-flex gap-2 align-items-center">
                                     <input type="number"
                                            min="0"
                                            class="form-control"
                                            style="width: 75px;"
-                                           @bind="input.SuperTieBreakPairOne" />
+                                           @bind="input.SetOnePairOne" />
                                     <span>-</span>
                                     <input type="number"
                                            min="0"
                                            class="form-control"
                                            style="width: 75px;"
-                                           @bind="input.SuperTieBreakPairTwo" />
+                                           @bind="input.SetOnePairTwo" />
                                 </div>
-                            }
-                        </td>
+                            </td>
 
-                        <td>
-                            @if (match.HasResult && match.Result != null)
-                            {
-                                <span class="badge bg-success">
-                                    @match.Result.DisplayScore
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">
-                                    Pending
-                                </span>
-                            }
-                        </td>
+                            <td>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <input type="number"
+                                           min="0"
+                                           class="form-control"
+                                           style="width: 75px;"
+                                           @bind="input.SetTwoPairOne" />
+                                    <span>-</span>
+                                    <input type="number"
+                                           min="0"
+                                           class="form-control"
+                                           style="width: 75px;"
+                                           @bind="input.SetTwoPairTwo" />
+                                </div>
+                            </td>
 
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary"
-                                    @onclick="() => RegisterResult(match.Id)">
-                                Save result
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            <td>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           @bind="input.UseSuperTieBreak" />
+                                    <label class="form-check-label">
+                                        Usar STB
+                                    </label>
+                                </div>
+
+                                @if (input.UseSuperTieBreak)
+                                {
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <input type="number"
+                                               min="0"
+                                               class="form-control"
+                                               style="width: 75px;"
+                                               @bind="input.SuperTieBreakPairOne" />
+                                        <span>-</span>
+                                        <input type="number"
+                                               min="0"
+                                               class="form-control"
+                                               style="width: 75px;"
+                                               @bind="input.SuperTieBreakPairTwo" />
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                @if (match.HasResult && match.Result != null)
+                                {
+                                    <span class="badge bg-success">
+                                        @match.Result.DisplayScore
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        Pendiente
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        @onclick="() => RegisterResult(match.Id)">
+                                    Guardar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 
-    <h3>Standings</h3>
+    <h3 class="mb-3">Tabla de posiciones</h3>
 
     @if (!standings.Any())
     {
         <div class="alert alert-info">
-            Standings will appear here after pairs are added.
+            La tabla aparecerá cuando agregues parejas.
         </div>
     }
     else
     {
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Pair</th>
-                    <th>PJ</th>
-                    <th>PG</th>
-                    <th>PP</th>
-                    <th>SF</th>
-                    <th>SC</th>
-                    <th>DS</th>
-                    <th>GF</th>
-                    <th>GC</th>
-                    <th>DG</th>
-                    <th>Pts</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (int i = 0; i < standings.Count; i++)
-                {
-                    var standing = standings[i];
-
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
                     <tr>
-                        <td>@(i + 1)</td>
-                        <td>@standing.Pair.DisplayName</td>
-                        <td>@standing.Played</td>
-                        <td>@standing.Won</td>
-                        <td>@standing.Lost</td>
-                        <td>@standing.SetsFor</td>
-                        <td>@standing.SetsAgainst</td>
-                        <td>@standing.SetDifference</td>
-                        <td>@standing.GamesFor</td>
-                        <td>@standing.GamesAgainst</td>
-                        <td>@standing.GameDifference</td>
-                        <td><strong>@standing.Points</strong></td>
-                        <td>
-                            @if (qualificationByPairId.ContainsKey(standing.Pair.Id))
-                            {
-                                var status = qualificationByPairId[standing.Pair.Id].Status;
-
-                                <span class="badge @GetQualificationBadgeClass(status)">
-                                    @GetQualificationLabel(status)
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-light text-dark">
-                                    -
-                                </span>
-                            }
-                        </td>
+                        <th>#</th>
+                        <th>Pareja</th>
+                        <th title="Partidos jugados">PJ</th>
+                        <th title="Partidos ganados">PG</th>
+                        <th title="Partidos perdidos">PP</th>
+                        <th title="Sets a favor">SF</th>
+                        <th title="Sets en contra">SC</th>
+                        <th title="Diferencia de sets">DS</th>
+                        <th title="Games a favor">GF</th>
+                        <th title="Games en contra">GC</th>
+                        <th title="Diferencia de games">DG</th>
+                        <th>Puntos</th>
+                        <th>Estado</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < standings.Count; i++)
+                    {
+                        var standing = standings[i];
+
+                        <tr class="@GetStandingRowClass(i)">
+                            <td>
+                                <strong>@(i + 1)</strong>
+                            </td>
+                            <td>
+                                <strong>@standing.Pair.DisplayName</strong>
+                            </td>
+                            <td>@standing.Played</td>
+                            <td>@standing.Won</td>
+                            <td>@standing.Lost</td>
+                            <td>@standing.SetsFor</td>
+                            <td>@standing.SetsAgainst</td>
+                            <td>@standing.SetDifference</td>
+                            <td>@standing.GamesFor</td>
+                            <td>@standing.GamesAgainst</td>
+                            <td>@standing.GameDifference</td>
+                            <td>
+                                <strong>@standing.Points</strong>
+                            </td>
+                            <td>
+                                @if (qualificationByPairId.ContainsKey(standing.Pair.Id))
+                                {
+                                    var status = qualificationByPairId[standing.Pair.Id].Status;
+
+                                    <span class="badge @GetQualificationBadgeClass(status)">
+                                        @GetQualificationLabel(status)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark">
+                                        -
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-muted mt-2">
+            <small>
+                PJ: partidos jugados · PG: ganados · PP: perdidos · SF/SC: sets a favor/en contra · GF/GC: games a favor/en contra.
+            </small>
+        </div>
     }
 }
 
@@ -478,11 +521,11 @@ else
     {
         return status switch
         {
-            QualificationStatus.MathematicallyQualified => "Qualified",
-            QualificationStatus.InQualificationZone => "In zone",
-            QualificationStatus.Alive => "Alive",
-            QualificationStatus.MathematicallyEliminated => "Eliminated",
-            _ => "Unknown"
+            QualificationStatus.MathematicallyQualified => "Clasificado",
+            QualificationStatus.InQualificationZone => "En zona",
+            QualificationStatus.Alive => "Con chances",
+            QualificationStatus.MathematicallyEliminated => "Eliminado",
+            _ => "Desconocido"
         };
     }
 
@@ -492,10 +535,15 @@ else
         {
             QualificationStatus.MathematicallyQualified => "bg-success",
             QualificationStatus.InQualificationZone => "bg-primary",
-            QualificationStatus.Alive => "bg-secondary",
+            QualificationStatus.Alive => "bg-warning text-dark",
             QualificationStatus.MathematicallyEliminated => "bg-danger",
             _ => "bg-dark"
         };
+    }
+
+    private string GetStandingRowClass(int index)
+    {
+        return index < QualifiedPairsCount ? "table-success" : string.Empty;
     }
 
     private class MatchInput

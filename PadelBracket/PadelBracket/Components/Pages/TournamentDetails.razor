@@ -4,60 +4,78 @@
 @inject TournamentService TournamentService
 @rendermode InteractiveServer
 
-<PageTitle>Tournament details</PageTitle>
+<PageTitle>Detalle del torneo</PageTitle>
 
 @if (tournament == null)
 {
     <div class="alert alert-danger">
-        Tournament not found.
+        No se encontró el torneo.
     </div>
 
     <a class="btn btn-secondary" href="/tournaments">
-        Back to tournaments
+        Volver a torneos
     </a>
 }
 else
 {
-    <a class="btn btn-link px-0" href="/tournaments">
-        ← Back to tournaments
-    </a>
+    <div class="mb-3">
+        <a class="btn btn-link px-0" href="/tournaments">
+            ← Volver a torneos
+        </a>
+    </div>
 
-    <h1>@tournament.Name</h1>
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="mb-1">@tournament.Name</h1>
 
-    <p class="text-muted">
-        Created at @tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-    </p>
+            <p class="text-muted mb-0">
+                Creado el @tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </p>
+        </div>
 
-    <div class="card mb-4">
+        <div class="text-end">
+            <span class="badge bg-dark fs-6">
+                @tournament.Groups.Count grupos
+            </span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    <div class="card mb-4 shadow-sm">
         <div class="card-body">
-            <h4 class="card-title">Create group</h4>
+            <h4 class="card-title">Crear grupo</h4>
 
             <div class="mb-3">
-                <label class="form-label">Group name</label>
+                <label class="form-label">Nombre del grupo</label>
                 <input class="form-control"
-                       placeholder="Example: Group A"
+                       placeholder="Ejemplo: Grupo A"
                        @bind="newGroupName" />
             </div>
 
             <button class="btn btn-primary" @onclick="CreateGroup">
-                Create group
+                Crear grupo
             </button>
-
-            @if (!string.IsNullOrWhiteSpace(errorMessage))
-            {
-                <div class="alert alert-danger mt-3">
-                    @errorMessage
-                </div>
-            }
         </div>
     </div>
 
-    <h3>Groups</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Grupos</h3>
+
+        <span class="badge bg-secondary">
+            @tournament.Groups.Count total
+        </span>
+    </div>
 
     @if (!tournament.Groups.Any())
     {
         <div class="alert alert-info">
-            This tournament does not have groups yet.
+            Este torneo todavía no tiene grupos.
         </div>
     }
     else
@@ -66,21 +84,21 @@ else
             @foreach (var group in tournament.Groups)
             {
                 <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100">
+                    <div class="card h-100 shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title">@group.Name</h5>
 
-                            <p class="card-text">
-                                Pairs: @group.Pairs.Count
+                            <p class="card-text mb-1">
+                                Parejas: <strong>@group.Pairs.Count</strong>
                             </p>
 
                             <p class="card-text">
-                                Matches: @group.Matches.Count
+                                Partidos: <strong>@group.Matches.Count</strong>
                             </p>
 
                             <a class="btn btn-sm btn-outline-primary"
                                href="@($"/tournaments/{tournament.Id}/groups/{group.Id}")">
-                                Open group
+                                Abrir grupo
                             </a>
                         </div>
                     </div>

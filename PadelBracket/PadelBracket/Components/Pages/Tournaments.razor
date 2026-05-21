@@ -4,74 +4,84 @@
 @inject TournamentService TournamentService
 @rendermode InteractiveServer
 
-<PageTitle>Tournaments</PageTitle>
+<PageTitle>Torneos</PageTitle>
 
 <h1 class="mb-4">PadelBracket</h1>
 
 <p class="text-muted">
-    Manage padel tournaments, groups, standings and knockout brackets.
+    Gestioná torneos de pádel, grupos, tablas de posiciones y llaves eliminatorias.
 </p>
 
-<div class="card mb-4">
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+<div class="card mb-4 shadow-sm">
     <div class="card-body">
-        <h4 class="card-title">Create tournament</h4>
+        <h4 class="card-title">Crear torneo</h4>
 
         <div class="mb-3">
-            <label class="form-label">Tournament name</label>
+            <label class="form-label">Nombre del torneo</label>
             <input class="form-control"
-                   placeholder="Example: Torneo Apertura 2026"
+                   placeholder="Ejemplo: Torneo Apertura 2026"
                    @bind="newTournamentName" />
         </div>
 
         <button class="btn btn-primary" @onclick="CreateTournament">
-            Create tournament
+            Crear torneo
         </button>
-
-        @if (!string.IsNullOrWhiteSpace(errorMessage))
-        {
-            <div class="alert alert-danger mt-3">
-                @errorMessage
-            </div>
-        }
     </div>
 </div>
 
-<h3>Created tournaments</h3>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Torneos creados</h3>
+
+    <span class="badge bg-secondary">
+        @tournaments.Count total
+    </span>
+</div>
 
 @if (!tournaments.Any())
 {
     <div class="alert alert-info">
-        No tournaments created yet.
+        Todavía no hay torneos creados.
     </div>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Created at</th>
-                <th>Groups</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var tournament in tournaments)
-            {
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
                 <tr>
-                    <td>@tournament.Name</td>
-                    <td>@tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@tournament.Groups.Count</td>
-                    <td>
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="@($"/tournaments/{tournament.Id}")">
-                            Open
-                        </a>
-                    </td>
+                    <th>Nombre</th>
+                    <th>Creado</th>
+                    <th>Grupos</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var tournament in tournaments)
+                {
+                    <tr>
+                        <td>
+                            <strong>@tournament.Name</strong>
+                        </td>
+                        <td>@tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@tournament.Groups.Count</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@($"/tournaments/{tournament.Id}")">
+                                Abrir
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
