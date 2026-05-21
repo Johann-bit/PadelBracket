@@ -95,6 +95,8 @@ else
                 <div class="row">
                     @foreach (var match in round.Matches)
                     {
+                        var input = GetMatchInput(match.Id);
+
                         <div class="col-md-6 col-lg-4 mb-4">
                             <div class="card h-100 shadow-sm">
                                 <div class="card-header bg-dark text-white">
@@ -103,7 +105,9 @@ else
 
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span>@GetPairName(match.PairOne)</span>
+                                        <span>
+                                            <strong>@GetPairName(match.PairOne)</strong>
+                                        </span>
                                         <span class="badge bg-secondary">Pareja 1</span>
                                     </div>
 
@@ -111,18 +115,95 @@ else
                                         vs
                                     </div>
 
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>@GetPairName(match.PairTwo)</span>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span>
+                                            <strong>@GetPairName(match.PairTwo)</strong>
+                                        </span>
                                         <span class="badge bg-secondary">Pareja 2</span>
                                     </div>
+
+                                    @if (match.IsReadyToPlay && !match.HasResult)
+                                    {
+                                        <hr />
+
+                                        <h6 class="mb-3">Cargar resultado</h6>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Set 1</label>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <input type="number"
+                                                       min="0"
+                                                       class="form-control"
+                                                       @bind="input.SetOnePairOne" />
+                                                <span>-</span>
+                                                <input type="number"
+                                                       min="0"
+                                                       class="form-control"
+                                                       @bind="input.SetOnePairTwo" />
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Set 2</label>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <input type="number"
+                                                       min="0"
+                                                       class="form-control"
+                                                       @bind="input.SetTwoPairOne" />
+                                                <span>-</span>
+                                                <input type="number"
+                                                       min="0"
+                                                       class="form-control"
+                                                       @bind="input.SetTwoPairTwo" />
+                                            </div>
+                                        </div>
+
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   @bind="input.UseSuperTieBreak" />
+                                            <label class="form-check-label">
+                                                Usar super tie-break
+                                            </label>
+                                        </div>
+
+                                        @if (input.UseSuperTieBreak)
+                                        {
+                                            <div class="mb-3">
+                                                <label class="form-label">Super tie-break</label>
+                                                <div class="d-flex gap-2 align-items-center">
+                                                    <input type="number"
+                                                           min="0"
+                                                           class="form-control"
+                                                           @bind="input.SuperTieBreakPairOne" />
+                                                    <span>-</span>
+                                                    <input type="number"
+                                                           min="0"
+                                                           class="form-control"
+                                                           @bind="input.SuperTieBreakPairTwo" />
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                @onclick="() => RegisterResult(match.Id)">
+                                            Guardar resultado
+                                        </button>
+                                    }
                                 </div>
 
                                 <div class="card-footer text-muted">
                                     @if (match.HasResult && match.Result != null)
                                     {
-                                        <span class="badge bg-success">
-                                            @match.Result.DisplayScore
-                                        </span>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-success">
+                                                @match.Result.DisplayScore
+                                            </span>
+
+                                            <span>
+                                                Ganó: <strong>@GetPairName(match.Winner)</strong>
+                                            </span>
+                                        </div>
                                     }
                                     else if (match.IsReadyToPlay)
                                     {
@@ -139,6 +220,14 @@ else
                 </div>
             </section>
         }
+
+        @if (GetChampion() != null)
+        {
+            <div class="alert alert-primary">
+                Campeones de @GetCategoryLabel(Category):
+                <strong>@GetPairName(GetChampion())</strong>
+            </div>
+        }
     }
 }
 
@@ -153,6 +242,8 @@ else
     private KnockoutBracket? bracket;
     private string? errorMessage;
 
+    private Dictionary<Guid, MatchInput> matchInputs = new();
+
     protected override void OnInitialized()
     {
         tournament = TournamentService.GetTournamentById(TournamentId);
@@ -161,6 +252,8 @@ else
             return;
 
         bracket = KnockoutService.GetBracket(tournament.Id, Category);
+
+        InitializeMatchInputs();
     }
 
     private void GenerateBracket()
@@ -173,11 +266,79 @@ else
         try
         {
             bracket = KnockoutService.GenerateBracket(tournament, Category);
+            InitializeMatchInputs();
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
         }
+    }
+
+    private void RegisterResult(Guid matchId)
+    {
+        if (tournament == null || bracket == null)
+            return;
+
+        errorMessage = null;
+
+        try
+        {
+            var input = GetMatchInput(matchId);
+
+            var sets = new List<MatchSet>
+            {
+                new MatchSet(input.SetOnePairOne, input.SetOnePairTwo),
+                new MatchSet(input.SetTwoPairOne, input.SetTwoPairTwo)
+            };
+
+            if (input.UseSuperTieBreak)
+            {
+                sets.Add(new MatchSet(
+                    input.SuperTieBreakPairOne,
+                    input.SuperTieBreakPairTwo,
+                    true
+                ));
+            }
+
+            KnockoutService.RegisterMatchResult(
+                tournament.Id,
+                Category,
+                matchId,
+                sets
+            );
+
+            bracket = KnockoutService.GetBracket(tournament.Id, Category);
+
+            InitializeMatchInputs();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void InitializeMatchInputs()
+    {
+        if (bracket == null)
+            return;
+
+        foreach (var match in bracket.Matches)
+        {
+            if (!matchInputs.ContainsKey(match.Id))
+            {
+                matchInputs[match.Id] = new MatchInput();
+            }
+        }
+    }
+
+    private MatchInput GetMatchInput(Guid matchId)
+    {
+        if (!matchInputs.ContainsKey(matchId))
+        {
+            matchInputs[matchId] = new MatchInput();
+        }
+
+        return matchInputs[matchId];
     }
 
     private int GetCategoryGroupCount()
@@ -232,6 +393,18 @@ else
         };
     }
 
+    private Pair? GetChampion()
+    {
+        if (bracket == null)
+            return null;
+
+        var final = bracket.Matches.FirstOrDefault(match =>
+            match.RoundName.StartsWith("Final")
+        );
+
+        return final?.Winner;
+    }
+
     private string GetPairName(Pair? pair)
     {
         return pair?.DisplayName ?? "Pendiente";
@@ -263,5 +436,19 @@ else
             Name = name;
             Matches = matches;
         }
+    }
+
+    private class MatchInput
+    {
+        public int SetOnePairOne { get; set; }
+        public int SetOnePairTwo { get; set; }
+
+        public int SetTwoPairOne { get; set; }
+        public int SetTwoPairTwo { get; set; }
+
+        public bool UseSuperTieBreak { get; set; }
+
+        public int SuperTieBreakPairOne { get; set; }
+        public int SuperTieBreakPairTwo { get; set; }
     }
 }
