@@ -18,4 +18,16 @@ public class Pair
     }
 
     public string DisplayName => $"{PlayerOne.Name} / {PlayerTwo.Name}";
+
+    public void RenamePlayers(string playerOneName, string playerTwoName)
+    {
+        if (string.IsNullOrWhiteSpace(playerOneName))
+            throw new ArgumentException("Player one name is required.");
+
+        if (string.IsNullOrWhiteSpace(playerTwoName))
+            throw new ArgumentException("Player two name is required.");
+
+        PlayerOne.Rename(playerOneName);
+        PlayerTwo.Rename(playerTwoName);
+    }
 }

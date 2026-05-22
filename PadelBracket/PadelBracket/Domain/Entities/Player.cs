@@ -13,4 +13,12 @@ public class Player
         Id = Guid.NewGuid();
         Name = name.Trim();
     }
+
+    public void Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Player name is required.");
+
+        Name = name.Trim();
+    }
 }

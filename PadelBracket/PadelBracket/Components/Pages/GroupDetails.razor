@@ -89,7 +89,7 @@ else
             @if (group.Matches.Any())
             {
                 <small class="text-muted ms-2">
-                    No se pueden agregar parejas después de generar los partidos.
+                    No se pueden agregar, editar ni eliminar parejas después de generar los partidos.
                 </small>
             }
         </div>
@@ -98,7 +98,12 @@ else
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">Parejas</h3>
+                <div>
+                    <h3 class="mb-1">Parejas</h3>
+                    <p class="text-muted mb-0">
+                        Gestioná las parejas antes de generar los partidos del grupo.
+                    </p>
+                </div>
 
                 <span class="badge bg-secondary">
                     @group.Pairs.Count cargadas
@@ -116,9 +121,64 @@ else
                 <ul class="list-group">
                     @foreach (var pair in group.Pairs)
                     {
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>@pair.DisplayName</span>
-                            <span class="badge bg-light text-dark">Pareja</span>
+                        var isEditingPair = IsEditingPair(pair.Id);
+
+                        <li class="list-group-item">
+                            @if (isEditingPair)
+                            {
+                                <div class="row align-items-end">
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Jugador 1</label>
+                                        <input class="form-control"
+                                               @bind="editPlayerOneName" />
+                                    </div>
+
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Jugador 2</label>
+                                        <input class="form-control"
+                                               @bind="editPlayerTwoName" />
+                                    </div>
+
+                                    <div class="col-md-4 mb-2 d-flex gap-2 justify-content-md-end">
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                @onclick="() => SavePairEdit(pair.Id)">
+                                            Guardar
+                                        </button>
+
+                                        <button class="btn btn-sm btn-outline-secondary"
+                                                @onclick="CancelPairEdit">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="d-flex justify-content-between align-items-center gap-3">
+                                    <div>
+                                        <strong>@pair.DisplayName</strong>
+                                    </div>
+
+                                    @if (!group.Matches.Any())
+                                    {
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => StartPairEdit(pair)">
+                                                Editar
+                                            </button>
+
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    @onclick="() => RemovePair(pair.Id)">
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark">Pareja</span>
+                                    }
+                                </div>
+                            }
                         </li>
                     }
                 </ul>
@@ -429,6 +489,10 @@ else
     private string? errorMessage;
     private string? successMessage;
 
+    private Guid? editingPairId;
+    private string editPlayerOneName = string.Empty;
+    private string editPlayerTwoName = string.Empty;
+
     private Dictionary<Guid, MatchInput> matchInputs = new();
     private HashSet<Guid> editingMatchIds = new();
 
@@ -515,6 +579,96 @@ else
         }
     }
 
+    private bool IsEditingPair(Guid pairId)
+    {
+        return editingPairId == pairId;
+    }
+
+    private void StartPairEdit(Pair pair)
+    {
+        editingPairId = pair.Id;
+        editPlayerOneName = pair.PlayerOne.Name;
+        editPlayerTwoName = pair.PlayerTwo.Name;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelPairEdit()
+    {
+        editingPairId = null;
+        editPlayerOneName = string.Empty;
+        editPlayerTwoName = string.Empty;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void SavePairEdit(Guid pairId)
+    {
+        if (tournament == null || group == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.UpdatePairInGroup(
+                tournament.Id,
+                group.Id,
+                pairId,
+                editPlayerOneName,
+                editPlayerTwoName
+            );
+
+            editingPairId = null;
+            editPlayerOneName = string.Empty;
+            editPlayerTwoName = string.Empty;
+
+            LoadData();
+
+            successMessage = "Pareja actualizada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void RemovePair(Guid pairId)
+    {
+        if (tournament == null || group == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.RemovePairFromGroup(
+                tournament.Id,
+                group.Id,
+                pairId
+            );
+
+            if (editingPairId == pairId)
+            {
+                editingPairId = null;
+                editPlayerOneName = string.Empty;
+                editPlayerTwoName = string.Empty;
+            }
+
+            LoadData();
+
+            successMessage = "Pareja eliminada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
     private void GenerateMatches()
     {
         if (tournament == null || group == null)
@@ -526,6 +680,7 @@ else
         try
         {
             TournamentService.GenerateGroupMatches(tournament.Id, group.Id);
+            CancelPairEdit();
             LoadData();
 
             successMessage = "Partidos generados correctamente.";

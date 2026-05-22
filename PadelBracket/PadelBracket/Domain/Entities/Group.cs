@@ -30,13 +30,54 @@ public class Group
         if (pair == null)
             throw new ArgumentNullException(nameof(pair));
 
-        if (Matches.Any())
-            throw new InvalidOperationException("Cannot add pairs after matches have been generated.");
+        EnsurePairsCanBeModified();
 
         if (Pairs.Any(p => p.Id == pair.Id))
             throw new ArgumentException("This pair is already in the group.");
 
+        if (Pairs.Any(p => string.Equals(p.DisplayName, pair.DisplayName, StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("A pair with the same players already exists in this group.");
+
         Pairs.Add(pair);
+    }
+
+    public void RenamePair(Guid pairId, string playerOneName, string playerTwoName)
+    {
+        EnsurePairsCanBeModified();
+
+        var pair = Pairs.FirstOrDefault(pair => pair.Id == pairId);
+
+        if (pair == null)
+            throw new ArgumentException("Pair not found.");
+
+        if (string.IsNullOrWhiteSpace(playerOneName))
+            throw new ArgumentException("Player one name is required.");
+
+        if (string.IsNullOrWhiteSpace(playerTwoName))
+            throw new ArgumentException("Player two name is required.");
+
+        var newDisplayName = $"{playerOneName.Trim()} / {playerTwoName.Trim()}";
+
+        if (Pairs.Any(existingPair =>
+                existingPair.Id != pairId &&
+                string.Equals(existingPair.DisplayName, newDisplayName, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("A pair with the same players already exists in this group.");
+        }
+
+        pair.RenamePlayers(playerOneName, playerTwoName);
+    }
+
+    public void RemovePair(Guid pairId)
+    {
+        EnsurePairsCanBeModified();
+
+        var pair = Pairs.FirstOrDefault(pair => pair.Id == pairId);
+
+        if (pair == null)
+            throw new ArgumentException("Pair not found.");
+
+        Pairs.Remove(pair);
     }
 
     public void GenerateMatches()
@@ -54,6 +95,12 @@ public class Group
                 Matches.Add(new Match(Pairs[i], Pairs[j]));
             }
         }
+    }
+
+    private void EnsurePairsCanBeModified()
+    {
+        if (Matches.Any())
+            throw new InvalidOperationException("Cannot modify pairs after matches have been generated.");
     }
 
     private static string GetCategoryLabel(int category)

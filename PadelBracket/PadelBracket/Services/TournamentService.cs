@@ -52,6 +52,28 @@ public class TournamentService
         return pair;
     }
 
+    public void UpdatePairInGroup(
+        Guid tournamentId,
+        Guid groupId,
+        Guid pairId,
+        string playerOneName,
+        string playerTwoName)
+    {
+        var group = GetGroupOrThrow(tournamentId, groupId);
+
+        group.RenamePair(pairId, playerOneName, playerTwoName);
+    }
+
+    public void RemovePairFromGroup(
+        Guid tournamentId,
+        Guid groupId,
+        Guid pairId)
+    {
+        var group = GetGroupOrThrow(tournamentId, groupId);
+
+        group.RemovePair(pairId);
+    }
+
     public void GenerateGroupMatches(Guid tournamentId, Guid groupId)
     {
         var group = GetGroupOrThrow(tournamentId, groupId);
