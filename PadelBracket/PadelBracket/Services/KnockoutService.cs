@@ -12,6 +12,18 @@ public class KnockoutService
         _standingService = standingService ?? throw new ArgumentNullException(nameof(standingService));
     }
 
+    public List<KnockoutBracket> GetAllBrackets()
+    {
+        return _brackets.ToList();
+    }
+
+    public List<KnockoutBracket> GetBracketsByTournament(Guid tournamentId)
+    {
+        return _brackets
+            .Where(bracket => bracket.TournamentId == tournamentId)
+            .ToList();
+    }
+
     public KnockoutBracket? GetBracket(Guid tournamentId, int category)
     {
         return _brackets.FirstOrDefault(bracket =>
