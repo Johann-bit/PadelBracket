@@ -8,6 +8,15 @@ public class TournamentService
 
     public Tournament CreateTournament(string name)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tournament name is required.");
+
+        if (_tournaments.Any(tournament =>
+                string.Equals(tournament.Name, name.Trim(), StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("A tournament with the same name already exists.");
+        }
+
         var tournament = new Tournament(name);
         _tournaments.Add(tournament);
 
@@ -24,6 +33,30 @@ public class TournamentService
         return _tournaments.FirstOrDefault(t => t.Id == tournamentId);
     }
 
+    public void RenameTournament(Guid tournamentId, string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tournament name is required.");
+
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        if (_tournaments.Any(existingTournament =>
+                existingTournament.Id != tournamentId &&
+                string.Equals(existingTournament.Name, name.Trim(), StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("A tournament with the same name already exists.");
+        }
+
+        tournament.Rename(name);
+    }
+
+    public void DeleteTournament(Guid tournamentId)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        _tournaments.Remove(tournament);
+    }
+
     public Group AddGroupToTournament(Guid tournamentId, string groupName, int category)
     {
         var tournament = GetTournamentOrThrow(tournamentId);
@@ -32,6 +65,25 @@ public class TournamentService
         tournament.AddGroup(group);
 
         return group;
+    }
+
+    public void RenameGroupInTournament(
+        Guid tournamentId,
+        Guid groupId,
+        string groupName)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        tournament.RenameGroup(groupId, groupName);
+    }
+
+    public void DeleteGroupFromTournament(
+        Guid tournamentId,
+        Guid groupId)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        tournament.RemoveGroup(groupId);
     }
 
     public Pair AddPairToGroup(

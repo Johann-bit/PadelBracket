@@ -25,6 +25,14 @@ public class Group
         Matches = new List<Match>();
     }
 
+    public void Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Group name is required.");
+
+        Name = name.Trim();
+    }
+
     public void AddPair(Pair pair)
     {
         if (pair == null)

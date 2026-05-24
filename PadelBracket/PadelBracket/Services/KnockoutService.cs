@@ -84,6 +84,11 @@ public class KnockoutService
         _brackets.Remove(bracket);
     }
 
+    public void DeleteBracketsByTournament(Guid tournamentId)
+    {
+        _brackets.RemoveAll(bracket => bracket.TournamentId == tournamentId);
+    }
+
     public bool BracketHasResults(Guid tournamentId, int category)
     {
         var bracket = GetBracket(tournamentId, category);

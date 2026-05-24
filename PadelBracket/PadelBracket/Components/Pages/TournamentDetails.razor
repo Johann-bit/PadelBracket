@@ -47,6 +47,13 @@ else
         </div>
     }
 
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
             <h4 class="card-title">Crear grupo</h4>
@@ -97,8 +104,8 @@ else
     else
     {
         @foreach (var categoryGroup in tournament.Groups
-                    .GroupBy(g => g.Category)
-                    .OrderByDescending(g => g.Key))
+                            .GroupBy(g => g.Category)
+                            .OrderByDescending(g => g.Key))
         {
             <section class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -127,11 +134,22 @@ else
                 <div class="row">
                     @foreach (var group in categoryGroup.OrderBy(g => g.Name))
                     {
+                        var isEditingGroup = editingGroupId == group.Id;
+                        var isDeletingGroup = groupIdToDelete == group.Id;
+
                         <div class="col-md-6 col-lg-4 mb-3">
                             <div class="card h-100 shadow-sm">
                                 <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="card-title mb-0">@group.Name</h5>
+                                    <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+                                        @if (isEditingGroup)
+                                        {
+                                            <input class="form-control"
+                                                   @bind="editGroupName" />
+                                        }
+                                        else
+                                        {
+                                            <h5 class="card-title mb-0">@group.Name</h5>
+                                        }
 
                                         <span class="badge bg-primary">
                                             @group.CategoryLabel
@@ -173,10 +191,65 @@ else
                                         </div>
                                     }
 
-                                    <a class="btn btn-sm btn-outline-primary"
-                                       href="@($"/tournaments/{tournament.Id}/groups/{group.Id}")">
-                                        Abrir grupo
-                                    </a>
+                                    @if (isEditingGroup)
+                                    {
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => SaveGroupEdit(group.Id)">
+                                                Guardar
+                                            </button>
+
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                    @onclick="CancelGroupEdit">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <a class="btn btn-sm btn-outline-primary"
+                                               href="@($"/tournaments/{tournament.Id}/groups/{group.Id}")">
+                                                Abrir grupo
+                                            </a>
+
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => StartGroupEdit(group)">
+                                                Renombrar
+                                            </button>
+
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    disabled="@group.Matches.Any()"
+                                                    @onclick="() => AskDeleteGroup(group.Id)">
+                                                Eliminar
+                                            </button>
+                                        </div>
+
+                                        @if (group.Matches.Any())
+                                        {
+                                            <small class="text-muted d-block mt-2">
+                                                No se puede eliminar un grupo con partidos generados.
+                                            </small>
+                                        }
+                                    }
+
+                                    @if (isDeletingGroup)
+                                    {
+                                        <div class="alert alert-danger mt-3 mb-0">
+                                            <strong>¿Eliminar este grupo?</strong>
+                                            <div class="mt-2 d-flex gap-2">
+                                                <button class="btn btn-sm btn-danger"
+                                                        @onclick="() => DeleteGroup(group.Id)">
+                                                    Confirmar
+                                                </button>
+
+                                                <button class="btn btn-sm btn-secondary"
+                                                        @onclick="CancelDeleteGroup">
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -195,8 +268,19 @@ else
     private string newGroupName = string.Empty;
     private int selectedCategory = 5;
     private string? errorMessage;
+    private string? successMessage;
+
+    private Guid? editingGroupId;
+    private string editGroupName = string.Empty;
+
+    private Guid? groupIdToDelete;
 
     protected override void OnInitialized()
+    {
+        LoadTournament();
+    }
+
+    private void LoadTournament()
     {
         tournament = TournamentService.GetTournamentById(TournamentId);
     }
@@ -207,6 +291,7 @@ else
             return;
 
         errorMessage = null;
+        successMessage = null;
 
         try
         {
@@ -217,7 +302,99 @@ else
             );
 
             newGroupName = string.Empty;
-            tournament = TournamentService.GetTournamentById(TournamentId);
+            LoadTournament();
+
+            successMessage = "Grupo creado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void StartGroupEdit(Group group)
+    {
+        editingGroupId = group.Id;
+        editGroupName = group.Name;
+        groupIdToDelete = null;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelGroupEdit()
+    {
+        editingGroupId = null;
+        editGroupName = string.Empty;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void SaveGroupEdit(Guid groupId)
+    {
+        if (tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.RenameGroupInTournament(
+                tournament.Id,
+                groupId,
+                editGroupName
+            );
+
+            editingGroupId = null;
+            editGroupName = string.Empty;
+
+            LoadTournament();
+
+            successMessage = "Grupo renombrado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void AskDeleteGroup(Guid groupId)
+    {
+        editingGroupId = null;
+        editGroupName = string.Empty;
+        groupIdToDelete = groupId;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelDeleteGroup()
+    {
+        groupIdToDelete = null;
+    }
+
+    private void DeleteGroup(Guid groupId)
+    {
+        if (tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.DeleteGroupFromTournament(
+                tournament.Id,
+                groupId
+            );
+
+            groupIdToDelete = null;
+
+            LoadTournament();
+
+            successMessage = "Grupo eliminado correctamente.";
         }
         catch (Exception ex)
         {
