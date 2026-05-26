@@ -12,6 +12,7 @@ builder.Services.AddSingleton<TournamentService>();
 builder.Services.AddSingleton<StandingService>();
 builder.Services.AddSingleton<QualificationService>();
 builder.Services.AddSingleton<KnockoutService>();
+builder.Services.AddSingleton<PlayerService>();
 
 var app = builder.Build();
 

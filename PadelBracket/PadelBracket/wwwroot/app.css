@@ -830,4 +830,193 @@ a {
         background: linear-gradient(90deg, var(--app-primary), #60a5fa);
         transition: width 180ms ease;
     }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        margin: 0;
+        color: #0f172a;
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .section-subtitle {
+        margin: 0.35rem 0 0;
+        color: #64748b;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .form-grid {
+        display: grid;
+        gap: 1.25rem;
+    }
+
+    .form-group {
+        display: grid;
+        gap: 0.6rem;
+    }
+
+        .form-group label {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+    .form-control {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 1rem;
+        padding: 0.95rem 1rem;
+        color: #0f172a;
+        background: #ffffff;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        }
+
+    .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger {
+        border: none;
+        border-radius: 0.9rem;
+        padding: 0.85rem 1.15rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn-primary {
+        color: #ffffff;
+        background: #2563eb;
+        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
+    }
+
+    .btn-secondary {
+        color: #334155;
+        background: #e2e8f0;
+    }
+
+    .btn-danger {
+        color: #ffffff;
+        background: #dc2626;
+    }
+
+        .btn-primary:hover,
+        .btn-secondary:hover,
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .data-table th {
+            padding: 1rem;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            color: #0f172a;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+    .player-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+    .player-avatar {
+        display: grid;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 1rem;
+        color: #ffffff;
+        background: linear-gradient(135deg, #2563eb, #60a5fa);
+        font-weight: 900;
+    }
+
+    .player-name {
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .player-id {
+        margin-top: 0.15rem;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .table-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .empty-state {
+        border: 1px dashed #cbd5e1;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        color: #64748b;
+        background: #f8fafc;
+        font-weight: 600;
+    }
+
+    .alert {
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        font-weight: 800;
+    }
+
+    .alert-success {
+        color: #166534;
+        background: #dcfce7;
+        border: 1px solid #86efac;
+    }
+
+    .alert-danger {
+        color: #991b1b;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+    }
 }

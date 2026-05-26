@@ -1,0 +1,252 @@
+﻿@page "/players"
+@using PadelBracket.Domain.Entities
+@using PadelBracket.Services
+@inject PlayerService PlayerService
+@rendermode InteractiveServer
+
+<PageTitle>Jugadores</PageTitle>
+
+<div class="page-header">
+    <div class="page-eyebrow">Gestión de jugadores</div>
+    <h1 class="page-title">Jugadores</h1>
+    <p class="page-subtitle">
+        Registrá jugadores, editá sus nombres y dejá preparada la base para crear parejas y rankings.
+    </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success">
+        @successMessage
+    </div>
+}
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Jugadores registrados</div>
+        <div class="stat-value">@players.Count</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Estado</div>
+        <div class="stat-value">Activo</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Próximo paso</div>
+        <div class="stat-value">Parejas</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title mb-2">Crear jugador</h4>
+
+        <p class="text-muted mb-4">
+            Agregá jugadores para luego formar parejas, torneos y rankings.
+        </p>
+
+        <div class="mb-3">
+            <label class="form-label">Nombre del jugador</label>
+            <input class="form-control"
+                   placeholder="Ejemplo: Johann"
+                   @bind="newPlayerName" />
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-primary" @onclick="CreatePlayer">
+                Crear jugador
+            </button>
+
+            <button class="btn btn-outline-primary" @onclick="SeedPlayers">
+                Cargar ejemplos
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">Jugadores registrados</h3>
+        <p class="text-muted mb-0">
+            Editá nombres o eliminá jugadores cargados en el sistema.
+        </p>
+    </div>
+
+    <span class="badge bg-secondary">
+        @players.Count total
+    </span>
+</div>
+
+@if (!players.Any())
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Todavía no hay jugadores registrados.</div>
+        <div>
+            Creá el primero para después formar parejas.
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Jugador</th>
+                    <th>Referencia</th>
+                    <th>Editar nombre</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Player player in players)
+                {
+                    <tr>
+                        <td>
+                            <strong>@player.Name</strong>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-secondary">
+                                @player.Id.ToString()[..8]
+                            </span>
+                        </td>
+
+                        <td>
+                            <input class="form-control"
+                                   value="@GetEditName(player.Id)"
+                                   @oninput="eventArgs => SetEditName(player.Id, eventArgs.Value?.ToString() ?? string.Empty)" />
+                        </td>
+
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary me-2"
+                                    @onclick="() => RenamePlayer(player.Id)">
+                                Guardar
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => DeletePlayer(player.Id)">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<Player> players = new();
+    private string newPlayerName = string.Empty;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+    private readonly Dictionary<Guid, string> editNames = new();
+
+    protected override void OnInitialized()
+    {
+        LoadPlayers();
+    }
+
+    private void LoadPlayers()
+    {
+        players = PlayerService.GetAll().ToList();
+
+        foreach (Player player in players)
+        {
+            if (!editNames.ContainsKey(player.Id))
+                editNames[player.Id] = player.Name;
+        }
+    }
+
+    private void CreatePlayer()
+    {
+        ClearMessages();
+
+        try
+        {
+            PlayerService.Add(newPlayerName);
+            newPlayerName = string.Empty;
+            successMessage = "Jugador creado correctamente.";
+            LoadPlayers();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private void RenamePlayer(Guid id)
+    {
+        ClearMessages();
+
+        try
+        {
+            string name = GetEditName(id);
+            PlayerService.Rename(id, name);
+            successMessage = "Jugador actualizado correctamente.";
+            LoadPlayers();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private void DeletePlayer(Guid id)
+    {
+        ClearMessages();
+
+        try
+        {
+            PlayerService.Delete(id);
+            editNames.Remove(id);
+            successMessage = "Jugador eliminado correctamente.";
+            LoadPlayers();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private void SeedPlayers()
+    {
+        ClearMessages();
+
+        try
+        {
+            PlayerService.SeedDefaultPlayers();
+            successMessage = "Jugadores de ejemplo cargados correctamente.";
+            LoadPlayers();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private string GetEditName(Guid id)
+    {
+        return editNames.TryGetValue(id, out string? name) ? name : string.Empty;
+    }
+
+    private void SetEditName(Guid id, string name)
+    {
+        editNames[id] = name;
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+    }
+}
