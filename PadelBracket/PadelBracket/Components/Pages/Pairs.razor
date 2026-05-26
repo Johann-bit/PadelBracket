@@ -1,4 +1,5 @@
 ﻿@page "/pairs"
+@using PadelBracket.Domain.DTOs
 @using PadelBracket.Domain.Entities
 @using PadelBracket.Services
 @inject PlayerService PlayerService
@@ -61,7 +62,7 @@
                 <select class="form-select" @bind="selectedPlayerOneId">
                     <option value="">Seleccionar jugador</option>
 
-                    @foreach (Player player in players)
+                    @foreach (PlayerDto player in players)
                     {
                         <option value="@player.Id">@player.Name</option>
                     }
@@ -74,7 +75,7 @@
                 <select class="form-select" @bind="selectedPlayerTwoId">
                     <option value="">Seleccionar jugador</option>
 
-                    @foreach (Player player in players)
+                    @foreach (PlayerDto player in players)
                     {
                         <option value="@player.Id">@player.Name</option>
                     }
@@ -126,16 +127,16 @@ else
             </thead>
 
             <tbody>
-                @foreach (Pair pair in pairs)
+                @foreach (PairDto pair in pairs)
                 {
                     <tr>
                         <td>
                             <strong>@pair.DisplayName</strong>
                         </td>
 
-                        <td>@pair.PlayerOne.Name</td>
+                        <td>@pair.PlayerOneName</td>
 
-                        <td>@pair.PlayerTwo.Name</td>
+                        <td>@pair.PlayerTwoName</td>
 
                         <td class="text-end">
                             <button class="btn btn-sm btn-outline-danger"
@@ -151,8 +152,8 @@ else
 }
 
 @code {
-    private List<Player> players = new();
-    private List<Pair> pairs = new();
+    private List<PlayerDto> players = new();
+    private List<PairDto> pairs = new();
 
     private string selectedPlayerOneId = string.Empty;
     private string selectedPlayerTwoId = string.Empty;
@@ -167,8 +168,8 @@ else
 
     private void LoadData()
     {
-        players = PlayerService.GetAll().ToList();
-        pairs = PairService.GetAll().ToList();
+        players = PlayerService.GetAllDtos().ToList();
+        pairs = PairService.GetAllDtos().ToList();
     }
 
     private void CreatePair()
