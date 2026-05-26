@@ -5,7 +5,10 @@ public class Tournament
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public TournamentStatus Status { get; private set; }
     public List<Group> Groups { get; private set; }
+
+    public string StatusLabel => GetStatusLabel(Status);
 
     public Tournament(string name)
     {
@@ -15,6 +18,7 @@ public class Tournament
         Id = Guid.NewGuid();
         Name = name.Trim();
         CreatedAt = DateTime.Now;
+        Status = TournamentStatus.Draft;
         Groups = new List<Group>();
     }
 
@@ -76,5 +80,61 @@ public class Tournament
             throw new InvalidOperationException("Cannot delete a group after matches have been generated.");
 
         Groups.Remove(group);
+    }
+
+    public void StartGroupStage()
+    {
+        if (Status == TournamentStatus.Cancelled)
+            throw new InvalidOperationException("A cancelled tournament cannot be started.");
+
+        if (Status == TournamentStatus.Finished)
+            throw new InvalidOperationException("A finished tournament cannot be modified.");
+
+        if (Status == TournamentStatus.Draft)
+            Status = TournamentStatus.GroupStageInProgress;
+    }
+
+    public void StartKnockoutStage()
+    {
+        if (Status == TournamentStatus.Cancelled)
+            throw new InvalidOperationException("A cancelled tournament cannot start knockout stage.");
+
+        if (Status == TournamentStatus.Finished)
+            throw new InvalidOperationException("A finished tournament cannot be modified.");
+
+        if (Status == TournamentStatus.Draft || Status == TournamentStatus.GroupStageInProgress)
+            Status = TournamentStatus.KnockoutInProgress;
+    }
+
+    public void Finish()
+    {
+        if (Status == TournamentStatus.Cancelled)
+            throw new InvalidOperationException("A cancelled tournament cannot be finished.");
+
+        if (Status == TournamentStatus.Draft)
+            throw new InvalidOperationException("A draft tournament cannot be finished.");
+
+        Status = TournamentStatus.Finished;
+    }
+
+    public void Cancel()
+    {
+        if (Status == TournamentStatus.Finished)
+            throw new InvalidOperationException("A finished tournament cannot be cancelled.");
+
+        Status = TournamentStatus.Cancelled;
+    }
+
+    private static string GetStatusLabel(TournamentStatus status)
+    {
+        return status switch
+        {
+            TournamentStatus.Draft => "Borrador",
+            TournamentStatus.GroupStageInProgress => "Fase de grupos",
+            TournamentStatus.KnockoutInProgress => "Eliminatoria",
+            TournamentStatus.Finished => "Finalizado",
+            TournamentStatus.Cancelled => "Cancelado",
+            _ => status.ToString()
+        };
     }
 }

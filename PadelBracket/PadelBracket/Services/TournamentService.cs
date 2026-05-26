@@ -57,6 +57,20 @@ public class TournamentService
         _tournaments.Remove(tournament);
     }
 
+    public void FinishTournament(Guid tournamentId)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        tournament.Finish();
+    }
+
+    public void CancelTournament(Guid tournamentId)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        tournament.Cancel();
+    }
+
     public Group AddGroupToTournament(Guid tournamentId, string groupName, int category)
     {
         var tournament = GetTournamentOrThrow(tournamentId);
@@ -128,9 +142,15 @@ public class TournamentService
 
     public void GenerateGroupMatches(Guid tournamentId, Guid groupId)
     {
-        var group = GetGroupOrThrow(tournamentId, groupId);
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        var group = tournament.Groups.FirstOrDefault(g => g.Id == groupId);
+
+        if (group == null)
+            throw new ArgumentException("Group not found.");
 
         group.GenerateMatches();
+        tournament.StartGroupStage();
     }
 
     public void RegisterMatchResult(

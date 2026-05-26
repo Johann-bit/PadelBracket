@@ -98,6 +98,7 @@ else
                 <tr>
                     <th>Nombre</th>
                     <th>Creado</th>
+                    <th>Estado</th>
                     <th>Grupos</th>
                     <th></th>
                 </tr>
@@ -122,6 +123,12 @@ else
                         </td>
 
                         <td>@tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+
+                        <td>
+                            <span class="badge bg-primary">
+                                @tournament.StatusLabel
+                            </span>
+                        </td>
 
                         <td>
                             <span class="badge bg-secondary">
@@ -165,7 +172,7 @@ else
                     @if (isDeleting)
                     {
                         <tr>
-                            <td colspan="4">
+                            <td colspan="5">
                                 <div class="alert alert-danger mb-0">
                                     <div class="d-flex justify-content-between align-items-center gap-3">
                                         <div>

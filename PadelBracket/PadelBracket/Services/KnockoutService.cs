@@ -71,6 +71,8 @@ public class KnockoutService
 
         _brackets.Add(bracket);
 
+        tournament.StartKnockoutStage();
+
         return bracket;
     }
 
