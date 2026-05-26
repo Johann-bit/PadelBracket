@@ -15,6 +15,7 @@ builder.Services.AddSingleton<KnockoutService>();
 builder.Services.AddSingleton<PlayerService>();
 builder.Services.AddSingleton<PairService>();
 builder.Services.AddSingleton<MatchHistoryService>();
+builder.Services.AddSingleton<RankingService>();
 
 var app = builder.Build();
 

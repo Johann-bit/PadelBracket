@@ -1,0 +1,166 @@
+﻿@page "/ranking"
+@using PadelBracket.Services
+@inject RankingService RankingService
+@rendermode InteractiveServer
+
+<PageTitle>Ranking</PageTitle>
+
+<div class="page-header">
+    <div class="page-eyebrow">Tabla competitiva</div>
+    <h1 class="page-title">Ranking</h1>
+    <p class="page-subtitle">
+        Clasificación general de parejas según resultados cargados en los partidos de fase de grupos.
+    </p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Parejas rankeadas</div>
+        <div class="stat-value">@ranking.Count</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Líder actual</div>
+        <div class="stat-value">@LeaderName</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Sistema</div>
+        <div class="stat-value">3 pts</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title mb-2">Criterios del ranking</h4>
+
+        <p class="text-muted mb-0">
+            Cada victoria suma 3 puntos. En caso de empate, se ordena por victorias, diferencia de games y games ganados.
+        </p>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">Ranking de parejas</h3>
+        <p class="text-muted mb-0">
+            La tabla se calcula automáticamente usando los partidos con resultado cargado.
+        </p>
+    </div>
+
+    <span class="badge bg-secondary">
+        @ranking.Count total
+    </span>
+</div>
+
+@if (!ranking.Any())
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Todavía no hay parejas rankeadas.</div>
+        <div>
+            Cargá resultados en partidos de grupo para generar el ranking.
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Posición</th>
+                    <th>Pareja</th>
+                    <th>Puntos</th>
+                    <th>Jugados</th>
+                    <th>Victorias</th>
+                    <th>Derrotas</th>
+                    <th>Games</th>
+                    <th>Diferencia</th>
+                    <th>Win rate</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @for (int i = 0; i < ranking.Count; i++)
+                {
+                    RankingItem item = ranking[i];
+
+                    <tr>
+                        <td>
+                            <span class="@GetPositionBadgeClass(i)">
+                                #@(i + 1)
+                            </span>
+                        </td>
+
+                        <td>
+                            <strong>@item.PairName</strong>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-primary">
+                                @item.Points pts
+                            </span>
+                        </td>
+
+                        <td>@item.MatchesPlayed</td>
+
+                        <td>@item.Wins</td>
+
+                        <td>@item.Losses</td>
+
+                        <td>
+                            @item.GamesWon / @item.GamesLost
+                        </td>
+
+                        <td>
+                            <span class="@GetDifferenceBadgeClass(item.GameDifference)">
+                                @FormatDifference(item.GameDifference)
+                            </span>
+                        </td>
+
+                        <td>
+                            @item.WinRate.ToString("0.0")%
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<RankingItem> ranking = new();
+
+    private string LeaderName => ranking.Any() ? ranking.First().PairName : "Sin datos";
+
+    protected override void OnInitialized()
+    {
+        LoadRanking();
+    }
+
+    private void LoadRanking()
+    {
+        ranking = RankingService.GetRanking();
+    }
+
+    private string GetPositionBadgeClass(int index)
+    {
+        return index == 0 ? "badge bg-success" : "badge bg-secondary";
+    }
+
+    private string GetDifferenceBadgeClass(int difference)
+    {
+        if (difference > 0)
+            return "badge bg-success";
+
+        if (difference < 0)
+            return "badge bg-danger";
+
+        return "badge bg-secondary";
+    }
+
+    private string FormatDifference(int difference)
+    {
+        return difference > 0 ? $"+{difference}" : difference.ToString();
+    }
+}
