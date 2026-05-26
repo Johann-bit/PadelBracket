@@ -1,13 +1,15 @@
 using PadelBracket.Components;
+using PadelBracket.Domain.Repositories;
+using PadelBracket.Repositories;
 using PadelBracket.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Service
+builder.Services.AddSingleton<IPlayerRepository, InMemoryPlayerRepository>();
+
 builder.Services.AddSingleton<TournamentService>();
 builder.Services.AddSingleton<StandingService>();
 builder.Services.AddSingleton<QualificationService>();
@@ -19,11 +21,9 @@ builder.Services.AddSingleton<RankingService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios.
     app.UseHsts();
 }
 
