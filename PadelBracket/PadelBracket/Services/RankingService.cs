@@ -13,7 +13,7 @@ public class RankingService
 
     public List<RankingItem> GetRanking()
     {
-        Dictionary<string, RankingItem> ranking = new();
+        Dictionary<Guid, RankingItem> ranking = new();
 
         List<Match> completedMatches = tournamentService
             .GetAllTournaments()
@@ -24,17 +24,17 @@ public class RankingService
 
         foreach (Match match in completedMatches)
         {
-            string pairOneName = match.PairOne.DisplayName;
-            string pairTwoName = match.PairTwo.DisplayName;
+            EnsurePairExists(ranking, match.PairOne);
+            EnsurePairExists(ranking, match.PairTwo);
 
-            EnsurePairExists(ranking, pairOneName);
-            EnsurePairExists(ranking, pairTwoName);
-
-            RankingItem pairOneRanking = ranking[pairOneName];
-            RankingItem pairTwoRanking = ranking[pairTwoName];
+            RankingItem pairOneRanking = ranking[match.PairOne.Id];
+            RankingItem pairTwoRanking = ranking[match.PairTwo.Id];
 
             pairOneRanking.MatchesPlayed++;
             pairTwoRanking.MatchesPlayed++;
+
+            pairOneRanking.PairName = match.PairOne.DisplayName;
+            pairTwoRanking.PairName = match.PairTwo.DisplayName;
 
             pairOneRanking.GamesWon += match.Result!.PairOneGames;
             pairOneRanking.GamesLost += match.Result.PairTwoGames;
@@ -66,14 +66,15 @@ public class RankingService
             .ToList();
     }
 
-    private static void EnsurePairExists(Dictionary<string, RankingItem> ranking, string pairName)
+    private static void EnsurePairExists(Dictionary<Guid, RankingItem> ranking, Pair pair)
     {
-        if (ranking.ContainsKey(pairName))
+        if (ranking.ContainsKey(pair.Id))
             return;
 
-        ranking[pairName] = new RankingItem
+        ranking[pair.Id] = new RankingItem
         {
-            PairName = pairName
+            PairId = pair.Id,
+            PairName = pair.DisplayName
         };
     }
 }

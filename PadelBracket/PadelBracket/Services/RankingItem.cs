@@ -2,6 +2,7 @@
 
 public class RankingItem
 {
+    public Guid PairId { get; set; }
     public string PairName { get; set; } = string.Empty;
     public int MatchesPlayed { get; set; }
     public int Wins { get; set; }

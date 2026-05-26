@@ -5,6 +5,16 @@ namespace PadelBracket.Services;
 public class TournamentService
 {
     private readonly List<Tournament> _tournaments = new();
+    private readonly PairService pairService;
+
+    public TournamentService() : this(new PairService())
+    {
+    }
+
+    public TournamentService(PairService pairService)
+    {
+        this.pairService = pairService;
+    }
 
     public Tournament CreateTournament(string name)
     {
@@ -112,6 +122,21 @@ public class TournamentService
         var playerTwo = new Player(playerTwoName);
 
         var pair = new Pair(playerOne, playerTwo);
+
+        group.AddPair(pair);
+
+        return pair;
+    }
+
+    public Pair AddExistingPairToGroup(
+        Guid tournamentId,
+        Guid groupId,
+        Guid pairId)
+    {
+        var group = GetGroupOrThrow(tournamentId, groupId);
+
+        var pair = pairService.GetById(pairId)
+            ?? throw new ArgumentException("Pair not found.");
 
         group.AddPair(pair);
 

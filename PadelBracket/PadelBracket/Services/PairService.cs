@@ -11,6 +11,11 @@ public class PairService
         return pairs;
     }
 
+    public Pair? GetById(Guid id)
+    {
+        return pairs.FirstOrDefault(pair => pair.Id == id);
+    }
+
     public Pair Add(Player playerOne, Player playerTwo)
     {
         if (playerOne.Id == playerTwo.Id)
@@ -32,7 +37,7 @@ public class PairService
 
     public void Delete(Guid id)
     {
-        Pair pair = pairs.FirstOrDefault(pair => pair.Id == id)
+        Pair pair = GetById(id)
             ?? throw new ArgumentException("Pair not found.");
 
         pairs.Remove(pair);
