@@ -1,4 +1,5 @@
-﻿using PadelBracket.Domain.Entities;
+﻿using PadelBracket.Domain.DTOs;
+using PadelBracket.Domain.Entities;
 using PadelBracket.Domain.Repositories;
 
 namespace PadelBracket.Services;
@@ -36,9 +37,40 @@ public class TournamentService
         return tournamentRepository.GetAll();
     }
 
+    public List<TournamentDto> GetAllTournamentDtos()
+    {
+        return tournamentRepository.GetAll()
+            .Select(tournament => new TournamentDto
+            {
+                Id = tournament.Id,
+                Name = tournament.Name,
+                CreatedAt = tournament.CreatedAt,
+                StatusLabel = tournament.StatusLabel,
+                GroupCount = tournament.Groups.Count
+            })
+            .ToList();
+    }
+
     public Tournament? GetTournamentById(Guid tournamentId)
     {
         return tournamentRepository.GetById(tournamentId);
+    }
+
+    public TournamentDto? GetTournamentDtoById(Guid tournamentId)
+    {
+        Tournament? tournament = GetTournamentById(tournamentId);
+
+        if (tournament == null)
+            return null;
+
+        return new TournamentDto
+        {
+            Id = tournament.Id,
+            Name = tournament.Name,
+            CreatedAt = tournament.CreatedAt,
+            StatusLabel = tournament.StatusLabel,
+            GroupCount = tournament.Groups.Count
+        };
     }
 
     public void RenameTournament(Guid tournamentId, string name)

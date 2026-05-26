@@ -1,4 +1,5 @@
-﻿using PadelBracket.Domain.Entities;
+﻿using PadelBracket.Domain.DTOs;
+using PadelBracket.Domain.Entities;
 using PadelBracket.Domain.Repositories;
 
 namespace PadelBracket.Services;
@@ -17,9 +18,40 @@ public class PairService
         return pairRepository.GetAll();
     }
 
+    public IReadOnlyList<PairDto> GetAllDtos()
+    {
+        return pairRepository.GetAll()
+            .Select(pair => new PairDto
+            {
+                Id = pair.Id,
+                PlayerOneId = pair.PlayerOne.Id,
+                PlayerOneName = pair.PlayerOne.Name,
+                PlayerTwoId = pair.PlayerTwo.Id,
+                PlayerTwoName = pair.PlayerTwo.Name
+            })
+            .ToList();
+    }
+
     public Pair? GetById(Guid id)
     {
         return pairRepository.GetById(id);
+    }
+
+    public PairDto? GetDtoById(Guid id)
+    {
+        Pair? pair = GetById(id);
+
+        if (pair == null)
+            return null;
+
+        return new PairDto
+        {
+            Id = pair.Id,
+            PlayerOneId = pair.PlayerOne.Id,
+            PlayerOneName = pair.PlayerOne.Name,
+            PlayerTwoId = pair.PlayerTwo.Id,
+            PlayerTwoName = pair.PlayerTwo.Name
+        };
     }
 
     public Pair Add(Player playerOne, Player playerTwo)

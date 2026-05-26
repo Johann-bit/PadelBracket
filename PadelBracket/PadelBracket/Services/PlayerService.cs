@@ -1,4 +1,5 @@
-﻿using PadelBracket.Domain.Entities;
+﻿using PadelBracket.Domain.DTOs;
+using PadelBracket.Domain.Entities;
 using PadelBracket.Domain.Repositories;
 
 namespace PadelBracket.Services;
@@ -15,6 +16,17 @@ public class PlayerService
     public IReadOnlyList<Player> GetAll()
     {
         return playerRepository.GetAll();
+    }
+
+    public IReadOnlyList<PlayerDto> GetAllDtos()
+    {
+        return playerRepository.GetAll()
+            .Select(player => new PlayerDto
+            {
+                Id = player.Id,
+                Name = player.Name
+            })
+            .ToList();
     }
 
     public Player Add(string name)
@@ -35,6 +47,20 @@ public class PlayerService
     public Player? GetById(Guid id)
     {
         return playerRepository.GetById(id);
+    }
+
+    public PlayerDto? GetDtoById(Guid id)
+    {
+        Player? player = GetById(id);
+
+        if (player == null)
+            return null;
+
+        return new PlayerDto
+        {
+            Id = player.Id,
+            Name = player.Name
+        };
     }
 
     public void Rename(Guid id, string name)
