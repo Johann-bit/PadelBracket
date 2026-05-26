@@ -1,0 +1,230 @@
+﻿@page "/pairs"
+@using PadelBracket.Domain.Entities
+@using PadelBracket.Services
+@inject PlayerService PlayerService
+@inject PairService PairService
+@rendermode InteractiveServer
+
+<PageTitle>Parejas</PageTitle>
+
+<div class="page-header">
+    <div class="page-eyebrow">Gestión de parejas</div>
+    <h1 class="page-title">Parejas</h1>
+    <p class="page-subtitle">
+        Formá parejas utilizando jugadores registrados y prepará la base para torneos y rankings.
+    </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success">
+        @successMessage
+    </div>
+}
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Parejas registradas</div>
+        <div class="stat-value">@pairs.Count</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Jugadores disponibles</div>
+        <div class="stat-value">@players.Count</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Próximo paso</div>
+        <div class="stat-value">Torneos</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title mb-2">Crear pareja</h4>
+
+        <p class="text-muted mb-4">
+            Seleccioná dos jugadores distintos para formar una pareja.
+        </p>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Jugador 1</label>
+
+                <select class="form-select" @bind="selectedPlayerOneId">
+                    <option value="">Seleccionar jugador</option>
+
+                    @foreach (Player player in players)
+                    {
+                        <option value="@player.Id">@player.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Jugador 2</label>
+
+                <select class="form-select" @bind="selectedPlayerTwoId">
+                    <option value="">Seleccionar jugador</option>
+
+                    @foreach (Player player in players)
+                    {
+                        <option value="@player.Id">@player.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" @onclick="CreatePair">
+            Crear pareja
+        </button>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">Parejas registradas</h3>
+
+        <p class="text-muted mb-0">
+            Estas parejas podrán utilizarse en torneos y partidos.
+        </p>
+    </div>
+
+    <span class="badge bg-secondary">
+        @pairs.Count total
+    </span>
+</div>
+
+@if (!pairs.Any())
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Todavía no hay parejas registradas.</div>
+
+        <div>
+            Creá la primera pareja usando jugadores existentes.
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Pareja</th>
+                    <th>Jugador 1</th>
+                    <th>Jugador 2</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (Pair pair in pairs)
+                {
+                    <tr>
+                        <td>
+                            <strong>@pair.DisplayName</strong>
+                        </td>
+
+                        <td>@pair.PlayerOne.Name</td>
+
+                        <td>@pair.PlayerTwo.Name</td>
+
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => DeletePair(pair.Id)">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<Player> players = new();
+    private List<Pair> pairs = new();
+
+    private string selectedPlayerOneId = string.Empty;
+    private string selectedPlayerTwoId = string.Empty;
+
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        players = PlayerService.GetAll().ToList();
+        pairs = PairService.GetAll().ToList();
+    }
+
+    private void CreatePair()
+    {
+        ClearMessages();
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(selectedPlayerOneId) ||
+                string.IsNullOrWhiteSpace(selectedPlayerTwoId))
+            {
+                throw new ArgumentException("Both players must be selected.");
+            }
+
+            Player playerOne = PlayerService.GetById(Guid.Parse(selectedPlayerOneId))
+                ?? throw new ArgumentException("Player one not found.");
+
+            Player playerTwo = PlayerService.GetById(Guid.Parse(selectedPlayerTwoId))
+                ?? throw new ArgumentException("Player two not found.");
+
+            PairService.Add(playerOne, playerTwo);
+
+            selectedPlayerOneId = string.Empty;
+            selectedPlayerTwoId = string.Empty;
+
+            successMessage = "Pareja creada correctamente.";
+
+            LoadData();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private void DeletePair(Guid id)
+    {
+        ClearMessages();
+
+        try
+        {
+            PairService.Delete(id);
+
+            successMessage = "Pareja eliminada correctamente.";
+
+            LoadData();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+    }
+}

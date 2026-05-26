@@ -13,6 +13,7 @@ builder.Services.AddSingleton<StandingService>();
 builder.Services.AddSingleton<QualificationService>();
 builder.Services.AddSingleton<KnockoutService>();
 builder.Services.AddSingleton<PlayerService>();
+builder.Services.AddSingleton<PairService>();
 
 var app = builder.Build();
 
