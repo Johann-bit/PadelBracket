@@ -1,19 +1,25 @@
 ﻿using PadelBracket.Domain.Entities;
+using PadelBracket.Domain.Repositories;
 
 namespace PadelBracket.Services;
 
 public class PairService
 {
-    private readonly List<Pair> pairs = new();
+    private readonly IPairRepository pairRepository;
+
+    public PairService(IPairRepository pairRepository)
+    {
+        this.pairRepository = pairRepository;
+    }
 
     public IReadOnlyList<Pair> GetAll()
     {
-        return pairs;
+        return pairRepository.GetAll();
     }
 
     public Pair? GetById(Guid id)
     {
-        return pairs.FirstOrDefault(pair => pair.Id == id);
+        return pairRepository.GetById(id);
     }
 
     public Pair Add(Player playerOne, Player playerTwo)
@@ -21,16 +27,12 @@ public class PairService
         if (playerOne.Id == playerTwo.Id)
             throw new ArgumentException("A pair cannot have the same player twice.");
 
-        bool pairAlreadyExists = pairs.Any(pair =>
-            (pair.PlayerOne.Id == playerOne.Id && pair.PlayerTwo.Id == playerTwo.Id) ||
-            (pair.PlayerOne.Id == playerTwo.Id && pair.PlayerTwo.Id == playerOne.Id));
-
-        if (pairAlreadyExists)
+        if (pairRepository.ExistsByPlayers(playerOne.Id, playerTwo.Id))
             throw new ArgumentException("That pair already exists.");
 
         Pair pair = new Pair(playerOne, playerTwo);
 
-        pairs.Add(pair);
+        pairRepository.Add(pair);
 
         return pair;
     }
@@ -40,6 +42,6 @@ public class PairService
         Pair pair = GetById(id)
             ?? throw new ArgumentException("Pair not found.");
 
-        pairs.Remove(pair);
+        pairRepository.Delete(pair);
     }
 }

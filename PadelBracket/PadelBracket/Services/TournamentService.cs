@@ -7,10 +7,6 @@ public class TournamentService
     private readonly List<Tournament> _tournaments = new();
     private readonly PairService pairService;
 
-    public TournamentService() : this(new PairService())
-    {
-    }
-
     public TournamentService(PairService pairService)
     {
         this.pairService = pairService;
@@ -40,7 +36,7 @@ public class TournamentService
 
     public Tournament? GetTournamentById(Guid tournamentId)
     {
-        return _tournaments.FirstOrDefault(t => t.Id == tournamentId);
+        return _tournaments.FirstOrDefault(tournament => tournament.Id == tournamentId);
     }
 
     public void RenameTournament(Guid tournamentId, string name)
@@ -169,7 +165,7 @@ public class TournamentService
     {
         var tournament = GetTournamentOrThrow(tournamentId);
 
-        var group = tournament.Groups.FirstOrDefault(g => g.Id == groupId);
+        var group = tournament.Groups.FirstOrDefault(group => group.Id == groupId);
 
         if (group == null)
             throw new ArgumentException("Group not found.");
@@ -215,7 +211,7 @@ public class TournamentService
     {
         var tournament = GetTournamentOrThrow(tournamentId);
 
-        var group = tournament.Groups.FirstOrDefault(g => g.Id == groupId);
+        var group = tournament.Groups.FirstOrDefault(group => group.Id == groupId);
 
         if (group == null)
             throw new ArgumentException("Group not found.");
@@ -227,7 +223,7 @@ public class TournamentService
     {
         var group = GetGroupOrThrow(tournamentId, groupId);
 
-        var match = group.Matches.FirstOrDefault(m => m.Id == matchId);
+        var match = group.Matches.FirstOrDefault(match => match.Id == matchId);
 
         if (match == null)
             throw new ArgumentException("Match not found.");

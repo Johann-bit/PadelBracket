@@ -1,4 +1,5 @@
 ﻿using PadelBracket.Domain.Entities;
+using PadelBracket.Repositories;
 using PadelBracket.Services;
 
 namespace PadelBracket.Tests.Services;
@@ -6,10 +7,18 @@ namespace PadelBracket.Tests.Services;
 [TestClass]
 public class TournamentServiceTests
 {
+    private static TournamentService CreateTournamentService()
+    {
+        var pairRepository = new InMemoryPairRepository();
+        var pairService = new PairService(pairRepository);
+
+        return new TournamentService(pairService);
+    }
+
     [TestMethod]
     public void CreateTournament_WhenNameIsValid_AddsTournamentToList()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
 
@@ -23,7 +32,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void GetTournamentById_WhenTournamentExists_ReturnsTournament()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
 
@@ -36,7 +45,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void AddGroupToTournament_WhenTournamentExists_AddsGroup()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
 
@@ -51,7 +60,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void AddGroupToTournament_WhenCategoryIsValid_AddsGroupWithCategory()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
 
@@ -64,7 +73,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void AddGroupToTournament_WhenCategoryIsLowerThanOne_ThrowsArgumentException()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
 
@@ -76,7 +85,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void AddGroupToTournament_WhenCategoryIsGreaterThanEight_ThrowsArgumentException()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
 
@@ -88,7 +97,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void AddPairToGroup_WhenGroupExists_AddsPair()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
         var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
@@ -108,7 +117,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void GenerateGroupMatches_WhenGroupHasThreePairs_GeneratesThreeMatches()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
         var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
@@ -125,7 +134,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void GenerateGroupMatches_WhenMatchesAlreadyExist_ThrowsExceptionAndKeepsExistingMatches()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
         var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
@@ -153,7 +162,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void AddPairToGroup_WhenMatchesAlreadyExist_ThrowsException()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
         var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
@@ -178,7 +187,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void RegisterMatchResult_WhenMatchExists_SavesResult()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
         var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
@@ -212,7 +221,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void AddGroupToTournament_WhenTournamentDoesNotExist_ThrowsException()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         Assert.ThrowsException<ArgumentException>(() =>
             service.AddGroupToTournament(Guid.NewGuid(), "Group A", 5)
@@ -222,7 +231,7 @@ public class TournamentServiceTests
     [TestMethod]
     public void AddPairToGroup_WhenGroupDoesNotExist_ThrowsException()
     {
-        var service = new TournamentService();
+        var service = CreateTournamentService();
 
         var tournament = service.CreateTournament("Torneo Apertura");
 
