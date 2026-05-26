@@ -1,0 +1,125 @@
+﻿@page "/matches/history"
+@using PadelBracket.Services
+@inject MatchHistoryService MatchHistoryService
+@rendermode InteractiveServer
+
+<PageTitle>Historial de partidos</PageTitle>
+
+<div class="page-header">
+    <div class="page-eyebrow">Historial competitivo</div>
+    <h1 class="page-title">Partidos jugados</h1>
+    <p class="page-subtitle">
+        Consultá los resultados cargados en fase de grupos y prepará la base para estadísticas y ranking.
+    </p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Partidos con resultado</div>
+        <div class="stat-value">@matches.Count</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Torneos con historial</div>
+        <div class="stat-value">@TournamentCount</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Modo</div>
+        <div class="stat-value">Grupos</div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">Resultados registrados</h3>
+        <p class="text-muted mb-0">
+            Cada partido completado queda listado con torneo, grupo, categoría, resultado y ganador.
+        </p>
+    </div>
+
+    <span class="badge bg-secondary">
+        @matches.Count total
+    </span>
+</div>
+
+@if (!matches.Any())
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Todavía no hay partidos con resultado.</div>
+        <div>
+            Cargá resultados en los grupos de un torneo para verlos aparecer acá.
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Torneo</th>
+                    <th>Categoría</th>
+                    <th>Grupo</th>
+                    <th>Partido</th>
+                    <th>Resultado</th>
+                    <th>Ganador</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (MatchHistoryItem match in matches)
+                {
+                    <tr>
+                        <td>
+                            <strong>@match.TournamentName</strong>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-secondary">
+                                @match.CategoryLabel
+                            </span>
+                        </td>
+
+                        <td>@match.GroupName</td>
+
+                        <td>
+                            @match.PairOneName
+                            <span class="text-muted">vs</span>
+                            @match.PairTwoName
+                        </td>
+
+                        <td>
+                            <span class="badge bg-primary">
+                                @match.Score
+                            </span>
+                        </td>
+
+                        <td>
+                            <strong>@match.WinnerName</strong>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<MatchHistoryItem> matches = new();
+
+    private int TournamentCount => matches
+        .Select(match => match.TournamentId)
+        .Distinct()
+        .Count();
+
+    protected override void OnInitialized()
+    {
+        LoadMatches();
+    }
+
+    private void LoadMatches()
+    {
+        matches = MatchHistoryService.GetCompletedGroupMatches();
+    }
+}

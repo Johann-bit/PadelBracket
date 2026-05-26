@@ -14,6 +14,7 @@ builder.Services.AddSingleton<QualificationService>();
 builder.Services.AddSingleton<KnockoutService>();
 builder.Services.AddSingleton<PlayerService>();
 builder.Services.AddSingleton<PairService>();
+builder.Services.AddSingleton<MatchHistoryService>();
 
 var app = builder.Build();
 
