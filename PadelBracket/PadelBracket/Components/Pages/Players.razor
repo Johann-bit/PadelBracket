@@ -1,5 +1,5 @@
 ﻿@page "/players"
-@using PadelBracket.Domain.Entities
+@using PadelBracket.Domain.DTOs
 @using PadelBracket.Services
 @inject PlayerService PlayerService
 @rendermode InteractiveServer
@@ -107,7 +107,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (Player player in players)
+                @foreach (PlayerDto player in players)
                 {
                     <tr>
                         <td>
@@ -116,7 +116,7 @@ else
 
                         <td>
                             <span class="badge bg-secondary">
-                                @player.Id.ToString()[..8]
+                                @player.ShortId
                             </span>
                         </td>
 
@@ -145,7 +145,7 @@ else
 }
 
 @code {
-    private List<Player> players = new();
+    private List<PlayerDto> players = new();
     private string newPlayerName = string.Empty;
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
@@ -158,9 +158,9 @@ else
 
     private void LoadPlayers()
     {
-        players = PlayerService.GetAll().ToList();
+        players = PlayerService.GetAllDtos().ToList();
 
-        foreach (Player player in players)
+        foreach (PlayerDto player in players)
         {
             if (!editNames.ContainsKey(player.Id))
                 editNames[player.Id] = player.Name;
