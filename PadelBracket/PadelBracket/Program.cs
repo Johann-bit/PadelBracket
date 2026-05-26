@@ -10,6 +10,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSingleton<IPlayerRepository, InMemoryPlayerRepository>();
 builder.Services.AddSingleton<IPairRepository, InMemoryPairRepository>();
+builder.Services.AddSingleton<ITournamentRepository, InMemoryTournamentRepository>();
 
 builder.Services.AddSingleton<TournamentService>();
 builder.Services.AddSingleton<StandingService>();

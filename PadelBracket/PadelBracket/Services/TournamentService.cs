@@ -1,14 +1,18 @@
 ﻿using PadelBracket.Domain.Entities;
+using PadelBracket.Domain.Repositories;
 
 namespace PadelBracket.Services;
 
 public class TournamentService
 {
-    private readonly List<Tournament> _tournaments = new();
+    private readonly ITournamentRepository tournamentRepository;
     private readonly PairService pairService;
 
-    public TournamentService(PairService pairService)
+    public TournamentService(
+        ITournamentRepository tournamentRepository,
+        PairService pairService)
     {
+        this.tournamentRepository = tournamentRepository;
         this.pairService = pairService;
     }
 
@@ -17,26 +21,24 @@ public class TournamentService
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Tournament name is required.");
 
-        if (_tournaments.Any(tournament =>
-                string.Equals(tournament.Name, name.Trim(), StringComparison.OrdinalIgnoreCase)))
-        {
+        if (tournamentRepository.ExistsByName(name))
             throw new ArgumentException("A tournament with the same name already exists.");
-        }
 
         var tournament = new Tournament(name);
-        _tournaments.Add(tournament);
+
+        tournamentRepository.Add(tournament);
 
         return tournament;
     }
 
     public List<Tournament> GetAllTournaments()
     {
-        return _tournaments;
+        return tournamentRepository.GetAll();
     }
 
     public Tournament? GetTournamentById(Guid tournamentId)
     {
-        return _tournaments.FirstOrDefault(tournament => tournament.Id == tournamentId);
+        return tournamentRepository.GetById(tournamentId);
     }
 
     public void RenameTournament(Guid tournamentId, string name)
@@ -46,12 +48,8 @@ public class TournamentService
 
         var tournament = GetTournamentOrThrow(tournamentId);
 
-        if (_tournaments.Any(existingTournament =>
-                existingTournament.Id != tournamentId &&
-                string.Equals(existingTournament.Name, name.Trim(), StringComparison.OrdinalIgnoreCase)))
-        {
+        if (tournamentRepository.ExistsByNameExceptId(name, tournamentId))
             throw new ArgumentException("A tournament with the same name already exists.");
-        }
 
         tournament.Rename(name);
     }
@@ -60,7 +58,7 @@ public class TournamentService
     {
         var tournament = GetTournamentOrThrow(tournamentId);
 
-        _tournaments.Remove(tournament);
+        tournamentRepository.Delete(tournament);
     }
 
     public void FinishTournament(Guid tournamentId)

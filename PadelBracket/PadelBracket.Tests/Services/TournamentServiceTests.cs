@@ -10,9 +10,10 @@ public class TournamentServiceTests
     private static TournamentService CreateTournamentService()
     {
         var pairRepository = new InMemoryPairRepository();
+        var tournamentRepository = new InMemoryTournamentRepository();
         var pairService = new PairService(pairRepository);
 
-        return new TournamentService(pairService);
+        return new TournamentService(tournamentRepository, pairService);
     }
 
     [TestMethod]
