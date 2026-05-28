@@ -7,6 +7,8 @@ public class PairDto
     public string PlayerOneName { get; set; } = string.Empty;
     public Guid PlayerTwoId { get; set; }
     public string PlayerTwoName { get; set; } = string.Empty;
+    public int? Category { get; set; }
+    public bool IsFullyVerified { get; set; }
 
     public string DisplayName => $"{PlayerOneName} / {PlayerTwoName}";
 }
