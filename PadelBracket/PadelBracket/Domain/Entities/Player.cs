@@ -88,6 +88,15 @@ public class Player
         VerificationStatus = PlayerVerificationStatus.Pending;
     }
 
+    public void ChangeCategory(int category)
+    {
+        ValidateCategory(category);
+
+        Category = category;
+        RankingPoints = GetBaseRankingPoints(category);
+        VerificationStatus = PlayerVerificationStatus.Pending;
+    }
+
     public void Verify()
     {
         if (!HasCompleteProfile)
