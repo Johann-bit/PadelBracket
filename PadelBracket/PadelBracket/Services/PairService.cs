@@ -21,14 +21,7 @@ public class PairService
     public IReadOnlyList<PairDto> GetAllDtos()
     {
         return pairRepository.GetAll()
-            .Select(pair => new PairDto
-            {
-                Id = pair.Id,
-                PlayerOneId = pair.PlayerOne.Id,
-                PlayerOneName = pair.PlayerOne.Name,
-                PlayerTwoId = pair.PlayerTwo.Id,
-                PlayerTwoName = pair.PlayerTwo.Name
-            })
+            .Select(ToDto)
             .ToList();
     }
 
@@ -44,14 +37,7 @@ public class PairService
         if (pair == null)
             return null;
 
-        return new PairDto
-        {
-            Id = pair.Id,
-            PlayerOneId = pair.PlayerOne.Id,
-            PlayerOneName = pair.PlayerOne.Name,
-            PlayerTwoId = pair.PlayerTwo.Id,
-            PlayerTwoName = pair.PlayerTwo.Name
-        };
+        return ToDto(pair);
     }
 
     public Pair Add(Player playerOne, Player playerTwo)
@@ -75,5 +61,19 @@ public class PairService
             ?? throw new ArgumentException("Pair not found.");
 
         pairRepository.Delete(pair);
+    }
+
+    private static PairDto ToDto(Pair pair)
+    {
+        return new PairDto
+        {
+            Id = pair.Id,
+            PlayerOneId = pair.PlayerOne.Id,
+            PlayerOneName = pair.PlayerOne.Name,
+            PlayerTwoId = pair.PlayerTwo.Id,
+            PlayerTwoName = pair.PlayerTwo.Name,
+            Category = pair.Category,
+            IsFullyVerified = pair.IsFullyVerified()
+        };
     }
 }

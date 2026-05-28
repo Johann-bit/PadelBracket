@@ -1,5 +1,6 @@
 ﻿using PadelBracket.Domain.DTOs;
 using PadelBracket.Domain.Entities;
+using PadelBracket.Domain.Enums;
 using PadelBracket.Domain.Repositories;
 
 namespace PadelBracket.Services;
@@ -21,11 +22,7 @@ public class PlayerService
     public IReadOnlyList<PlayerDto> GetAllDtos()
     {
         return playerRepository.GetAll()
-            .Select(player => new PlayerDto
-            {
-                Id = player.Id,
-                Name = player.Name
-            })
+            .Select(ToDto)
             .ToList();
     }
 
@@ -44,6 +41,31 @@ public class PlayerService
         return player;
     }
 
+    public Player Add(
+        string name,
+        string email,
+        DominantHand dominantHand,
+        PreferredSide preferredSide,
+        int category)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Player name is required.");
+
+        if (playerRepository.ExistsByName(name))
+            throw new ArgumentException("A player with that name already exists.");
+
+        Player player = new Player(
+            name,
+            email,
+            dominantHand,
+            preferredSide,
+            category);
+
+        playerRepository.Add(player);
+
+        return player;
+    }
+
     public Player? GetById(Guid id)
     {
         return playerRepository.GetById(id);
@@ -56,11 +78,7 @@ public class PlayerService
         if (player == null)
             return null;
 
-        return new PlayerDto
-        {
-            Id = player.Id,
-            Name = player.Name
-        };
+        return ToDto(player);
     }
 
     public void Rename(Guid id, string name)
@@ -71,6 +89,41 @@ public class PlayerService
             throw new ArgumentException("A player with that name already exists.");
 
         player.Rename(name);
+    }
+
+    public void UpdatePersonalData(Guid id, string name, string email)
+    {
+        Player player = GetById(id) ?? throw new ArgumentException("Player not found.");
+
+        if (playerRepository.ExistsByNameExceptId(name, id))
+            throw new ArgumentException("A player with that name already exists.");
+
+        player.UpdatePersonalData(name, email);
+    }
+
+    public void UpdateSportData(
+        Guid id,
+        DominantHand dominantHand,
+        PreferredSide preferredSide,
+        int category)
+    {
+        Player player = GetById(id) ?? throw new ArgumentException("Player not found.");
+
+        player.UpdateSportData(dominantHand, preferredSide, category);
+    }
+
+    public void Verify(Guid id)
+    {
+        Player player = GetById(id) ?? throw new ArgumentException("Player not found.");
+
+        player.Verify();
+    }
+
+    public void RejectVerification(Guid id)
+    {
+        Player player = GetById(id) ?? throw new ArgumentException("Player not found.");
+
+        player.RejectVerification();
     }
 
     public void Delete(Guid id)
@@ -89,5 +142,22 @@ public class PlayerService
         Add("Franco");
         Add("Bruno");
         Add("Joshua");
+    }
+
+    private static PlayerDto ToDto(Player player)
+    {
+        return new PlayerDto
+        {
+            Id = player.Id,
+            Name = player.Name,
+            Email = player.Email,
+            DominantHand = player.DominantHand,
+            PreferredSide = player.PreferredSide,
+            Category = player.Category,
+            VerificationStatus = player.VerificationStatus,
+            RankingPoints = player.RankingPoints,
+            HasCompleteProfile = player.HasCompleteProfile,
+            IsVerified = player.IsVerified
+        };
     }
 }
