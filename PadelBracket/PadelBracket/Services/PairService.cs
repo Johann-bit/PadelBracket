@@ -1,6 +1,6 @@
 ﻿using PadelBracket.Domain.DTOs;
 using PadelBracket.Domain.Entities;
-using PadelBracket.Domain.Repositories;
+using PadelBracket.Repositories.Interface;
 
 namespace PadelBracket.Services;
 
