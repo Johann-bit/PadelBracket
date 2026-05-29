@@ -1,6 +1,6 @@
 using PadelBracket.Components;
-using PadelBracket.Domain.Repositories;
 using PadelBracket.Repositories;
+using PadelBracket.Repositories.Interface;
 using PadelBracket.Services;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,5 +1,5 @@
 ﻿using PadelBracket.Domain.Entities;
-using PadelBracket.Domain.Repositories;
+using PadelBracket.Repositories.Interface;
 
 namespace PadelBracket.Repositories;
 

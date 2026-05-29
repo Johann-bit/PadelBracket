@@ -1,6 +1,6 @@
 ﻿using PadelBracket.Domain.Entities;
 
-namespace PadelBracket.Domain.Repositories;
+namespace PadelBracket.Repositories.Interface;
 
 public interface IPlayerRepository
 {
