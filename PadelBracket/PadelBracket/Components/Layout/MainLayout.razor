@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@using PadelBracket.Services
+@inject PlayerAccountService PlayerAccountService
 
 <div class="app-shell">
     <aside class="app-sidebar">
@@ -9,6 +11,29 @@
         <header class="app-topbar">
             <div>
                 <span class="app-topbar-kicker">Panel de torneos</span>
+            </div>
+
+            <div class="topbar-account">
+                @if (PlayerAccountService.IsLoggedIn && PlayerAccountService.CurrentPlayer != null)
+                {
+                    <span class="topbar-player-name">
+                        @PlayerAccountService.CurrentPlayer.Name
+                    </span>
+
+                    <button class="btn btn-sm btn-outline-primary" @onclick="Logout">
+                        Cerrar sesión
+                    </button>
+                }
+                else
+                {
+                    <a class="btn btn-sm btn-outline-primary" href="/login">
+                        Ingresar
+                    </a>
+
+                    <a class="btn btn-sm btn-primary" href="/register">
+                        Registrarme
+                    </a>
+                }
             </div>
         </header>
 
@@ -23,3 +48,10 @@
     <a href="" class="reload">Recargar</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private void Logout()
+    {
+        PlayerAccountService.Logout();
+    }
+}

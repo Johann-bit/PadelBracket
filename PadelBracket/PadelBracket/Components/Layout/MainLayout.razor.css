@@ -94,3 +94,16 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.topbar-account {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.topbar-player-name {
+    color: var(--app-text);
+    font-weight: 800;
+}
