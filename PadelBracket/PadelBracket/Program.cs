@@ -20,6 +20,8 @@ builder.Services.AddSingleton<PlayerService>();
 builder.Services.AddSingleton<PairService>();
 builder.Services.AddSingleton<MatchHistoryService>();
 builder.Services.AddSingleton<RankingService>();
+builder.Services.AddSingleton<TournamentRegistrationService>();
+builder.Services.AddSingleton<PlayerAccountService>();
 
 var app = builder.Build();
 
