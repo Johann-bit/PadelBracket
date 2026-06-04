@@ -51,8 +51,17 @@
             <label class="form-label">Contraseña</label>
             <input class="form-control"
                    type="password"
-                   placeholder="Mínimo 6 caracteres"
+                   placeholder="Mínimo 8 caracteres"
                    @bind="password"
+                   @bind:event="oninput" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Confirmar contraseña</label>
+            <input class="form-control"
+                   type="password"
+                   placeholder="Repetí tu contraseña"
+                   @bind="confirmPassword"
                    @bind:event="oninput" />
         </div>
 
@@ -99,6 +108,7 @@
     private string realName = string.Empty;
     private string email = string.Empty;
     private string password = string.Empty;
+    private string confirmPassword = string.Empty;
     private DominantHand dominantHand = DominantHand.Right;
     private PreferredSide preferredSide = PreferredSide.Drive;
     private int category = 6;
@@ -114,6 +124,7 @@
                 realName,
                 email,
                 password,
+                confirmPassword,
                 dominantHand,
                 preferredSide,
                 category);
