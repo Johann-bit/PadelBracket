@@ -16,9 +16,9 @@
             <div class="topbar-account">
                 @if (PlayerAccountService.IsLoggedIn && PlayerAccountService.CurrentPlayer != null)
                 {
-                    <span class="topbar-player-name">
+                    <a class="topbar-player-name" href="/profile">
                         @PlayerAccountService.CurrentPlayer.Name
-                    </span>
+                    </a>
 
                     <button class="btn btn-sm btn-outline-primary" @onclick="Logout">
                         Cerrar sesión

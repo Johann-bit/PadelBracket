@@ -106,4 +106,9 @@ main {
 .topbar-player-name {
     color: var(--app-text);
     font-weight: 800;
+    text-decoration: none;
 }
+
+    .topbar-player-name:hover {
+        color: var(--app-primary);
+    }
