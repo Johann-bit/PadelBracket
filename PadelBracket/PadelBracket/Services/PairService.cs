@@ -42,8 +42,20 @@ public class PairService
 
     public Pair Add(Player playerOne, Player playerTwo)
     {
+        if (playerOne == null)
+            throw new ArgumentNullException(nameof(playerOne));
+
+        if (playerTwo == null)
+            throw new ArgumentNullException(nameof(playerTwo));
+
         if (playerOne.Id == playerTwo.Id)
             throw new ArgumentException("A pair cannot have the same player twice.");
+
+        if (!playerOne.HasCompleteProfile)
+            throw new InvalidOperationException("Player one must have a complete profile before creating a pair.");
+
+        if (!playerTwo.HasCompleteProfile)
+            throw new InvalidOperationException("Player two must have a complete profile before creating a pair.");
 
         if (pairRepository.ExistsByPlayers(playerOne.Id, playerTwo.Id))
             throw new ArgumentException("That pair already exists.");
