@@ -138,10 +138,33 @@ public class PlayerService
         if (playerRepository.HasAny())
             return;
 
-        Add("Johann");
-        Add("Franco");
-        Add("Bruno");
-        Add("Joshua");
+        Add(
+            "Johann Rosas",
+            "johann@mail.com",
+            DominantHand.Right,
+            PreferredSide.Backhand,
+            6);
+
+        Add(
+            "Franco Banchero",
+            "franco@mail.com",
+            DominantHand.Right,
+            PreferredSide.Drive,
+            6);
+
+        Add(
+            "Bruno Banchero",
+            "bruno@mail.com",
+            DominantHand.Left,
+            PreferredSide.Drive,
+            5);
+
+        Add(
+            "Joshua Rosas",
+            "joshua@mail.com",
+            DominantHand.Right,
+            PreferredSide.Both,
+            5);
     }
 
     private static PlayerDto ToDto(Player player)
