@@ -1,6 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using PadelBracket.Services
 @inject PlayerAccountService PlayerAccountService
+@inject NavigationManager NavigationManager
+
 
 <div class="app-shell">
     <aside class="app-sidebar">
@@ -53,5 +55,6 @@
     private void Logout()
     {
         PlayerAccountService.Logout();
+        NavigationManager.NavigateTo("/");
     }
 }
