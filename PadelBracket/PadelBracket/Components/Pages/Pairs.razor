@@ -4,6 +4,7 @@
 @using PadelBracket.Services
 @inject PlayerService PlayerService
 @inject PairService PairService
+@inject PlayerAccountService PlayerAccountService
 @rendermode InteractiveServer
 
 <PageTitle>Parejas</PageTitle>
@@ -12,7 +13,7 @@
     <div class="page-eyebrow">Gestión de parejas</div>
     <h1 class="page-title">Parejas</h1>
     <p class="page-subtitle">
-        Formá parejas utilizando jugadores registrados y prepará la base para torneos y rankings.
+        Formá tu pareja usando tu perfil de jugador y un compañero registrado.
     </p>
 </div>
 
@@ -38,7 +39,7 @@
 
     <div class="stat-card">
         <div class="stat-label">Jugadores disponibles</div>
-        <div class="stat-value">@players.Count</div>
+        <div class="stat-value">@partnerCandidates.Count</div>
     </div>
 
     <div class="stat-card">
@@ -47,47 +48,81 @@
     </div>
 </div>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <h4 class="card-title mb-2">Crear pareja</h4>
+@if (CurrentPlayer == null)
+{
+    <div class="empty-state mb-4">
+        <div class="empty-state-title">Iniciá sesión para crear tu pareja.</div>
 
-        <p class="text-muted mb-4">
-            Seleccioná dos jugadores distintos para formar una pareja.
-        </p>
-
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                <label class="form-label">Jugador 1</label>
-
-                <select class="form-select" @bind="selectedPlayerOneId">
-                    <option value="">Seleccionar jugador</option>
-
-                    @foreach (PlayerDto player in players)
-                    {
-                        <option value="@player.Id">@player.Name</option>
-                    }
-                </select>
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Jugador 2</label>
-
-                <select class="form-select" @bind="selectedPlayerTwoId">
-                    <option value="">Seleccionar jugador</option>
-
-                    @foreach (PlayerDto player in players)
-                    {
-                        <option value="@player.Id">@player.Name</option>
-                    }
-                </select>
-            </div>
+        <div class="mb-3">
+            Necesitás una cuenta de jugador para elegir compañero y anotarte a torneos.
         </div>
 
-        <button class="btn btn-primary" @onclick="CreatePair">
-            Crear pareja
-        </button>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary" href="/login">
+                Ingresar
+            </a>
+
+            <a class="btn btn-outline-primary" href="/register">
+                Registrarme
+            </a>
+        </div>
     </div>
-</div>
+}
+else if (!CurrentPlayer.HasCompleteProfile)
+{
+    <div class="empty-state mb-4">
+        <div class="empty-state-title">Completá tu perfil antes de crear pareja.</div>
+
+        <div class="mb-3">
+            Para formar pareja necesitás nombre real, email, mano hábil, lado de juego y categoría.
+        </div>
+
+        <a class="btn btn-primary" href="/profile">
+            Ir a mi perfil
+        </a>
+    </div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title mb-2">Crear mi pareja</h4>
+
+            <p class="text-muted mb-4">
+                Tu perfil queda como primer jugador. Elegí un compañero registrado con perfil completo.
+            </p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Jugador 1</label>
+
+                    <input class="form-control"
+                           value="@CurrentPlayer.Name"
+                           disabled />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Compañero</label>
+
+                    <select class="form-select" @bind="selectedPartnerId">
+                        <option value="">Seleccionar compañero</option>
+
+                        @foreach (PlayerDto player in partnerCandidates)
+                        {
+                            <option value="@player.Id">
+                                @player.Name · Categoría @GetCategoryLabel(player.Category)
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" @onclick="CreatePair">
+                Crear pareja
+            </button>
+        </div>
+    </div>
+}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
@@ -122,6 +157,8 @@ else
                     <th>Pareja</th>
                     <th>Jugador 1</th>
                     <th>Jugador 2</th>
+                    <th>Categoría</th>
+                    <th>Estado</th>
                     <th></th>
                 </tr>
             </thead>
@@ -138,11 +175,31 @@ else
 
                         <td>@pair.PlayerTwoName</td>
 
+                        <td>
+                            <span class="badge bg-primary">
+                                Categoría @GetCategoryLabel(pair.Category)
+                            </span>
+                        </td>
+
+                        <td>
+                            @if (pair.IsFullyVerified)
+                            {
+                                <span class="badge bg-success">Verificada</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Pendiente</span>
+                            }
+                        </td>
+
                         <td class="text-end">
-                            <button class="btn btn-sm btn-outline-danger"
-                                    @onclick="() => DeletePair(pair.Id)">
-                                Eliminar
-                            </button>
+                            @if (CanDeletePair(pair))
+                            {
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => DeletePair(pair.Id)">
+                                    Eliminar
+                                </button>
+                            }
                         </td>
                     </tr>
                 }
@@ -153,13 +210,15 @@ else
 
 @code {
     private List<PlayerDto> players = new();
+    private List<PlayerDto> partnerCandidates = new();
     private List<PairDto> pairs = new();
 
-    private string selectedPlayerOneId = string.Empty;
-    private string selectedPlayerTwoId = string.Empty;
+    private string selectedPartnerId = string.Empty;
 
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
+
+    private Player? CurrentPlayer => PlayerAccountService.CurrentPlayer;
 
     protected override void OnInitialized()
     {
@@ -169,7 +228,19 @@ else
     private void LoadData()
     {
         players = PlayerService.GetAllDtos().ToList();
-        pairs = PairService.GetAllDtos().ToList();
+
+        partnerCandidates = players
+            .Where(player =>
+                CurrentPlayer != null &&
+                player.Id != CurrentPlayer.Id &&
+                player.HasCompleteProfile)
+            .OrderBy(player => player.Name)
+            .ToList();
+
+        pairs = PairService.GetAllDtos()
+            .OrderBy(pair => pair.PlayerOneName)
+            .ThenBy(pair => pair.PlayerTwoName)
+            .ToList();
     }
 
     private void CreatePair()
@@ -178,22 +249,24 @@ else
 
         try
         {
-            if (string.IsNullOrWhiteSpace(selectedPlayerOneId) ||
-                string.IsNullOrWhiteSpace(selectedPlayerTwoId))
-            {
-                throw new ArgumentException("Both players must be selected.");
-            }
+            if (CurrentPlayer == null)
+                throw new InvalidOperationException("Tenés que iniciar sesión para crear una pareja.");
 
-            Player playerOne = PlayerService.GetById(Guid.Parse(selectedPlayerOneId))
-                ?? throw new ArgumentException("Player one not found.");
+            if (!CurrentPlayer.HasCompleteProfile)
+                throw new InvalidOperationException("Completá tu perfil antes de crear una pareja.");
 
-            Player playerTwo = PlayerService.GetById(Guid.Parse(selectedPlayerTwoId))
-                ?? throw new ArgumentException("Player two not found.");
+            if (string.IsNullOrWhiteSpace(selectedPartnerId))
+                throw new ArgumentException("Seleccioná un compañero.");
 
-            PairService.Add(playerOne, playerTwo);
+            Player partner = PlayerService.GetById(Guid.Parse(selectedPartnerId))
+                ?? throw new ArgumentException("No se encontró el compañero seleccionado.");
 
-            selectedPlayerOneId = string.Empty;
-            selectedPlayerTwoId = string.Empty;
+            if (!partner.HasCompleteProfile)
+                throw new InvalidOperationException("El compañero debe tener el perfil completo.");
+
+            PairService.Add(CurrentPlayer, partner);
+
+            selectedPartnerId = string.Empty;
 
             successMessage = "Pareja creada correctamente.";
 
@@ -211,6 +284,12 @@ else
 
         try
         {
+            Pair pair = PairService.GetById(id)
+                ?? throw new ArgumentException("Pair not found.");
+
+            if (CurrentPlayer == null || !pair.ContainsPlayer(CurrentPlayer.Id))
+                throw new InvalidOperationException("Solo podés eliminar una pareja en la que participás.");
+
             PairService.Delete(id);
 
             successMessage = "Pareja eliminada correctamente.";
@@ -221,6 +300,20 @@ else
         {
             errorMessage = exception.Message;
         }
+    }
+
+    private bool CanDeletePair(PairDto pair)
+    {
+        return CurrentPlayer != null &&
+            (pair.PlayerOneId == CurrentPlayer.Id || pair.PlayerTwoId == CurrentPlayer.Id);
+    }
+
+    private static string GetCategoryLabel(int? category)
+    {
+        if (!category.HasValue)
+            return "-";
+
+        return category.Value.ToString();
     }
 
     private void ClearMessages()
