@@ -1,0 +1,147 @@
+﻿@page "/tournaments/available"
+@using PadelBracket.Domain.DTOs
+@using PadelBracket.Services
+@inject TournamentService TournamentService
+@rendermode InteractiveServer
+
+<PageTitle>Torneos disponibles</PageTitle>
+
+<div class="page-header">
+    <div class="page-eyebrow">Competencia</div>
+    <h1 class="page-title">Torneos disponibles</h1>
+    <p class="page-subtitle">
+        Encontrá torneos abiertos, revisá categorías, cupos e inscripciones antes de anotarte con tu pareja.
+    </p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Torneos</div>
+        <div class="stat-value">@availableTournaments.Count</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Categorías</div>
+        <div class="stat-value">@availableTournaments.Sum(tournament => tournament.CategoryCount)</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Inscripciones activas</div>
+        <div class="stat-value">@availableTournaments.Sum(tournament => tournament.ActiveRegistrationCount)</div>
+    </div>
+</div>
+
+@if (!availableTournaments.Any())
+{
+    <div class="empty-state">
+        <div class="empty-state-title">No hay torneos disponibles por ahora.</div>
+        <div>
+            Cuando un organizador cree torneos con categorías, van a aparecer acá.
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (TournamentDto tournament in availableTournaments)
+        {
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <h4 class="card-title mb-1">@tournament.Name</h4>
+                                <div class="text-muted">
+                                    Creado @tournament.CreatedAtLabel
+                                </div>
+                            </div>
+
+                            <span class="badge bg-primary">
+                                @tournament.StatusLabel
+                            </span>
+                        </div>
+
+                        @if (tournament.HasCategories)
+                        {
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                @foreach (TournamentCategoryDto category in tournament.Categories)
+                                {
+                                    <span class="badge @GetCategoryBadgeClass(category)">
+                                        @category.CategoryLabel · @category.SlotsLabel
+                                    </span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-state mb-3">
+                                <div class="empty-state-title">Sin categorías cargadas.</div>
+                                <div>
+                                    Este torneo todavía no está listo para recibir inscripciones.
+                                </div>
+                            </div>
+                        }
+
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Categoría</th>
+                                        <th>Cupo</th>
+                                        <th>Fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (TournamentCategoryDto category in tournament.Categories)
+                                    {
+                                        <tr>
+                                            <td>@category.CategoryLabel</td>
+                                            <td>@category.SlotsLabel</td>
+                                            <td>@category.RegistrationFeeLabel</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                            <div class="text-muted">
+                                @tournament.ActiveRegistrationCount inscripciones activas
+                            </div>
+
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@($"/tournaments/{tournament.Id}")">
+                                Ver torneo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<TournamentDto> availableTournaments = new();
+
+    protected override void OnInitialized()
+    {
+        LoadTournaments();
+    }
+
+    private void LoadTournaments()
+    {
+        availableTournaments = TournamentService.GetAllTournamentDtos()
+            .Where(tournament => tournament.HasCategories)
+            .OrderByDescending(tournament => tournament.CreatedAt)
+            .ToList();
+    }
+
+    private static string GetCategoryBadgeClass(TournamentCategoryDto category)
+    {
+        if (category.AvailableSlots <= 0)
+            return "bg-secondary";
+
+        return "bg-success";
+    }
+}
