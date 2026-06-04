@@ -70,10 +70,30 @@ public class TournamentRegistrationServiceTests
     }
 
     [TestMethod]
-    public void RegisterPair_WithUnverifiedPair_ShouldThrowInvalidOperationException()
+    public void RegisterPair_WithCompleteUnverifiedPair_ShouldCreateRegistration()
     {
         Tournament tournament = CreateTournamentWithCategory(6, 16);
         Pair pair = CreateUnverifiedPair("Johann", "Franco", 6);
+        TournamentRegistrationService service = new TournamentRegistrationService();
+
+        TournamentRegistration registration = service.RegisterPair(tournament, pair, 6);
+
+        Assert.AreNotEqual(Guid.Empty, registration.Id);
+        Assert.AreEqual(tournament.Id, registration.TournamentId);
+        Assert.AreEqual(pair, registration.Pair);
+        Assert.AreEqual(6, registration.Category);
+        Assert.AreEqual(1, tournament.Registrations.Count);
+    }
+
+    [TestMethod]
+    public void RegisterPair_WithIncompletePairProfile_ShouldThrowInvalidOperationException()
+    {
+        Tournament tournament = CreateTournamentWithCategory(6, 16);
+
+        Player playerOne = new Player("Johann");
+        Player playerTwo = CreateVerifiedPlayer("Franco", "franco@mail.com", 6);
+
+        Pair pair = new Pair(playerOne, playerTwo);
         TournamentRegistrationService service = new TournamentRegistrationService();
 
         Assert.ThrowsException<InvalidOperationException>(() =>

@@ -77,8 +77,8 @@ public class TournamentRegistrationService
 
     private static void ValidatePairCanRegister(Pair pair, int category)
     {
-        if (!pair.IsFullyVerified())
-            throw new InvalidOperationException("Both players must be verified before registering to a tournament.");
+        if (!pair.PlayerOne.HasCompleteProfile || !pair.PlayerTwo.HasCompleteProfile)
+            throw new InvalidOperationException("Both players must have a complete profile before registering to a tournament.");
 
         if (!pair.CanPlayInCategory(category))
             throw new InvalidOperationException("Pair cannot play in this category.");
