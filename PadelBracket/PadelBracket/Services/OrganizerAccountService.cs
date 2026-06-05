@@ -87,6 +87,31 @@ public class OrganizerAccountService
         currentOrganizerId = null;
     }
 
+    public void UpdateCurrentOrganizerProfile(
+        string realName,
+        string email,
+        string clubName,
+        string city,
+        string phone)
+    {
+        Organizer organizer = CurrentOrganizer
+            ?? throw new InvalidOperationException("No hay una sesión activa de organizador.");
+
+        ValidateRealName(realName);
+        ValidateEmail(email);
+
+        organizerService.UpdateProfile(
+            organizer.Id,
+            realName,
+            email,
+            clubName,
+            city,
+            phone);
+
+        if (accountsByOrganizerId.TryGetValue(organizer.Id, out OrganizerAccount? account))
+            account.ChangeEmail(email);
+    }
+
     private bool EmailAlreadyExists(string email)
     {
         return organizerService.GetAll().Any(organizer =>
@@ -205,6 +230,11 @@ public class OrganizerAccountService
                 email,
                 hash,
                 salt);
+        }
+
+        public void ChangeEmail(string email)
+        {
+            Email = email.Trim().ToLower();
         }
 
         public bool VerifyPassword(string password)

@@ -130,6 +130,73 @@ public class OrganizerAccountServiceTests
         Assert.IsNull(service.CurrentOrganizer);
     }
 
+    [TestMethod]
+    public void UpdateCurrentOrganizerProfile_WithValidEmail_ShouldUpdateLoginEmail()
+    {
+        OrganizerAccountService service = CreateService();
+
+        var organizer = service.Register(
+            "Juan Perez",
+            "juan@mail.com",
+            "Cancha#2026",
+            "Cancha#2026",
+            "Club Carrasco",
+            "Montevideo",
+            "099123456");
+
+        service.UpdateCurrentOrganizerProfile(
+            "Juan Perez",
+            "nuevo@mail.com",
+            "Club Carrasco",
+            "Montevideo",
+            "099123456");
+
+        Assert.AreEqual("nuevo@mail.com", service.CurrentOrganizer!.Email);
+
+        service.Logout();
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            service.Login("juan@mail.com", "Cancha#2026"));
+
+        var loggedOrganizer = service.Login("nuevo@mail.com", "Cancha#2026");
+
+        Assert.AreEqual(organizer.Id, loggedOrganizer.Id);
+    }
+
+    [TestMethod]
+    public void UpdateCurrentOrganizerProfile_WithDuplicateEmail_ShouldThrowArgumentException()
+    {
+        OrganizerAccountService service = CreateService();
+
+        service.Register(
+            "Juan Perez",
+            "juan@mail.com",
+            "Cancha#2026",
+            "Cancha#2026",
+            "Club Carrasco",
+            "Montevideo",
+            "099123456");
+
+        service.Register(
+            "Ana Garcia",
+            "ana@mail.com",
+            "Torneo#2026",
+            "Torneo#2026",
+            "Club Prado",
+            "Montevideo",
+            "098654321");
+
+        service.Login("juan@mail.com", "Cancha#2026");
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            service.UpdateCurrentOrganizerProfile(
+                "Juan Perez",
+                "ana@mail.com",
+                "Club Carrasco",
+                "Montevideo",
+                "099123456"));
+    }
+
     private static OrganizerAccountService CreateService()
     {
         var organizerRepository = new InMemoryOrganizerRepository();
