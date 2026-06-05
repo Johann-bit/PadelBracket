@@ -8,13 +8,16 @@ public class TournamentService
 {
     private readonly ITournamentRepository tournamentRepository;
     private readonly PairService pairService;
+    private readonly TournamentRegistrationService tournamentRegistrationService;
 
     public TournamentService(
         ITournamentRepository tournamentRepository,
-        PairService pairService)
+        PairService pairService,
+        TournamentRegistrationService tournamentRegistrationService)
     {
         this.tournamentRepository = tournamentRepository;
         this.pairService = pairService;
+        this.tournamentRegistrationService = tournamentRegistrationService;
     }
 
     public Tournament CreateTournament(string name)
@@ -40,14 +43,7 @@ public class TournamentService
     public List<TournamentDto> GetAllTournamentDtos()
     {
         return tournamentRepository.GetAll()
-            .Select(tournament => new TournamentDto
-            {
-                Id = tournament.Id,
-                Name = tournament.Name,
-                CreatedAt = tournament.CreatedAt,
-                StatusLabel = tournament.StatusLabel,
-                GroupCount = tournament.Groups.Count
-            })
+            .Select(ToDto)
             .ToList();
     }
 
@@ -63,14 +59,7 @@ public class TournamentService
         if (tournament == null)
             return null;
 
-        return new TournamentDto
-        {
-            Id = tournament.Id,
-            Name = tournament.Name,
-            CreatedAt = tournament.CreatedAt,
-            StatusLabel = tournament.StatusLabel,
-            GroupCount = tournament.Groups.Count
-        };
+        return ToDto(tournament);
     }
 
     public void RenameTournament(Guid tournamentId, string name)
@@ -105,6 +94,47 @@ public class TournamentService
         var tournament = GetTournamentOrThrow(tournamentId);
 
         tournament.Cancel();
+    }
+
+    public TournamentCategory AddCategoryToTournament(
+        Guid tournamentId,
+        int category,
+        int maxPairs,
+        decimal registrationFee)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        var tournamentCategory = new TournamentCategory(
+            category,
+            maxPairs,
+            registrationFee);
+
+        tournament.AddCategory(tournamentCategory);
+
+        return tournamentCategory;
+    }
+
+    public void RemoveCategoryFromTournament(Guid tournamentId, int category)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        tournament.RemoveCategory(category);
+    }
+
+    public TournamentRegistration RegisterPairToTournament(
+        Guid tournamentId,
+        Guid pairId,
+        int category)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        Pair pair = pairService.GetById(pairId)
+            ?? throw new ArgumentException("Pair not found.");
+
+        return tournamentRegistrationService.RegisterPair(
+            tournament,
+            pair,
+            category);
     }
 
     public Group AddGroupToTournament(Guid tournamentId, string groupName, int category)
@@ -259,5 +289,26 @@ public class TournamentService
             throw new ArgumentException("Match not found.");
 
         return match;
+    }
+
+    private static TournamentDto ToDto(Tournament tournament)
+    {
+        return new TournamentDto
+        {
+            Id = tournament.Id,
+            Name = tournament.Name,
+            CreatedAt = tournament.CreatedAt,
+            StatusLabel = tournament.StatusLabel,
+            GroupCount = tournament.Groups.Count,
+            Categories = tournament.TournamentCategories
+                .Select(category =>
+                    TournamentCategoryDto.FromEntity(
+                        category,
+                        tournament.GetActiveRegistrationsByCategory(category.Category).Count))
+                .ToList(),
+            Registrations = tournament.Registrations
+                .Select(TournamentRegistrationDto.FromEntity)
+                .ToList()
+        };
     }
 }

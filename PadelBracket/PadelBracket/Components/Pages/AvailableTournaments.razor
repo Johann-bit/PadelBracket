@@ -1,7 +1,10 @@
 ﻿@page "/tournaments/available"
 @using PadelBracket.Domain.DTOs
+@using PadelBracket.Domain.Entities
 @using PadelBracket.Services
 @inject TournamentService TournamentService
+@inject PairService PairService
+@inject PlayerAccountService PlayerAccountService
 @rendermode InteractiveServer
 
 <PageTitle>Torneos disponibles</PageTitle>
@@ -13,6 +16,20 @@
         Encontrá torneos abiertos, revisá categorías, cupos e inscripciones antes de anotarte con tu pareja.
     </p>
 </div>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success">
+        @successMessage
+    </div>
+}
 
 <div class="stat-grid">
     <div class="stat-card">
@@ -26,8 +43,8 @@
     </div>
 
     <div class="stat-card">
-        <div class="stat-label">Inscripciones activas</div>
-        <div class="stat-value">@availableTournaments.Sum(tournament => tournament.ActiveRegistrationCount)</div>
+        <div class="stat-label">Mis parejas</div>
+        <div class="stat-value">@myPairs.Count</div>
     </div>
 </div>
 
@@ -61,26 +78,14 @@ else
                             </span>
                         </div>
 
-                        @if (tournament.HasCategories)
-                        {
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                @foreach (TournamentCategoryDto category in tournament.Categories)
-                                {
-                                    <span class="badge @GetCategoryBadgeClass(category)">
-                                        @category.CategoryLabel · @category.SlotsLabel
-                                    </span>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="empty-state mb-3">
-                                <div class="empty-state-title">Sin categorías cargadas.</div>
-                                <div>
-                                    Este torneo todavía no está listo para recibir inscripciones.
-                                </div>
-                            </div>
-                        }
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            @foreach (TournamentCategoryDto category in tournament.Categories)
+                            {
+                                <span class="badge @GetCategoryBadgeClass(category)">
+                                    @category.CategoryLabel · @category.SlotsLabel
+                                </span>
+                            }
+                        </div>
 
                         <div class="table-responsive mb-3">
                             <table class="table table-sm align-middle">
@@ -104,15 +109,102 @@ else
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                            <div class="text-muted">
-                                @tournament.ActiveRegistrationCount inscripciones activas
-                            </div>
+                        <div class="border-top pt-3 mt-3">
+                            <h5 class="mb-3">Inscribir mi pareja</h5>
 
-                            <a class="btn btn-sm btn-outline-primary"
-                               href="@($"/tournaments/{tournament.Id}")">
-                                Ver torneo
-                            </a>
+                            @if (CurrentPlayer == null)
+                            {
+                                <div class="empty-state mb-3">
+                                    <div class="empty-state-title">Iniciá sesión para inscribirte.</div>
+                                    <div>
+                                        Necesitás una cuenta de jugador y una pareja creada.
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a class="btn btn-sm btn-primary" href="/login">
+                                        Ingresar
+                                    </a>
+
+                                    <a class="btn btn-sm btn-outline-primary" href="/register">
+                                        Registrarme
+                                    </a>
+                                </div>
+                            }
+                            else if (!myPairs.Any())
+                            {
+                                <div class="empty-state mb-3">
+                                    <div class="empty-state-title">Todavía no tenés pareja.</div>
+                                    <div>
+                                        Creá una pareja antes de anotarte a un torneo.
+                                    </div>
+                                </div>
+
+                                <a class="btn btn-sm btn-primary" href="/pairs">
+                                    Crear pareja
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-7">
+                                        <label class="form-label">Pareja</label>
+                                        <select class="form-select"
+                                                value="@GetSelectedPairId(tournament.Id)"
+                                                @onchange="eventArgs => SetSelectedPairId(tournament.Id, eventArgs.Value?.ToString() ?? string.Empty)">
+                                            <option value="">Seleccionar pareja</option>
+
+                                            @foreach (PairDto pair in GetEligiblePairs(tournament))
+                                            {
+                                                <option value="@pair.Id">
+                                                    @pair.DisplayName · Categoría @GetCategoryLabel(pair.Category)
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label class="form-label">Categoría</label>
+                                        <select class="form-select"
+                                                value="@GetSelectedCategory(tournament.Id)"
+                                                @onchange="eventArgs => SetSelectedCategory(tournament.Id, eventArgs.Value?.ToString() ?? string.Empty)">
+                                            <option value="">Seleccionar categoría</option>
+
+                                            @foreach (TournamentCategoryDto category in tournament.Categories.Where(category => category.HasAvailableSlots))
+                                            {
+                                                <option value="@category.Category">
+                                                    @category.CategoryLabel
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                @if (!GetEligiblePairs(tournament).Any())
+                                {
+                                    <div class="alert alert-warning">
+                                        No tenés parejas compatibles con las categorías disponibles de este torneo.
+                                    </div>
+                                }
+
+                                <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                    <div class="text-muted">
+                                        @tournament.ActiveRegistrationCount inscripciones activas
+                                    </div>
+
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           href="@($"/tournaments/{tournament.Id}")">
+                                            Ver torneo
+                                        </a>
+
+                                        <button class="btn btn-sm btn-primary"
+                                                @onclick="() => RegisterMyPair(tournament.Id)">
+                                            Inscribir
+                                        </button>
+                                    </div>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -123,18 +215,113 @@ else
 
 @code {
     private List<TournamentDto> availableTournaments = new();
+    private List<PairDto> myPairs = new();
+
+    private readonly Dictionary<Guid, string> selectedPairIdsByTournament = new();
+    private readonly Dictionary<Guid, string> selectedCategoriesByTournament = new();
+
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    private Player? CurrentPlayer => PlayerAccountService.CurrentPlayer;
 
     protected override void OnInitialized()
     {
-        LoadTournaments();
+        LoadData();
     }
 
-    private void LoadTournaments()
+    private void LoadData()
     {
         availableTournaments = TournamentService.GetAllTournamentDtos()
             .Where(tournament => tournament.HasCategories)
             .OrderByDescending(tournament => tournament.CreatedAt)
             .ToList();
+
+        myPairs = PairService.GetAllDtos()
+            .Where(pair =>
+                CurrentPlayer != null &&
+                (pair.PlayerOneId == CurrentPlayer.Id || pair.PlayerTwoId == CurrentPlayer.Id))
+            .OrderBy(pair => pair.DisplayName)
+            .ToList();
+    }
+
+    private void RegisterMyPair(Guid tournamentId)
+    {
+        ClearMessages();
+
+        try
+        {
+            string selectedPairId = GetSelectedPairId(tournamentId);
+            string selectedCategory = GetSelectedCategory(tournamentId);
+
+            if (CurrentPlayer == null)
+                throw new InvalidOperationException("Tenés que iniciar sesión para inscribirte.");
+
+            if (string.IsNullOrWhiteSpace(selectedPairId))
+                throw new ArgumentException("Seleccioná una pareja.");
+
+            if (string.IsNullOrWhiteSpace(selectedCategory))
+                throw new ArgumentException("Seleccioná una categoría.");
+
+            PairDto selectedPair = myPairs.FirstOrDefault(pair => pair.Id == Guid.Parse(selectedPairId))
+                ?? throw new ArgumentException("No se encontró la pareja seleccionada.");
+
+            if (!selectedPair.PlayerOneId.Equals(CurrentPlayer.Id) &&
+                !selectedPair.PlayerTwoId.Equals(CurrentPlayer.Id))
+            {
+                throw new InvalidOperationException("Solo podés inscribir una pareja en la que participás.");
+            }
+
+            TournamentService.RegisterPairToTournament(
+                tournamentId,
+                selectedPair.Id,
+                int.Parse(selectedCategory));
+
+            selectedPairIdsByTournament[tournamentId] = string.Empty;
+            selectedCategoriesByTournament[tournamentId] = string.Empty;
+
+            successMessage = "Inscripción creada correctamente.";
+
+            LoadData();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private List<PairDto> GetEligiblePairs(TournamentDto tournament)
+    {
+        return myPairs
+            .Where(pair => tournament.Categories.Any(category =>
+                category.HasAvailableSlots &&
+                pair.Category.HasValue &&
+                pair.Category.Value <= category.Category))
+            .ToList();
+    }
+
+    private string GetSelectedPairId(Guid tournamentId)
+    {
+        return selectedPairIdsByTournament.TryGetValue(tournamentId, out string? pairId)
+            ? pairId
+            : string.Empty;
+    }
+
+    private void SetSelectedPairId(Guid tournamentId, string pairId)
+    {
+        selectedPairIdsByTournament[tournamentId] = pairId;
+    }
+
+    private string GetSelectedCategory(Guid tournamentId)
+    {
+        return selectedCategoriesByTournament.TryGetValue(tournamentId, out string? category)
+            ? category
+            : string.Empty;
+    }
+
+    private void SetSelectedCategory(Guid tournamentId, string category)
+    {
+        selectedCategoriesByTournament[tournamentId] = category;
     }
 
     private static string GetCategoryBadgeClass(TournamentCategoryDto category)
@@ -143,5 +330,19 @@ else
             return "bg-secondary";
 
         return "bg-success";
+    }
+
+    private static string GetCategoryLabel(int? category)
+    {
+        if (!category.HasValue)
+            return "-";
+
+        return category.Value.ToString();
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
     }
 }

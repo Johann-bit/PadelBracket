@@ -12,8 +12,12 @@ public class TournamentServiceTests
         var pairRepository = new InMemoryPairRepository();
         var tournamentRepository = new InMemoryTournamentRepository();
         var pairService = new PairService(pairRepository);
+        var tournamentRegistrationService = new TournamentRegistrationService();
 
-        return new TournamentService(tournamentRepository, pairService);
+        return new TournamentService(
+            tournamentRepository,
+            pairService,
+            tournamentRegistrationService);
     }
 
     [TestMethod]
