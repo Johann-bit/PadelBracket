@@ -10,7 +10,7 @@
 <PageTitle>Parejas</PageTitle>
 
 <div class="page-header">
-    <div class="page-eyebrow">Gestión de parejas</div>
+    <div class="page-eyebrow">Mi pareja</div>
     <h1 class="page-title">Parejas</h1>
     <p class="page-subtitle">
         Formá tu pareja usando tu perfil de jugador y un compañero registrado.
@@ -43,8 +43,8 @@
     </div>
 
     <div class="stat-card">
-        <div class="stat-label">Próximo paso</div>
-        <div class="stat-value">Torneos</div>
+        <div class="stat-label">Mi estado</div>
+        <div class="stat-value">@CurrentPairStatus</div>
     </div>
 </div>
 
@@ -82,6 +82,69 @@ else if (!CurrentPlayer.HasCompleteProfile)
         </a>
     </div>
 }
+else if (myPair != null)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title mb-2">Mi pareja actual</h4>
+
+            <p class="text-muted mb-4">
+                Esta pareja queda disponible para inscribirte a torneos.
+            </p>
+
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <tbody>
+                        <tr>
+                            <th>Pareja</th>
+                            <td>@myPair.DisplayName</td>
+                        </tr>
+
+                        <tr>
+                            <th>Jugador 1</th>
+                            <td>@myPair.PlayerOneName</td>
+                        </tr>
+
+                        <tr>
+                            <th>Jugador 2</th>
+                            <td>@myPair.PlayerTwoName</td>
+                        </tr>
+
+                        <tr>
+                            <th>Categoría</th>
+                            <td>
+                                <span class="badge bg-primary">
+                                    Categoría @GetCategoryLabel(myPair.Category)
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Estado</th>
+                            <td>
+                                @if (myPair.IsFullyVerified)
+                                {
+                                    <span class="badge bg-success">Verificada</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Pendiente</span>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <button class="btn btn-outline-danger"
+                        @onclick="() => DeletePair(myPair.Id)">
+                    Eliminar mi pareja
+                </button>
+            </div>
+        </div>
+    </div>
+}
 else
 {
     <div class="card mb-4">
@@ -89,7 +152,7 @@ else
             <h4 class="card-title mb-2">Crear mi pareja</h4>
 
             <p class="text-muted mb-4">
-                Tu perfil queda como primer jugador. Elegí un compañero registrado con perfil completo.
+                Tu perfil queda como primer jugador. Elegí un compañero registrado con perfil completo y sin pareja activa.
             </p>
 
             <div class="row g-3 mb-4">
@@ -117,7 +180,16 @@ else
                 </div>
             </div>
 
-            <button class="btn btn-primary" @onclick="CreatePair">
+            @if (!partnerCandidates.Any())
+            {
+                <div class="alert alert-warning">
+                    No hay compañeros disponibles con perfil completo y sin pareja activa.
+                </div>
+            }
+
+            <button class="btn btn-primary"
+                    disabled="@(!partnerCandidates.Any())"
+                    @onclick="CreatePair">
                 Crear pareja
             </button>
         </div>
@@ -169,6 +241,11 @@ else
                     <tr>
                         <td>
                             <strong>@pair.DisplayName</strong>
+
+                            @if (IsMyPair(pair))
+                            {
+                                <span class="badge bg-primary ms-2">Mi pareja</span>
+                            }
                         </td>
 
                         <td>@pair.PlayerOneName</td>
@@ -213,12 +290,27 @@ else
     private List<PlayerDto> partnerCandidates = new();
     private List<PairDto> pairs = new();
 
+    private PairDto? myPair;
     private string selectedPartnerId = string.Empty;
 
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
 
     private Player? CurrentPlayer => PlayerAccountService.CurrentPlayer;
+
+    private string CurrentPairStatus
+    {
+        get
+        {
+            if (CurrentPlayer == null)
+                return "Sin sesión";
+
+            if (!CurrentPlayer.HasCompleteProfile)
+                return "Perfil incompleto";
+
+            return myPair == null ? "Sin pareja" : "Con pareja";
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -229,17 +321,22 @@ else
     {
         players = PlayerService.GetAllDtos().ToList();
 
+        pairs = PairService.GetAllDtos()
+            .OrderBy(pair => pair.PlayerOneName)
+            .ThenBy(pair => pair.PlayerTwoName)
+            .ToList();
+
+        myPair = CurrentPlayer == null
+            ? null
+            : PairService.GetDtosByPlayerId(CurrentPlayer.Id).FirstOrDefault();
+
         partnerCandidates = players
             .Where(player =>
                 CurrentPlayer != null &&
                 player.Id != CurrentPlayer.Id &&
-                player.HasCompleteProfile)
+                player.HasCompleteProfile &&
+                !PairService.PlayerHasPair(player.Id))
             .OrderBy(player => player.Name)
-            .ToList();
-
-        pairs = PairService.GetAllDtos()
-            .OrderBy(pair => pair.PlayerOneName)
-            .ThenBy(pair => pair.PlayerTwoName)
             .ToList();
     }
 
@@ -255,6 +352,9 @@ else
             if (!CurrentPlayer.HasCompleteProfile)
                 throw new InvalidOperationException("Completá tu perfil antes de crear una pareja.");
 
+            if (PairService.PlayerHasPair(CurrentPlayer.Id))
+                throw new InvalidOperationException("Ya tenés una pareja activa.");
+
             if (string.IsNullOrWhiteSpace(selectedPartnerId))
                 throw new ArgumentException("Seleccioná un compañero.");
 
@@ -263,6 +363,9 @@ else
 
             if (!partner.HasCompleteProfile)
                 throw new InvalidOperationException("El compañero debe tener el perfil completo.");
+
+            if (PairService.PlayerHasPair(partner.Id))
+                throw new InvalidOperationException("El compañero ya tiene una pareja activa.");
 
             PairService.Add(CurrentPlayer, partner);
 
@@ -292,6 +395,7 @@ else
 
             PairService.Delete(id);
 
+            selectedPartnerId = string.Empty;
             successMessage = "Pareja eliminada correctamente.";
 
             LoadData();
@@ -302,10 +406,15 @@ else
         }
     }
 
-    private bool CanDeletePair(PairDto pair)
+    private bool IsMyPair(PairDto pair)
     {
         return CurrentPlayer != null &&
             (pair.PlayerOneId == CurrentPlayer.Id || pair.PlayerTwoId == CurrentPlayer.Id);
+    }
+
+    private bool CanDeletePair(PairDto pair)
+    {
+        return IsMyPair(pair);
     }
 
     private static string GetCategoryLabel(int? category)
