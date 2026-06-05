@@ -36,13 +36,13 @@
     </div>
 
     <div class="stat-card">
-        <div class="stat-label">Estado</div>
-        <div class="stat-value">Activo</div>
+        <div class="stat-label">Perfiles completos</div>
+        <div class="stat-value">@CompleteProfilesCount</div>
     </div>
 
     <div class="stat-card">
-        <div class="stat-label">Próximo paso</div>
-        <div class="stat-value">Parejas</div>
+        <div class="stat-label">Verificados</div>
+        <div class="stat-value">@VerifiedPlayersCount</div>
     </div>
 </div>
 
@@ -114,7 +114,7 @@
     <div>
         <h3 class="mb-1">Jugadores registrados</h3>
         <p class="text-muted mb-0">
-            Editá nombres o eliminá jugadores cargados en el sistema.
+            Revisá fichas, editá nombres o eliminá jugadores cargados en el sistema.
         </p>
     </div>
 
@@ -139,6 +139,8 @@ else
             <thead>
                 <tr>
                     <th>Jugador</th>
+                    <th>Categoría</th>
+                    <th>Perfil</th>
                     <th>Referencia</th>
                     <th>Editar nombre</th>
                     <th></th>
@@ -150,6 +152,21 @@ else
                     <tr>
                         <td>
                             <strong>@player.Name</strong>
+                        </td>
+
+                        <td>
+                            @GetCategoryLabel(player.Category)
+                        </td>
+
+                        <td>
+                            @if (player.HasCompleteProfile)
+                            {
+                                <span class="badge bg-success">Completo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Incompleto</span>
+                            }
                         </td>
 
                         <td>
@@ -165,6 +182,11 @@ else
                         </td>
 
                         <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary me-2"
+                               href="@($"/players/{player.Id}")">
+                                Ver ficha
+                            </a>
+
                             <button class="btn btn-sm btn-outline-primary me-2"
                                     @onclick="() => RenamePlayer(player.Id)">
                                 Guardar
@@ -192,6 +214,9 @@ else
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
     private readonly Dictionary<Guid, string> editNames = new();
+
+    private int CompleteProfilesCount => players.Count(player => player.HasCompleteProfile);
+    private int VerifiedPlayersCount => players.Count(player => player.IsVerified);
 
     protected override void OnInitialized()
     {
@@ -295,6 +320,14 @@ else
     private void SetEditName(Guid id, string name)
     {
         editNames[id] = name;
+    }
+
+    private static string GetCategoryLabel(int? category)
+    {
+        if (!category.HasValue)
+            return "-";
+
+        return category.Value.ToString();
     }
 
     private void ClearMessages()

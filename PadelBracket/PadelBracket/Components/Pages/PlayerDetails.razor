@@ -1,328 +1,141 @@
-﻿@page "/players"
+﻿@page "/players/{PlayerId:guid}"
 @using PadelBracket.Domain.DTOs
 @using PadelBracket.Domain.Enums
 @using PadelBracket.Services
 @inject PlayerService PlayerService
-@rendermode InteractiveServer
 
-<PageTitle>Jugadores</PageTitle>
+<PageTitle>Jugador</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Gestión de jugadores</div>
-    <h1 class="page-title">Jugadores</h1>
-    <p class="page-subtitle">
-        Registrá jugadores, editá sus nombres y dejá preparada la base para crear parejas y rankings.
-    </p>
-</div>
-
-@if (!string.IsNullOrWhiteSpace(errorMessage))
+@if (player == null)
 {
-    <div class="alert alert-danger">
-        @errorMessage
-    </div>
-}
-
-@if (!string.IsNullOrWhiteSpace(successMessage))
-{
-    <div class="alert alert-success">
-        @successMessage
-    </div>
-}
-
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-label">Jugadores registrados</div>
-        <div class="stat-value">@players.Count</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Perfiles completos</div>
-        <div class="stat-value">@CompleteProfilesCount</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Verificados</div>
-        <div class="stat-value">@VerifiedPlayersCount</div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-body">
-        <h4 class="card-title mb-2">Crear jugador</h4>
-
-        <p class="text-muted mb-4">
-            Agregá jugadores para luego formar parejas, torneos y rankings.
-        </p>
-
-        <div class="mb-3">
-            <label class="form-label">Nombre real</label>
-            <input class="form-control"
-                   placeholder="Ejemplo: Juan Pérez"
-                   @bind="newPlayerName"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input class="form-control"
-                   type="email"
-                   placeholder="Ejemplo: juan@mail.com"
-                   @bind="newPlayerEmail"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Mano hábil</label>
-            <select class="form-select" @bind="newDominantHand">
-                <option value="@DominantHand.Right">Derecha</option>
-                <option value="@DominantHand.Left">Zurda</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Lado de juego</label>
-            <select class="form-select" @bind="newPreferredSide">
-                <option value="@PreferredSide.Drive">Drive</option>
-                <option value="@PreferredSide.Backhand">Revés</option>
-                <option value="@PreferredSide.Both">Ambos</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Categoría</label>
-            <select class="form-select" @bind="newCategory">
-                @for (int category = 1; category <= 8; category++)
-                {
-                    <option value="@category">@category</option>
-                }
-            </select>
-        </div>
-
-        <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-primary" @onclick="CreatePlayer">
-                Crear jugador
-            </button>
-
-            <button class="btn btn-outline-primary" @onclick="SeedPlayers">
-                Cargar ejemplos
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h3 class="mb-1">Jugadores registrados</h3>
-        <p class="text-muted mb-0">
-            Revisá fichas, editá nombres o eliminá jugadores cargados en el sistema.
+    <div class="page-header">
+        <div class="page-eyebrow">Jugador</div>
+        <h1 class="page-title">Jugador no encontrado</h1>
+        <p class="page-subtitle">
+            No existe un jugador registrado con esa referencia.
         </p>
     </div>
 
-    <span class="badge bg-secondary">
-        @players.Count total
-    </span>
-</div>
-
-@if (!players.Any())
-{
     <div class="empty-state">
-        <div class="empty-state-title">Todavía no hay jugadores registrados.</div>
-        <div>
-            Creá el primero para después formar parejas.
+        <div class="empty-state-title">No encontramos este jugador.</div>
+        <div class="mb-3">
+            Volvé al listado para revisar los jugadores registrados.
         </div>
+
+        <a class="btn btn-primary" href="/players">
+            Ver jugadores
+        </a>
     </div>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Jugador</th>
-                    <th>Categoría</th>
-                    <th>Perfil</th>
-                    <th>Referencia</th>
-                    <th>Editar nombre</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (PlayerDto player in players)
+    <div class="page-header">
+        <div class="page-eyebrow">Ficha de jugador</div>
+        <h1 class="page-title">@player.Name</h1>
+        <p class="page-subtitle">
+            Datos deportivos, categoría, ranking y estado del perfil.
+        </p>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Categoría</div>
+            <div class="stat-value">@GetCategoryLabel(player.Category)</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Puntos</div>
+            <div class="stat-value">@player.RankingPoints</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Estado</div>
+            <div class="stat-value">@GetProfileStatus(player)</div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title mb-2">Datos deportivos</h4>
+
+            <p class="text-muted mb-4">
+                Información principal para formar pareja y competir en torneos.
+            </p>
+
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <tbody>
+                        <tr>
+                            <th>Nombre real</th>
+                            <td>@player.Name</td>
+                        </tr>
+
+                        <tr>
+                            <th>Mano hábil</th>
+                            <td>@GetDominantHandLabel(player.DominantHand)</td>
+                        </tr>
+
+                        <tr>
+                            <th>Lado de juego</th>
+                            <td>@GetPreferredSideLabel(player.PreferredSide)</td>
+                        </tr>
+
+                        <tr>
+                            <th>Categoría</th>
+                            <td>@GetCategoryLabel(player.Category)</td>
+                        </tr>
+
+                        <tr>
+                            <th>Referencia</th>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    @player.ShortId
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title mb-2">Estado del jugador</h4>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="badge @GetVerificationBadgeClass(player.VerificationStatus)">
+                    @GetVerificationLabel(player.VerificationStatus)
+                </span>
+
+                @if (player.HasCompleteProfile)
                 {
-                    <tr>
-                        <td>
-                            <strong>@player.Name</strong>
-                            <div class="text-muted small">
-                                @player.Email
-                            </div>
-                        </td>
-
-                        <td>
-                            @GetCategoryLabel(player.Category)
-                        </td>
-
-                        <td>
-                            @if (player.HasCompleteProfile)
-                            {
-                                <span class="badge bg-success">Completo</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark">Incompleto</span>
-                            }
-                        </td>
-
-                        <td>
-                            <span class="badge bg-secondary">
-                                @player.ShortId
-                            </span>
-                        </td>
-
-                        <td>
-                            <input class="form-control"
-                                   value="@GetEditName(player.Id)"
-                                   @oninput="eventArgs => SetEditName(player.Id, eventArgs.Value?.ToString() ?? string.Empty)" />
-                        </td>
-
-                        <td class="text-end">
-                            <a class="btn btn-sm btn-outline-primary me-2"
-                               href="@($"/players/{player.Id}")">
-                                Ver ficha
-                            </a>
-
-                            <button class="btn btn-sm btn-outline-primary me-2"
-                                    @onclick="() => RenamePlayer(player.Id)">
-                                Guardar
-                            </button>
-
-                            <button class="btn btn-sm btn-outline-danger"
-                                    @onclick="() => DeletePlayer(player.Id)">
-                                Eliminar
-                            </button>
-                        </td>
-                    </tr>
+                    <span class="badge bg-success">Perfil completo</span>
                 }
-            </tbody>
-        </table>
+                else
+                {
+                    <span class="badge bg-warning text-dark">Perfil incompleto</span>
+                }
+            </div>
+
+            <div class="mt-4">
+                <a class="btn btn-outline-primary" href="/players">
+                    Volver a jugadores
+                </a>
+            </div>
+        </div>
     </div>
 }
 
 @code {
-    private List<PlayerDto> players = new();
-    private string newPlayerName = string.Empty;
-    private string newPlayerEmail = string.Empty;
-    private DominantHand newDominantHand = DominantHand.Right;
-    private PreferredSide newPreferredSide = PreferredSide.Drive;
-    private int newCategory = 6;
-    private string errorMessage = string.Empty;
-    private string successMessage = string.Empty;
-    private readonly Dictionary<Guid, string> editNames = new();
+    [Parameter]
+    public Guid PlayerId { get; set; }
 
-    private int CompleteProfilesCount => players.Count(player => player.HasCompleteProfile);
-    private int VerifiedPlayersCount => players.Count(player => player.IsVerified);
+    private PlayerDto? player;
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
-        LoadPlayers();
-    }
-
-    private void LoadPlayers()
-    {
-        players = PlayerService.GetAllDtos().ToList();
-
-        foreach (PlayerDto player in players)
-        {
-            if (!editNames.ContainsKey(player.Id))
-                editNames[player.Id] = player.Name;
-        }
-    }
-
-    private void CreatePlayer()
-    {
-        ClearMessages();
-
-        try
-        {
-            PlayerService.Add(
-                newPlayerName,
-                newPlayerEmail,
-                newDominantHand,
-                newPreferredSide,
-                newCategory);
-
-            newPlayerName = string.Empty;
-            newPlayerEmail = string.Empty;
-            newDominantHand = DominantHand.Right;
-            newPreferredSide = PreferredSide.Drive;
-            newCategory = 6;
-
-            successMessage = "Jugador creado correctamente.";
-            LoadPlayers();
-        }
-        catch (Exception exception)
-        {
-            errorMessage = exception.Message;
-        }
-    }
-
-    private void RenamePlayer(Guid id)
-    {
-        ClearMessages();
-
-        try
-        {
-            string name = GetEditName(id);
-            PlayerService.Rename(id, name);
-            successMessage = "Jugador actualizado correctamente.";
-            LoadPlayers();
-        }
-        catch (Exception exception)
-        {
-            errorMessage = exception.Message;
-        }
-    }
-
-    private void DeletePlayer(Guid id)
-    {
-        ClearMessages();
-
-        try
-        {
-            PlayerService.Delete(id);
-            editNames.Remove(id);
-            successMessage = "Jugador eliminado correctamente.";
-            LoadPlayers();
-        }
-        catch (Exception exception)
-        {
-            errorMessage = exception.Message;
-        }
-    }
-
-    private void SeedPlayers()
-    {
-        ClearMessages();
-
-        try
-        {
-            PlayerService.SeedDefaultPlayers();
-            successMessage = "Jugadores de ejemplo cargados correctamente.";
-            LoadPlayers();
-        }
-        catch (Exception exception)
-        {
-            errorMessage = exception.Message;
-        }
-    }
-
-    private string GetEditName(Guid id)
-    {
-        return editNames.TryGetValue(id, out string? name) ? name : string.Empty;
-    }
-
-    private void SetEditName(Guid id, string name)
-    {
-        editNames[id] = name;
+        player = PlayerService.GetDtoById(PlayerId);
     }
 
     private static string GetCategoryLabel(int? category)
@@ -333,9 +146,50 @@ else
         return category.Value.ToString();
     }
 
-    private void ClearMessages()
+    private static string GetDominantHandLabel(DominantHand? dominantHand)
     {
-        errorMessage = string.Empty;
-        successMessage = string.Empty;
+        return dominantHand switch
+        {
+            DominantHand.Right => "Derecha",
+            DominantHand.Left => "Zurda",
+            _ => "-"
+        };
+    }
+
+    private static string GetPreferredSideLabel(PreferredSide? preferredSide)
+    {
+        return preferredSide switch
+        {
+            PreferredSide.Drive => "Drive",
+            PreferredSide.Backhand => "Revés",
+            PreferredSide.Both => "Ambos",
+            _ => "-"
+        };
+    }
+
+    private static string GetProfileStatus(PlayerDto player)
+    {
+        return player.HasCompleteProfile ? "Completo" : "Incompleto";
+    }
+
+    private static string GetVerificationLabel(PlayerVerificationStatus status)
+    {
+        return status switch
+        {
+            PlayerVerificationStatus.Pending => "Verificación pendiente",
+            PlayerVerificationStatus.Verified => "Verificado",
+            PlayerVerificationStatus.Rejected => "Verificación rechazada",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetVerificationBadgeClass(PlayerVerificationStatus status)
+    {
+        return status switch
+        {
+            PlayerVerificationStatus.Verified => "bg-success",
+            PlayerVerificationStatus.Rejected => "bg-danger",
+            _ => "bg-secondary"
+        };
     }
 }
