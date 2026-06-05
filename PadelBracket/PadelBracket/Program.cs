@@ -22,6 +22,8 @@ builder.Services.AddSingleton<MatchHistoryService>();
 builder.Services.AddSingleton<RankingService>();
 builder.Services.AddSingleton<TournamentRegistrationService>();
 builder.Services.AddSingleton<PlayerAccountService>();
+builder.Services.AddSingleton<IOrganizerRepository, InMemoryOrganizerRepository>();
+builder.Services.AddSingleton<OrganizerService>();
 
 var app = builder.Build();
 
