@@ -107,6 +107,42 @@ public class PlayerAccountService
         currentPlayerId = null;
     }
 
+    public void UpdateCurrentPlayerPersonalData(string realName, string email)
+    {
+        Player player = CurrentPlayer
+            ?? throw new InvalidOperationException("No hay una sesión activa.");
+
+        ValidateRealName(realName);
+        ValidateEmail(email);
+
+        playerService.UpdatePersonalData(player.Id, realName, email);
+
+        if (accountsByPlayerId.TryGetValue(player.Id, out PlayerAccount? account))
+            account.ChangeEmail(email);
+    }
+
+    public void ChangeCurrentPlayerPassword(
+        string currentPassword,
+        string newPassword,
+        string confirmNewPassword)
+    {
+        Player player = CurrentPlayer
+            ?? throw new InvalidOperationException("No hay una sesión activa.");
+
+        PlayerAccount account = accountsByPlayerId.GetValueOrDefault(player.Id)
+            ?? throw new InvalidOperationException("No se encontró la cuenta del jugador.");
+
+        if (string.IsNullOrWhiteSpace(currentPassword))
+            throw new ArgumentException("La contraseña actual es obligatoria.");
+
+        if (!account.VerifyPassword(currentPassword))
+            throw new InvalidOperationException("La contraseña actual es incorrecta.");
+
+        ValidatePassword(newPassword, confirmNewPassword, player.Name, player.Email);
+
+        account.ChangePassword(newPassword);
+    }
+
     private bool EmailAlreadyExists(string email)
     {
         return playerService.GetAll().Any(player =>
@@ -199,9 +235,9 @@ public class PlayerAccountService
     private class PlayerAccount
     {
         public Guid PlayerId { get; }
-        public string Email { get; }
-        private byte[] PasswordHash { get; }
-        private byte[] PasswordSalt { get; }
+        public string Email { get; private set; }
+        private byte[] PasswordHash { get; set; }
+        private byte[] PasswordSalt { get; set; }
 
         private PlayerAccount(
             Guid playerId,
@@ -225,6 +261,17 @@ public class PlayerAccountService
                 email,
                 hash,
                 salt);
+        }
+
+        public void ChangeEmail(string email)
+        {
+            Email = email.Trim().ToLower();
+        }
+
+        public void ChangePassword(string password)
+        {
+            PasswordSalt = RandomNumberGenerator.GetBytes(16);
+            PasswordHash = HashPassword(password, PasswordSalt);
         }
 
         public bool VerifyPassword(string password)

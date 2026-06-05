@@ -54,6 +54,9 @@ public class PlayerService
         if (playerRepository.ExistsByName(name))
             throw new ArgumentException("A player with that name already exists.");
 
+        if (EmailAlreadyExists(email))
+            throw new ArgumentException("A player with that email already exists.");
+
         Player player = new Player(
             name,
             email,
@@ -97,6 +100,9 @@ public class PlayerService
 
         if (playerRepository.ExistsByNameExceptId(name, id))
             throw new ArgumentException("A player with that name already exists.");
+
+        if (EmailAlreadyExistsExceptId(email, id))
+            throw new ArgumentException("A player with that email already exists.");
 
         player.UpdatePersonalData(name, email);
     }
@@ -165,6 +171,19 @@ public class PlayerService
             DominantHand.Right,
             PreferredSide.Both,
             5);
+    }
+
+    private bool EmailAlreadyExists(string email)
+    {
+        return playerRepository.GetAll().Any(player =>
+            string.Equals(player.Email, email.Trim(), StringComparison.OrdinalIgnoreCase));
+    }
+
+    private bool EmailAlreadyExistsExceptId(string email, Guid id)
+    {
+        return playerRepository.GetAll().Any(player =>
+            player.Id != id &&
+            string.Equals(player.Email, email.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
     private static PlayerDto ToDto(Player player)

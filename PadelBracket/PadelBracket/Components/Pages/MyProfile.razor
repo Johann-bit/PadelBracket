@@ -141,6 +141,44 @@ else
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title mb-2">Seguridad</h4>
+
+            <p class="text-muted mb-4">
+                Cambiá tu contraseña usando tu contraseña actual.
+            </p>
+
+            <div class="mb-3">
+                <label class="form-label">Contraseña actual</label>
+                <input class="form-control"
+                       type="password"
+                       @bind="currentPassword"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nueva contraseña</label>
+                <input class="form-control"
+                       type="password"
+                       @bind="newPassword"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Confirmar nueva contraseña</label>
+                <input class="form-control"
+                       type="password"
+                       @bind="confirmNewPassword"
+                       @bind:event="oninput" />
+            </div>
+
+            <button class="btn btn-primary" @onclick="ChangePassword">
+                Cambiar contraseña
+            </button>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <h4 class="card-title mb-2">Estado del perfil</h4>
@@ -169,6 +207,9 @@ else
     private DominantHand dominantHand = DominantHand.Right;
     private PreferredSide preferredSide = PreferredSide.Drive;
     private int category = 6;
+    private string currentPassword = string.Empty;
+    private string newPassword = string.Empty;
+    private string confirmNewPassword = string.Empty;
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
 
@@ -203,7 +244,7 @@ else
 
         try
         {
-            PlayerService.UpdatePersonalData(CurrentPlayer.Id, name, email);
+            PlayerAccountService.UpdateCurrentPlayerPersonalData(name, email);
             successMessage = "Datos personales actualizados correctamente.";
             LoadProfile();
         }
@@ -233,6 +274,34 @@ else
 
             successMessage = "Datos deportivos actualizados correctamente.";
             LoadProfile();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private void ChangePassword()
+    {
+        ClearMessages();
+
+        if (CurrentPlayer == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        try
+        {
+            PlayerAccountService.ChangeCurrentPlayerPassword(
+                currentPassword,
+                newPassword,
+                confirmNewPassword);
+
+            currentPassword = string.Empty;
+            newPassword = string.Empty;
+            confirmNewPassword = string.Empty;
+            successMessage = "Contraseña actualizada correctamente.";
         }
         catch (Exception exception)
         {
