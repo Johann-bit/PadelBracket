@@ -169,6 +169,141 @@ else
 
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
+            <h4 class="card-title mb-2">Categorías del torneo</h4>
+
+            <p class="text-muted mb-4">
+                Definí qué categorías pueden inscribirse, cupos disponibles y costo de inscripción.
+            </p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Categoría</label>
+                    <select class="form-select" @bind="newCategory">
+                        <option value="8">8va categoría</option>
+                        <option value="7">7ma categoría</option>
+                        <option value="6">6ta categoría</option>
+                        <option value="5">5ta categoría</option>
+                        <option value="4">4ta categoría</option>
+                        <option value="3">3ra categoría</option>
+                        <option value="2">2da categoría</option>
+                        <option value="1">1ra categoría</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Cupos</label>
+                    <input class="form-control"
+                           type="number"
+                           min="1"
+                           @bind="newCategoryMaxPairs" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Inscripción</label>
+                    <input class="form-control"
+                           type="number"
+                           min="0"
+                           step="100"
+                           @bind="newCategoryRegistrationFee" />
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100"
+                            @onclick="CreateCategory">
+                        Agregar categoría
+                    </button>
+                </div>
+            </div>
+
+            @if (!tournament.TournamentCategories.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-state-title">Todavía no hay categorías.</div>
+                    <div>
+                        Agregá al menos una categoría para que el torneo aparezca en disponibles.
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Categoría</th>
+                                <th>Cupos</th>
+                                <th>Inscripción</th>
+                                <th>Inscriptos activos</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var category in tournament.TournamentCategories.OrderByDescending(category => category.Category))
+                            {
+                                var activeRegistrations = tournament.GetActiveRegistrationsByCategory(category.Category).Count;
+
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            @GetCategoryLabel(category.Category)
+                                        </span>
+                                    </td>
+
+                                    <td>@activeRegistrations / @category.MaxPairs</td>
+
+                                    <td>$@category.RegistrationFee</td>
+
+                                    <td>@activeRegistrations</td>
+
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                disabled="@HasActiveRegistrations(category.Category)"
+                                                @onclick="() => AskDeleteCategory(category.Category)">
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                @if (categoryToDelete == category.Category)
+                                {
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="alert alert-danger mb-0">
+                                                <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                                    <div>
+                                                        <strong>¿Eliminar esta categoría?</strong>
+                                                        <div>
+                                                            Solo se puede eliminar si no tiene inscripciones activas.
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="d-flex gap-2 flex-wrap">
+                                                        <button class="btn btn-sm btn-danger"
+                                                                @onclick="() => DeleteCategory(category.Category)">
+                                                            Confirmar
+                                                        </button>
+
+                                                        <button class="btn btn-sm btn-secondary"
+                                                                @onclick="CancelDeleteCategory">
+                                                            Cancelar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
             <h4 class="card-title">Crear grupo</h4>
 
             <div class="row">
@@ -389,6 +524,11 @@ else
     private string editAddress = string.Empty;
     private DateTime editStartDate = DateTime.Today;
 
+    private int newCategory = 6;
+    private int newCategoryMaxPairs = 16;
+    private decimal newCategoryRegistrationFee = 800;
+    private int? categoryToDelete;
+
     private Guid? editingGroupId;
     private string editGroupName = string.Empty;
 
@@ -457,6 +597,81 @@ else
         {
             errorMessage = ex.Message;
         }
+    }
+
+    private void CreateCategory()
+    {
+        if (tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.AddCategoryToTournament(
+                tournament.Id,
+                newCategory,
+                newCategoryMaxPairs,
+                newCategoryRegistrationFee);
+
+            newCategory = 6;
+            newCategoryMaxPairs = 16;
+            newCategoryRegistrationFee = 800;
+
+            LoadTournament();
+
+            successMessage = "Categoría agregada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void AskDeleteCategory(int category)
+    {
+        categoryToDelete = category;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelDeleteCategory()
+    {
+        categoryToDelete = null;
+    }
+
+    private void DeleteCategory(int category)
+    {
+        if (tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.RemoveCategoryFromTournament(tournament.Id, category);
+
+            categoryToDelete = null;
+
+            LoadTournament();
+
+            successMessage = "Categoría eliminada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private bool HasActiveRegistrations(int category)
+    {
+        if (tournament == null)
+            return false;
+
+        return tournament.GetActiveRegistrationsByCategory(category).Any();
     }
 
     private void CreateGroup()
