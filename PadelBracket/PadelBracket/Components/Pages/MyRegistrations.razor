@@ -1,0 +1,193 @@
+﻿@page "/my-registrations"
+@using PadelBracket.Domain.DTOs
+@using PadelBracket.Domain.Enums
+@using PadelBracket.Services
+@inject TournamentService TournamentService
+@inject PlayerAccountService PlayerAccountService
+@rendermode InteractiveServer
+
+<PageTitle>Mis inscripciones</PageTitle>
+
+<div class="page-header">
+    <div class="page-eyebrow">Competencia</div>
+    <h1 class="page-title">Mis inscripciones</h1>
+    <p class="page-subtitle">
+        Revisá los torneos en los que anotaste a tu pareja y el estado de cada inscripción.
+    </p>
+</div>
+
+@if (CurrentPlayerId == null)
+{
+    <div class="empty-state">
+        <div class="empty-state-title">Iniciá sesión para ver tus inscripciones.</div>
+        <div class="mb-3">
+            Tus inscripciones se muestran según el jugador que tenga la sesión activa.
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary" href="/login">
+                Ingresar
+            </a>
+
+            <a class="btn btn-outline-primary" href="/register">
+                Registrarme
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Inscripciones</div>
+            <div class="stat-value">@myRegistrations.Count</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Pendientes</div>
+            <div class="stat-value">@myRegistrations.Count(item => item.Registration.Status == RegistrationStatus.Pending)</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Confirmadas</div>
+            <div class="stat-value">@myRegistrations.Count(item => item.Registration.Status == RegistrationStatus.Confirmed)</div>
+        </div>
+    </div>
+
+    @if (!myRegistrations.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-title">Todavía no tenés inscripciones.</div>
+            <div class="mb-3">
+                Cuando inscribas una pareja a un torneo, vas a verla acá.
+            </div>
+
+            <a class="btn btn-primary" href="/tournaments/available">
+                Ver torneos disponibles
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Torneo</th>
+                        <th>Pareja</th>
+                        <th>Categoría</th>
+                        <th>Inscripción</th>
+                        <th>Pago</th>
+                        <th>Fecha</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (MyRegistrationItem item in myRegistrations)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Tournament.Name</strong>
+                                <div class="text-muted">
+                                    @item.Tournament.StatusLabel
+                                </div>
+                            </td>
+
+                            <td>@item.Registration.PairDisplayName</td>
+
+                            <td>
+                                <span class="badge bg-primary">
+                                    @item.Registration.CategoryLabel
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge @GetRegistrationStatusBadgeClass(item.Registration.Status)">
+                                    @item.Registration.StatusLabel
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge @GetPaymentStatusBadgeClass(item.Registration.PaymentStatus)">
+                                    @item.Registration.PaymentStatusLabel
+                                </span>
+                            </td>
+
+                            <td>@item.Registration.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
+
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="@($"/tournaments/{item.Tournament.Id}")">
+                                    Ver torneo
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    private List<MyRegistrationItem> myRegistrations = new();
+
+    private Guid? CurrentPlayerId => PlayerAccountService.CurrentPlayer?.Id;
+
+    protected override void OnInitialized()
+    {
+        LoadRegistrations();
+    }
+
+    private void LoadRegistrations()
+    {
+        if (CurrentPlayerId == null)
+            return;
+
+        myRegistrations = TournamentService.GetAllTournamentDtos()
+            .SelectMany(tournament => tournament.Registrations
+                .Where(registration => RegistrationBelongsToCurrentPlayer(registration))
+                .Select(registration => new MyRegistrationItem(tournament, registration)))
+            .OrderByDescending(item => item.Registration.RegisteredAt)
+            .ToList();
+    }
+
+    private bool RegistrationBelongsToCurrentPlayer(TournamentRegistrationDto registration)
+    {
+        if (CurrentPlayerId == null)
+            return false;
+
+        return TournamentService.GetTournamentById(registration.TournamentId)?
+            .Registrations
+            .FirstOrDefault(existingRegistration => existingRegistration.Id == registration.Id)?
+            .Pair
+            .ContainsPlayer(CurrentPlayerId.Value) == true;
+    }
+
+    private static string GetRegistrationStatusBadgeClass(RegistrationStatus status)
+    {
+        return status switch
+        {
+            RegistrationStatus.Confirmed => "bg-success",
+            RegistrationStatus.Rejected => "bg-danger",
+            RegistrationStatus.Cancelled => "bg-secondary",
+            _ => "bg-warning text-dark"
+        };
+    }
+
+    private static string GetPaymentStatusBadgeClass(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Paid => "bg-success",
+            PaymentStatus.Refunded => "bg-primary",
+            PaymentStatus.Cancelled => "bg-secondary",
+            _ => "bg-warning text-dark"
+        };
+    }
+
+    private record MyRegistrationItem(
+        TournamentDto Tournament,
+        TournamentRegistrationDto Registration);
+}
