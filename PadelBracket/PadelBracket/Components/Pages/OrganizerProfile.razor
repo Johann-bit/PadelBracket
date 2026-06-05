@@ -1,0 +1,184 @@
+﻿@page "/organizer/profile"
+@using PadelBracket.Domain.Entities
+@using PadelBracket.Services
+@inject OrganizerAccountService OrganizerAccountService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Perfil organizador</PageTitle>
+
+@if (CurrentOrganizer == null)
+{
+    <div class="page-header">
+        <div class="page-eyebrow">Cuenta de organizador</div>
+        <h1 class="page-title">Mi perfil</h1>
+        <p class="page-subtitle">
+            Iniciá sesión como organizador para ver y editar tus datos.
+        </p>
+    </div>
+
+    <div class="empty-state">
+        <div class="empty-state-title">No hay una sesión de organizador activa.</div>
+        <div class="mb-3">
+            Entrá con tu cuenta de organizador para administrar torneos.
+        </div>
+
+        <a class="btn btn-primary" href="/organizer/login">
+            Ingresar como organizador
+        </a>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <div class="page-eyebrow">Cuenta de organizador</div>
+        <h1 class="page-title">Mi perfil</h1>
+        <p class="page-subtitle">
+            Revisá los datos del responsable y del club asociado.
+        </p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Organizador</div>
+            <div class="stat-value">@CurrentOrganizer.RealName</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Club</div>
+            <div class="stat-value">@CurrentOrganizer.ClubName</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Ciudad</div>
+            <div class="stat-value">@CurrentOrganizer.City</div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title mb-2">Datos del organizador</h4>
+
+            <p class="text-muted mb-4">
+                Estos datos se usarán como referencia para torneos, clubes e inscripciones.
+            </p>
+
+            <div class="mb-3">
+                <label class="form-label">Nombre real</label>
+                <input class="form-control"
+                       @bind="realName"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input class="form-control"
+                       type="email"
+                       @bind="email"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Club</label>
+                <input class="form-control"
+                       @bind="clubName"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ciudad</label>
+                <input class="form-control"
+                       @bind="city"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Teléfono</label>
+                <input class="form-control"
+                       @bind="phone"
+                       @bind:event="oninput" />
+            </div>
+
+            <button class="btn btn-primary" @onclick="SaveProfile">
+                Guardar perfil
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    private string realName = string.Empty;
+    private string email = string.Empty;
+    private string clubName = string.Empty;
+    private string city = string.Empty;
+    private string phone = string.Empty;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    private Organizer? CurrentOrganizer => OrganizerAccountService.CurrentOrganizer;
+
+    protected override void OnInitialized()
+    {
+        LoadProfile();
+    }
+
+    private void LoadProfile()
+    {
+        if (CurrentOrganizer == null)
+            return;
+
+        realName = CurrentOrganizer.RealName;
+        email = CurrentOrganizer.Email;
+        clubName = CurrentOrganizer.ClubName;
+        city = CurrentOrganizer.City;
+        phone = CurrentOrganizer.Phone;
+    }
+
+    private void SaveProfile()
+    {
+        ClearMessages();
+
+        if (CurrentOrganizer == null)
+        {
+            NavigationManager.NavigateTo("/organizer/login");
+            return;
+        }
+
+        try
+        {
+            OrganizerAccountService.UpdateCurrentOrganizerProfile(
+                realName,
+                email,
+                clubName,
+                city,
+                phone);
+
+            successMessage = "Perfil de organizador actualizado correctamente.";
+            LoadProfile();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+    }
+}
