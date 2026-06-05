@@ -29,6 +29,14 @@ else
             <h1 class="mb-1">@tournament.Name</h1>
 
             <p class="text-muted mb-0">
+                @tournament.ClubName · @tournament.City · Inicio @tournament.StartDate.ToString("dd/MM/yyyy")
+            </p>
+
+            <p class="text-muted mb-0">
+                @tournament.Address
+            </p>
+
+            <p class="text-muted mb-0">
                 Creado el @tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")
             </p>
         </div>
@@ -53,6 +61,111 @@ else
             @successMessage
         </div>
     }
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                    <h4 class="card-title mb-1">Datos del torneo</h4>
+                    <p class="text-muted mb-0">
+                        Club, ubicación y fecha de inicio del torneo.
+                    </p>
+                </div>
+
+                @if (!isEditingDetails)
+                {
+                    <button class="btn btn-sm btn-outline-primary"
+                            @onclick="StartDetailsEdit">
+                        Editar datos
+                    </button>
+                }
+            </div>
+
+            @if (isEditingDetails)
+            {
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Club</label>
+                        <input class="form-control"
+                               @bind="editClubName"
+                               @bind:event="oninput" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Ciudad</label>
+                        <input class="form-control"
+                               @bind="editCity"
+                               @bind:event="oninput" />
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label">Dirección</label>
+                        <input class="form-control"
+                               @bind="editAddress"
+                               @bind:event="oninput" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha de inicio</label>
+                        <input class="form-control"
+                               type="date"
+                               @bind="editStartDate" />
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-primary"
+                            @onclick="SaveDetailsEdit">
+                        Guardar datos
+                    </button>
+
+                    <button class="btn btn-outline-secondary"
+                            @onclick="CancelDetailsEdit">
+                        Cancelar
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Club</div>
+                            <div class="stat-value">@tournament.ClubName</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Ciudad</div>
+                            <div class="stat-value">@tournament.City</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Fecha</div>
+                            <div class="stat-value">@tournament.StartDate.ToString("dd/MM")</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Estado</div>
+                            <div class="stat-value">@tournament.StatusLabel</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <div class="empty-state-title">Dirección</div>
+                            <div>@tournament.Address</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
@@ -104,8 +217,8 @@ else
     else
     {
         @foreach (var categoryGroup in tournament.Groups
-                            .GroupBy(g => g.Category)
-                            .OrderByDescending(g => g.Key))
+                                    .GroupBy(g => g.Category)
+                                    .OrderByDescending(g => g.Key))
         {
             <section class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -270,6 +383,12 @@ else
     private string? errorMessage;
     private string? successMessage;
 
+    private bool isEditingDetails;
+    private string editClubName = string.Empty;
+    private string editCity = string.Empty;
+    private string editAddress = string.Empty;
+    private DateTime editStartDate = DateTime.Today;
+
     private Guid? editingGroupId;
     private string editGroupName = string.Empty;
 
@@ -283,6 +402,61 @@ else
     private void LoadTournament()
     {
         tournament = TournamentService.GetTournamentById(TournamentId);
+    }
+
+    private void StartDetailsEdit()
+    {
+        if (tournament == null)
+            return;
+
+        isEditingDetails = true;
+        editClubName = tournament.ClubName;
+        editCity = tournament.City;
+        editAddress = tournament.Address;
+        editStartDate = tournament.StartDate;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelDetailsEdit()
+    {
+        isEditingDetails = false;
+        editClubName = string.Empty;
+        editCity = string.Empty;
+        editAddress = string.Empty;
+        editStartDate = DateTime.Today;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void SaveDetailsEdit()
+    {
+        if (tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            tournament.UpdateDetails(
+                editClubName,
+                editCity,
+                editAddress,
+                editStartDate);
+
+            isEditingDetails = false;
+
+            LoadTournament();
+
+            successMessage = "Datos del torneo actualizados correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
     }
 
     private void CreateGroup()
