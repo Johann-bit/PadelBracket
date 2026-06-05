@@ -234,4 +234,113 @@ public class PlayerAccountServiceTests
 
         return new PlayerAccountService(playerService);
     }
+
+    [TestMethod]
+    public void RequestPasswordReset_WithRegisteredEmail_ShouldReturnCode()
+    {
+        PlayerAccountService service = CreateService();
+
+        service.Register(
+            "Juan Perez",
+            "juan@mail.com",
+            "Raqueta#2026",
+            "Raqueta#2026",
+            DominantHand.Right,
+            PreferredSide.Drive,
+            6);
+
+        string resetCode = service.RequestPasswordReset("JUAN@mail.com");
+
+        Assert.IsFalse(string.IsNullOrWhiteSpace(resetCode));
+        Assert.AreEqual(6, resetCode.Length);
+    }
+
+    [TestMethod]
+    public void RequestPasswordReset_WithUnknownEmail_ShouldThrowInvalidOperationException()
+    {
+        PlayerAccountService service = CreateService();
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            service.RequestPasswordReset("nadie@mail.com"));
+    }
+
+    [TestMethod]
+    public void ResetPassword_WithValidCode_ShouldUpdatePassword()
+    {
+        PlayerAccountService service = CreateService();
+
+        var player = service.Register(
+            "Juan Perez",
+            "juan@mail.com",
+            "Raqueta#2026",
+            "Raqueta#2026",
+            DominantHand.Right,
+            PreferredSide.Drive,
+            6);
+
+        string resetCode = service.RequestPasswordReset("juan@mail.com");
+
+        service.ResetPassword(
+            "juan@mail.com",
+            resetCode,
+            "Nueva#2026",
+            "Nueva#2026");
+
+        service.Logout();
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            service.Login("juan@mail.com", "Raqueta#2026"));
+
+        var loggedPlayer = service.Login("juan@mail.com", "Nueva#2026");
+
+        Assert.AreEqual(player.Id, loggedPlayer.Id);
+    }
+
+    [TestMethod]
+    public void ResetPassword_WithInvalidCode_ShouldThrowInvalidOperationException()
+    {
+        PlayerAccountService service = CreateService();
+
+        service.Register(
+            "Juan Perez",
+            "juan@mail.com",
+            "Raqueta#2026",
+            "Raqueta#2026",
+            DominantHand.Right,
+            PreferredSide.Drive,
+            6);
+
+        service.RequestPasswordReset("juan@mail.com");
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            service.ResetPassword(
+                "juan@mail.com",
+                "000000",
+                "Nueva#2026",
+                "Nueva#2026"));
+    }
+
+    [TestMethod]
+    public void ResetPassword_WithWeakPassword_ShouldThrowArgumentException()
+    {
+        PlayerAccountService service = CreateService();
+
+        service.Register(
+            "Juan Perez",
+            "juan@mail.com",
+            "Raqueta#2026",
+            "Raqueta#2026",
+            DominantHand.Right,
+            PreferredSide.Drive,
+            6);
+
+        string resetCode = service.RequestPasswordReset("juan@mail.com");
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            service.ResetPassword(
+                "juan@mail.com",
+                resetCode,
+                "nueva",
+                "nueva"));
+    }
 }

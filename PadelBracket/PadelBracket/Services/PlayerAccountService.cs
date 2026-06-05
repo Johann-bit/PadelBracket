@@ -143,6 +143,44 @@ public class PlayerAccountService
         account.ChangePassword(newPassword);
     }
 
+    public string RequestPasswordReset(string email)
+    {
+        ValidateEmail(email);
+
+        PlayerAccount account = accountsByPlayerId.Values.FirstOrDefault(account =>
+            string.Equals(account.Email, email.Trim(), StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidOperationException("No existe una cuenta registrada con ese email.");
+
+        return account.CreatePasswordResetCode();
+    }
+
+    public void ResetPassword(
+        string email,
+        string resetCode,
+        string newPassword,
+        string confirmNewPassword)
+    {
+        ValidateEmail(email);
+
+        if (string.IsNullOrWhiteSpace(resetCode))
+            throw new ArgumentException("El código de recuperación es obligatorio.");
+
+        PlayerAccount account = accountsByPlayerId.Values.FirstOrDefault(account =>
+            string.Equals(account.Email, email.Trim(), StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidOperationException("No existe una cuenta registrada con ese email.");
+
+        Player player = playerService.GetById(account.PlayerId)
+            ?? throw new InvalidOperationException("No se encontró el jugador asociado a la cuenta.");
+
+        if (!account.HasValidPasswordResetCode(resetCode))
+            throw new InvalidOperationException("El código de recuperación no es válido o venció.");
+
+        ValidatePassword(newPassword, confirmNewPassword, player.Name, player.Email);
+
+        account.ChangePassword(newPassword);
+        account.ClearPasswordResetCode();
+    }
+
     private bool EmailAlreadyExists(string email)
     {
         return playerService.GetAll().Any(player =>
@@ -238,6 +276,8 @@ public class PlayerAccountService
         public string Email { get; private set; }
         private byte[] PasswordHash { get; set; }
         private byte[] PasswordSalt { get; set; }
+        private string? PasswordResetCode { get; set; }
+        private DateTime? PasswordResetRequestedAt { get; set; }
 
         private PlayerAccount(
             Guid playerId,
@@ -272,6 +312,31 @@ public class PlayerAccountService
         {
             PasswordSalt = RandomNumberGenerator.GetBytes(16);
             PasswordHash = HashPassword(password, PasswordSalt);
+        }
+
+        public string CreatePasswordResetCode()
+        {
+            PasswordResetCode = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+            PasswordResetRequestedAt = DateTime.UtcNow;
+
+            return PasswordResetCode;
+        }
+
+        public bool HasValidPasswordResetCode(string resetCode)
+        {
+            if (string.IsNullOrWhiteSpace(PasswordResetCode) || !PasswordResetRequestedAt.HasValue)
+                return false;
+
+            if (DateTime.UtcNow - PasswordResetRequestedAt.Value > TimeSpan.FromMinutes(15))
+                return false;
+
+            return string.Equals(PasswordResetCode, resetCode.Trim(), StringComparison.Ordinal);
+        }
+
+        public void ClearPasswordResetCode()
+        {
+            PasswordResetCode = null;
+            PasswordResetRequestedAt = null;
         }
 
         public bool VerifyPassword(string password)
