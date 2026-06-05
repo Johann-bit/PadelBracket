@@ -1,8 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using PadelBracket.Services
 @inject PlayerAccountService PlayerAccountService
+@inject OrganizerAccountService OrganizerAccountService
 @inject NavigationManager NavigationManager
-
 
 <div class="app-shell">
     <aside class="app-sidebar">
@@ -16,13 +16,23 @@
             </div>
 
             <div class="topbar-account">
-                @if (PlayerAccountService.IsLoggedIn && PlayerAccountService.CurrentPlayer != null)
+                @if (OrganizerAccountService.IsLoggedIn && OrganizerAccountService.CurrentOrganizer != null)
+                {
+                    <a class="topbar-player-name" href="/organizer/profile">
+                        @OrganizerAccountService.CurrentOrganizer.RealName
+                    </a>
+
+                    <button class="btn btn-sm btn-outline-primary" @onclick="LogoutOrganizer">
+                        Cerrar sesión
+                    </button>
+                }
+                else if (PlayerAccountService.IsLoggedIn && PlayerAccountService.CurrentPlayer != null)
                 {
                     <a class="topbar-player-name" href="/profile">
                         @PlayerAccountService.CurrentPlayer.Name
                     </a>
 
-                    <button class="btn btn-sm btn-outline-primary" @onclick="Logout">
+                    <button class="btn btn-sm btn-outline-primary" @onclick="LogoutPlayer">
                         Cerrar sesión
                     </button>
                 }
@@ -34,6 +44,10 @@
 
                     <a class="btn btn-sm btn-primary" href="/register">
                         Registrarme
+                    </a>
+
+                    <a class="btn btn-sm btn-outline-primary" href="/organizer/login">
+                        Organizador
                     </a>
                 }
             </div>
@@ -52,9 +66,15 @@
 </div>
 
 @code {
-    private void Logout()
+    private void LogoutPlayer()
     {
         PlayerAccountService.Logout();
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void LogoutOrganizer()
+    {
+        OrganizerAccountService.Logout();
         NavigationManager.NavigateTo("/");
     }
 }
