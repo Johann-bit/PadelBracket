@@ -25,6 +25,20 @@ public class PairService
             .ToList();
     }
 
+    public IReadOnlyList<PairDto> GetDtosByPlayerId(Guid playerId)
+    {
+        return pairRepository.GetAll()
+            .Where(pair => pair.ContainsPlayer(playerId))
+            .Select(ToDto)
+            .ToList();
+    }
+
+    public bool PlayerHasPair(Guid playerId)
+    {
+        return pairRepository.GetAll()
+            .Any(pair => pair.ContainsPlayer(playerId));
+    }
+
     public Pair? GetById(Guid id)
     {
         return pairRepository.GetById(id);
@@ -59,6 +73,12 @@ public class PairService
 
         if (pairRepository.ExistsByPlayers(playerOne.Id, playerTwo.Id))
             throw new ArgumentException("That pair already exists.");
+
+        if (PlayerHasPair(playerOne.Id))
+            throw new InvalidOperationException("Player one already has an active pair.");
+
+        if (PlayerHasPair(playerTwo.Id))
+            throw new InvalidOperationException("Player two already has an active pair.");
 
         Pair pair = new Pair(playerOne, playerTwo);
 
