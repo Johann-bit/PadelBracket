@@ -137,6 +137,19 @@ public class TournamentService
             category);
     }
 
+    public void CancelRegistration(
+        Guid tournamentId,
+        Guid registrationId)
+    {
+        Tournament tournament = GetTournamentOrThrow(tournamentId);
+
+        TournamentRegistration registration = tournament.Registrations
+            .FirstOrDefault(registration => registration.Id == registrationId)
+            ?? throw new ArgumentException("Registration not found.");
+
+        tournamentRegistrationService.CancelRegistration(registration);
+    }
+
     public Group AddGroupToTournament(Guid tournamentId, string groupName, int category)
     {
         var tournament = GetTournamentOrThrow(tournamentId);

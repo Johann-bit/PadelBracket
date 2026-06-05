@@ -1,4 +1,5 @@
 ﻿using PadelBracket.Domain.Entities;
+using PadelBracket.Domain.Enums;
 using PadelBracket.Repositories;
 using PadelBracket.Services;
 
@@ -9,15 +10,22 @@ public class TournamentServiceTests
 {
     private static TournamentService CreateTournamentService()
     {
+        return CreateTournamentContext().TournamentService;
+    }
+
+    private static (TournamentService TournamentService, PairService PairService) CreateTournamentContext()
+    {
         var pairRepository = new InMemoryPairRepository();
         var tournamentRepository = new InMemoryTournamentRepository();
         var pairService = new PairService(pairRepository);
         var tournamentRegistrationService = new TournamentRegistrationService();
 
-        return new TournamentService(
+        var tournamentService = new TournamentService(
             tournamentRepository,
             pairService,
             tournamentRegistrationService);
+
+        return (tournamentService, pairService);
     }
 
     [TestMethod]
@@ -224,6 +232,35 @@ public class TournamentServiceTests
     }
 
     [TestMethod]
+    public void CancelRegistration_WhenRegistrationExists_ShouldCancelRegistration()
+    {
+        var context = CreateTournamentContext();
+        var service = context.TournamentService;
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        service.AddCategoryToTournament(tournament.Id, 6, 16, 800);
+
+        var pair = CreateCompletePair(context.PairService, "Juan Perez", "Pedro Gomez", 6);
+        var registration = service.RegisterPairToTournament(tournament.Id, pair.Id, 6);
+
+        service.CancelRegistration(tournament.Id, registration.Id);
+
+        Assert.AreEqual(RegistrationStatus.Cancelled, registration.Status);
+        Assert.AreEqual(PaymentStatus.Cancelled, registration.PaymentStatus);
+    }
+
+    [TestMethod]
+    public void CancelRegistration_WhenRegistrationDoesNotExist_ShouldThrowArgumentException()
+    {
+        var service = CreateTournamentService();
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            service.CancelRegistration(tournament.Id, Guid.NewGuid()));
+    }
+
+    [TestMethod]
     public void AddGroupToTournament_WhenTournamentDoesNotExist_ThrowsException()
     {
         var service = CreateTournamentService();
@@ -248,5 +285,28 @@ public class TournamentServiceTests
                 "Pedro"
             )
         );
+    }
+
+    private static Pair CreateCompletePair(
+        PairService pairService,
+        string playerOneName,
+        string playerTwoName,
+        int category)
+    {
+        Player playerOne = new Player(
+            playerOneName,
+            $"{playerOneName.Replace(" ", "").ToLower()}@mail.com",
+            DominantHand.Right,
+            PreferredSide.Drive,
+            category);
+
+        Player playerTwo = new Player(
+            playerTwoName,
+            $"{playerTwoName.Replace(" ", "").ToLower()}@mail.com",
+            DominantHand.Right,
+            PreferredSide.Backhand,
+            category);
+
+        return pairService.Add(playerOne, playerTwo);
     }
 }
