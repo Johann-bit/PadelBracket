@@ -16,6 +16,20 @@
     </p>
 </div>
 
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success">
+        @successMessage
+    </div>
+}
+
 @if (CurrentPlayerId == null)
 {
     <div class="empty-state">
@@ -117,12 +131,52 @@ else
                             <td>@item.Registration.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
 
                             <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary"
-                                   href="@($"/tournaments/{item.Tournament.Id}")">
-                                    Ver torneo
-                                </a>
+                                <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="@($"/tournaments/{item.Tournament.Id}")">
+                                        Ver torneo
+                                    </a>
+
+                                    @if (CanCancelRegistration(item.Registration))
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                @onclick="() => AskCancelRegistration(item.Registration.Id)">
+                                            Cancelar
+                                        </button>
+                                    }
+                                </div>
                             </td>
                         </tr>
+
+                        @if (registrationIdToCancel == item.Registration.Id)
+                        {
+                            <tr>
+                                <td colspan="7">
+                                    <div class="alert alert-danger mb-0">
+                                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                            <div>
+                                                <strong>¿Cancelar esta inscripción?</strong>
+                                                <div>
+                                                    La inscripción quedará cancelada y el cupo volverá a estar disponible.
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button class="btn btn-sm btn-danger"
+                                                        @onclick="() => CancelRegistration(item.Tournament.Id, item.Registration.Id)">
+                                                    Confirmar
+                                                </button>
+
+                                                <button class="btn btn-sm btn-secondary"
+                                                        @onclick="CancelCancelRegistration">
+                                                    Volver
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -132,6 +186,9 @@ else
 
 @code {
     private List<MyRegistrationItem> myRegistrations = new();
+    private Guid? registrationIdToCancel;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
 
     private Guid? CurrentPlayerId => PlayerAccountService.CurrentPlayer?.Id;
 
@@ -142,6 +199,8 @@ else
 
     private void LoadRegistrations()
     {
+        myRegistrations = new();
+
         if (CurrentPlayerId == null)
             return;
 
@@ -165,6 +224,42 @@ else
             .ContainsPlayer(CurrentPlayerId.Value) == true;
     }
 
+    private void AskCancelRegistration(Guid registrationId)
+    {
+        ClearMessages();
+        registrationIdToCancel = registrationId;
+    }
+
+    private void CancelCancelRegistration()
+    {
+        registrationIdToCancel = null;
+    }
+
+    private void CancelRegistration(Guid tournamentId, Guid registrationId)
+    {
+        ClearMessages();
+
+        try
+        {
+            TournamentService.CancelRegistration(tournamentId, registrationId);
+
+            registrationIdToCancel = null;
+            successMessage = "Inscripción cancelada correctamente.";
+
+            LoadRegistrations();
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+
+    private static bool CanCancelRegistration(TournamentRegistrationDto registration)
+    {
+        return registration.Status == RegistrationStatus.Pending ||
+               registration.Status == RegistrationStatus.Confirmed;
+    }
+
     private static string GetRegistrationStatusBadgeClass(RegistrationStatus status)
     {
         return status switch
@@ -185,6 +280,12 @@ else
             PaymentStatus.Cancelled => "bg-secondary",
             _ => "bg-warning text-dark"
         };
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
     }
 
     private record MyRegistrationItem(
