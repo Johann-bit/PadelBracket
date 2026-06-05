@@ -52,14 +52,48 @@
         <h4 class="card-title mb-2">Crear torneo</h4>
 
         <p class="text-muted mb-4">
-            Elegí un nombre claro para identificar el torneo dentro del panel.
+            Cargá los datos principales del torneo, club, ubicación y fecha de inicio.
         </p>
 
-        <div class="mb-3">
-            <label class="form-label">Nombre del torneo</label>
-            <input class="form-control"
-                   placeholder="Ejemplo: Torneo Apertura 2026"
-                   @bind="newTournamentName" />
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Nombre del torneo</label>
+                <input class="form-control"
+                       placeholder="Ejemplo: Torneo Apertura 2026"
+                       @bind="newTournamentName"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Club</label>
+                <input class="form-control"
+                       placeholder="Ejemplo: Club Carrasco"
+                       @bind="newClubName"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Ciudad</label>
+                <input class="form-control"
+                       placeholder="Ejemplo: Montevideo"
+                       @bind="newCity"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label">Dirección</label>
+                <input class="form-control"
+                       placeholder="Ejemplo: Av. Italia 1234"
+                       @bind="newAddress"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Fecha de inicio</label>
+                <input class="form-control"
+                       type="date"
+                       @bind="newStartDate" />
+            </div>
         </div>
 
         <button class="btn btn-primary" @onclick="CreateTournament">
@@ -97,6 +131,9 @@ else
             <thead>
                 <tr>
                     <th>Nombre</th>
+                    <th>Club</th>
+                    <th>Ciudad</th>
+                    <th>Inicio</th>
                     <th>Creado</th>
                     <th>Estado</th>
                     <th>Grupos</th>
@@ -119,8 +156,17 @@ else
                             else
                             {
                                 <strong>@tournament.Name</strong>
+                                <div class="text-muted">
+                                    @tournament.Address
+                                </div>
                             }
                         </td>
+
+                        <td>@tournament.ClubName</td>
+
+                        <td>@tournament.City</td>
+
+                        <td>@tournament.StartDate.ToString("dd/MM/yyyy")</td>
 
                         <td>@tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
 
@@ -172,7 +218,7 @@ else
                     @if (isDeleting)
                     {
                         <tr>
-                            <td colspan="5">
+                            <td colspan="8">
                                 <div class="alert alert-danger mb-0">
                                     <div class="d-flex justify-content-between align-items-center gap-3">
                                         <div>
@@ -206,6 +252,11 @@ else
 
 @code {
     private string newTournamentName = string.Empty;
+    private string newClubName = string.Empty;
+    private string newCity = "Montevideo";
+    private string newAddress = string.Empty;
+    private DateTime newStartDate = DateTime.Today;
+
     private string? errorMessage;
     private string? successMessage;
     private List<Tournament> tournaments = new();
@@ -232,9 +283,19 @@ else
 
         try
         {
-            TournamentService.CreateTournament(newTournamentName);
+            TournamentService.CreateTournament(
+                newTournamentName,
+                newClubName,
+                newCity,
+                newAddress,
+                newStartDate);
 
             newTournamentName = string.Empty;
+            newClubName = string.Empty;
+            newCity = "Montevideo";
+            newAddress = string.Empty;
+            newStartDate = DateTime.Today;
+
             LoadTournaments();
 
             successMessage = "Torneo creado correctamente.";
