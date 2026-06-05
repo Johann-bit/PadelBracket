@@ -24,6 +24,7 @@ builder.Services.AddSingleton<TournamentRegistrationService>();
 builder.Services.AddSingleton<PlayerAccountService>();
 builder.Services.AddSingleton<IOrganizerRepository, InMemoryOrganizerRepository>();
 builder.Services.AddSingleton<OrganizerService>();
+builder.Services.AddSingleton<OrganizerAccountService>();
 
 var app = builder.Build();
 
