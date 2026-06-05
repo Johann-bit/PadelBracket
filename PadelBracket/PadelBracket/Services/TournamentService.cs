@@ -35,6 +35,31 @@ public class TournamentService
         return tournament;
     }
 
+    public Tournament CreateTournament(
+        string name,
+        string clubName,
+        string city,
+        string address,
+        DateTime startDate)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tournament name is required.");
+
+        if (tournamentRepository.ExistsByName(name))
+            throw new ArgumentException("A tournament with the same name already exists.");
+
+        var tournament = new Tournament(
+            name,
+            clubName,
+            city,
+            address,
+            startDate);
+
+        tournamentRepository.Add(tournament);
+
+        return tournament;
+    }
+
     public List<Tournament> GetAllTournaments()
     {
         return tournamentRepository.GetAll();
@@ -310,6 +335,10 @@ public class TournamentService
         {
             Id = tournament.Id,
             Name = tournament.Name,
+            ClubName = tournament.ClubName,
+            City = tournament.City,
+            Address = tournament.Address,
+            StartDate = tournament.StartDate,
             CreatedAt = tournament.CreatedAt,
             StatusLabel = tournament.StatusLabel,
             GroupCount = tournament.Groups.Count,

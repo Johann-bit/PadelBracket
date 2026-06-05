@@ -4,6 +4,10 @@ public class TournamentDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string ClubName { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
     public DateTime CreatedAt { get; set; }
     public string StatusLabel { get; set; } = string.Empty;
     public int GroupCount { get; set; }
@@ -28,4 +32,5 @@ public class TournamentDto
     public bool HasRegistrations => Registrations.Any();
 
     public string CreatedAtLabel => CreatedAt.ToString("dd/MM/yyyy HH:mm");
+    public string StartDateLabel => StartDate.ToString("dd/MM/yyyy");
 }

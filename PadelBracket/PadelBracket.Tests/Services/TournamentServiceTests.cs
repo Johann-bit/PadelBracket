@@ -43,6 +43,48 @@ public class TournamentServiceTests
     }
 
     [TestMethod]
+    public void CreateTournament_WithDetails_ShouldCreateTournamentWithClubLocationAndStartDate()
+    {
+        var service = CreateTournamentService();
+        DateTime startDate = new DateTime(2026, 7, 15);
+
+        var tournament = service.CreateTournament(
+            "Torneo Apertura",
+            "Club Carrasco",
+            "Montevideo",
+            "Av. Italia 1234",
+            startDate);
+
+        Assert.AreEqual("Torneo Apertura", tournament.Name);
+        Assert.AreEqual("Club Carrasco", tournament.ClubName);
+        Assert.AreEqual("Montevideo", tournament.City);
+        Assert.AreEqual("Av. Italia 1234", tournament.Address);
+        Assert.AreEqual(startDate.Date, tournament.StartDate);
+    }
+
+    [TestMethod]
+    public void GetTournamentDtoById_WhenTournamentHasDetails_ReturnsDetails()
+    {
+        var service = CreateTournamentService();
+        DateTime startDate = new DateTime(2026, 7, 15);
+
+        var tournament = service.CreateTournament(
+            "Torneo Apertura",
+            "Club Carrasco",
+            "Montevideo",
+            "Av. Italia 1234",
+            startDate);
+
+        var dto = service.GetTournamentDtoById(tournament.Id);
+
+        Assert.IsNotNull(dto);
+        Assert.AreEqual("Club Carrasco", dto.ClubName);
+        Assert.AreEqual("Montevideo", dto.City);
+        Assert.AreEqual("Av. Italia 1234", dto.Address);
+        Assert.AreEqual(startDate.Date, dto.StartDate);
+    }
+
+    [TestMethod]
     public void GetTournamentById_WhenTournamentExists_ReturnsTournament()
     {
         var service = CreateTournamentService();
