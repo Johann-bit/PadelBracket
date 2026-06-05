@@ -6,6 +6,10 @@ public class Tournament
     public string Name { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public TournamentStatus Status { get; private set; }
+    public string ClubName { get; private set; }
+    public string City { get; private set; }
+    public string Address { get; private set; }
+    public DateTime StartDate { get; private set; }
     public List<Group> Groups { get; private set; }
     public List<TournamentCategory> TournamentCategories { get; private set; }
     public List<TournamentRegistration> Registrations { get; private set; }
@@ -13,12 +17,33 @@ public class Tournament
     public string StatusLabel => GetStatusLabel(Status);
 
     public Tournament(string name)
+        : this(
+            name,
+            "Club sin definir",
+            "Montevideo",
+            "Dirección sin definir",
+            DateTime.Today)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Tournament name is required.");
+    }
+
+    public Tournament(
+        string name,
+        string clubName,
+        string city,
+        string address,
+        DateTime startDate)
+    {
+        ValidateName(name);
+        ValidateRequiredText(clubName, "Club name is required.");
+        ValidateRequiredText(city, "City is required.");
+        ValidateRequiredText(address, "Address is required.");
 
         Id = Guid.NewGuid();
         Name = name.Trim();
+        ClubName = clubName.Trim();
+        City = city.Trim();
+        Address = address.Trim();
+        StartDate = startDate.Date;
         CreatedAt = DateTime.Now;
         Status = TournamentStatus.Draft;
         Groups = new List<Group>();
@@ -28,10 +53,25 @@ public class Tournament
 
     public void Rename(string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Tournament name is required.");
+        ValidateName(name);
 
         Name = name.Trim();
+    }
+
+    public void UpdateDetails(
+        string clubName,
+        string city,
+        string address,
+        DateTime startDate)
+    {
+        ValidateRequiredText(clubName, "Club name is required.");
+        ValidateRequiredText(city, "City is required.");
+        ValidateRequiredText(address, "Address is required.");
+
+        ClubName = clubName.Trim();
+        City = city.Trim();
+        Address = address.Trim();
+        StartDate = startDate.Date;
     }
 
     public void AddCategory(TournamentCategory tournamentCategory)
@@ -228,6 +268,18 @@ public class Tournament
             throw new InvalidOperationException("A finished tournament cannot be cancelled.");
 
         Status = TournamentStatus.Cancelled;
+    }
+
+    private static void ValidateName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tournament name is required.");
+    }
+
+    private static void ValidateRequiredText(string value, string message)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException(message);
     }
 
     private static void ValidateCategory(int category)

@@ -502,4 +502,53 @@ public class TournamentTests
 
         return player;
     }
+
+    [TestMethod]
+    public void Constructor_WithDetails_ShouldCreateTournamentWithClubLocationAndStartDate()
+    {
+        DateTime startDate = new DateTime(2026, 7, 15, 20, 30, 0);
+
+        Tournament tournament = new Tournament(
+            "Torneo Apertura",
+            "Club Carrasco",
+            "Montevideo",
+            "Av. Italia 1234",
+            startDate);
+
+        Assert.AreEqual("Torneo Apertura", tournament.Name);
+        Assert.AreEqual("Club Carrasco", tournament.ClubName);
+        Assert.AreEqual("Montevideo", tournament.City);
+        Assert.AreEqual("Av. Italia 1234", tournament.Address);
+        Assert.AreEqual(startDate.Date, tournament.StartDate);
+    }
+
+    [TestMethod]
+    public void Constructor_WithEmptyClubName_ShouldThrowArgumentException()
+    {
+        Assert.ThrowsException<ArgumentException>(() =>
+            new Tournament(
+                "Torneo Apertura",
+                "",
+                "Montevideo",
+                "Av. Italia 1234",
+                new DateTime(2026, 7, 15)));
+    }
+
+    [TestMethod]
+    public void UpdateDetails_WithValidData_ShouldUpdateClubLocationAndStartDate()
+    {
+        Tournament tournament = new Tournament("Torneo Apertura");
+        DateTime startDate = new DateTime(2026, 8, 20, 19, 0, 0);
+
+        tournament.UpdateDetails(
+            "Club Prado",
+            "Montevideo",
+            "Camino Castro 900",
+            startDate);
+
+        Assert.AreEqual("Club Prado", tournament.ClubName);
+        Assert.AreEqual("Montevideo", tournament.City);
+        Assert.AreEqual("Camino Castro 900", tournament.Address);
+        Assert.AreEqual(startDate.Date, tournament.StartDate);
+    }
 }
