@@ -7,6 +7,12 @@ public class KnockoutMatch
     public Pair? PairOne { get; private set; }
     public Pair? PairTwo { get; private set; }
     public MatchResult? Result { get; private set; }
+    public int SortOrder { get; private set; }
+
+    private KnockoutMatch()
+    {
+        RoundName = string.Empty;
+    }
 
     public KnockoutMatch(string roundName, Pair? pairOne, Pair? pairTwo)
     {
@@ -79,5 +85,13 @@ public class KnockoutMatch
     {
         PairTwo = null;
         Result = null;
+    }
+
+    public void SetSortOrder(int sortOrder)
+    {
+        if (sortOrder < 0)
+            throw new ArgumentException("Sort order cannot be negative.");
+
+        SortOrder = sortOrder;
     }
 }

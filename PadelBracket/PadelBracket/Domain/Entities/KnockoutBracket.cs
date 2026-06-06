@@ -8,6 +8,11 @@ public class KnockoutBracket
     public DateTime CreatedAt { get; private set; }
     public List<KnockoutMatch> Matches { get; private set; }
 
+    private KnockoutBracket()
+    {
+        Matches = new List<KnockoutMatch>();
+    }
+
     public KnockoutBracket(Guid tournamentId, int category, List<KnockoutMatch> matches)
     {
         if (tournamentId == Guid.Empty)
@@ -27,5 +32,10 @@ public class KnockoutBracket
         Category = category;
         CreatedAt = DateTime.Now;
         Matches = matches;
+
+        for (int i = 0; i < Matches.Count; i++)
+        {
+            Matches[i].SetSortOrder(i);
+        }
     }
 }
