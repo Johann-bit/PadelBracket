@@ -141,6 +141,128 @@ public class RankingServiceTests
             context.RankingService.GetRankingByCategory(9));
     }
 
+    [TestMethod]
+    public void GetPlayerRanking_WhenMatchesHaveResults_ShouldGivePointsToBothPlayersOfWinningPair()
+    {
+        var context = CreateContext();
+
+        var tournament = context.TournamentService.CreateTournament("Torneo Apertura");
+
+        var group = context.TournamentService.AddGroupToTournament(
+            tournament.Id,
+            "Grupo A",
+            6);
+
+        var winningPair = CreateCompletePair(
+            context.PairService,
+            "Juan Perez",
+            "Pedro Gomez",
+            6);
+
+        var losingPair = CreateCompletePair(
+            context.PairService,
+            "Nico Silva",
+            "Santi Lopez",
+            6);
+
+        AddPairToGroup(context, tournament.Id, group.Id, winningPair.Id);
+        AddPairToGroup(context, tournament.Id, group.Id, losingPair.Id);
+
+        RegisterFirstMatchResult(context, tournament.Id, group);
+
+        var ranking = context.RankingService.GetPlayerRanking();
+
+        Assert.AreEqual(4, ranking.Count);
+
+        var playerOneRanking = ranking.First(item => item.PlayerId == winningPair.PlayerOne.Id);
+        var playerTwoRanking = ranking.First(item => item.PlayerId == winningPair.PlayerTwo.Id);
+        var losingPlayerOneRanking = ranking.First(item => item.PlayerId == losingPair.PlayerOne.Id);
+        var losingPlayerTwoRanking = ranking.First(item => item.PlayerId == losingPair.PlayerTwo.Id);
+
+        Assert.AreEqual(3, playerOneRanking.Points);
+        Assert.AreEqual(3, playerTwoRanking.Points);
+        Assert.AreEqual(1, playerOneRanking.Wins);
+        Assert.AreEqual(1, playerTwoRanking.Wins);
+
+        Assert.AreEqual(0, losingPlayerOneRanking.Points);
+        Assert.AreEqual(0, losingPlayerTwoRanking.Points);
+        Assert.AreEqual(1, losingPlayerOneRanking.Losses);
+        Assert.AreEqual(1, losingPlayerTwoRanking.Losses);
+    }
+
+    [TestMethod]
+    public void GetPlayerRankingByCategory_ShouldReturnOnlyPlayersFromSelectedCategory()
+    {
+        var context = CreateContext();
+
+        var tournament = context.TournamentService.CreateTournament("Torneo Apertura");
+
+        var sixthCategoryGroup = context.TournamentService.AddGroupToTournament(
+            tournament.Id,
+            "Grupo A",
+            6);
+
+        var fifthCategoryGroup = context.TournamentService.AddGroupToTournament(
+            tournament.Id,
+            "Grupo B",
+            5);
+
+        var sixthCategoryPairOne = CreateCompletePair(
+            context.PairService,
+            "Juan Perez",
+            "Pedro Gomez",
+            6);
+
+        var sixthCategoryPairTwo = CreateCompletePair(
+            context.PairService,
+            "Nico Silva",
+            "Santi Lopez",
+            6);
+
+        var fifthCategoryPairOne = CreateCompletePair(
+            context.PairService,
+            "Lucas Diaz",
+            "Mateo Torres",
+            5);
+
+        var fifthCategoryPairTwo = CreateCompletePair(
+            context.PairService,
+            "Bruno Costa",
+            "Facu Molina",
+            5);
+
+        AddPairToGroup(context, tournament.Id, sixthCategoryGroup.Id, sixthCategoryPairOne.Id);
+        AddPairToGroup(context, tournament.Id, sixthCategoryGroup.Id, sixthCategoryPairTwo.Id);
+        AddPairToGroup(context, tournament.Id, fifthCategoryGroup.Id, fifthCategoryPairOne.Id);
+        AddPairToGroup(context, tournament.Id, fifthCategoryGroup.Id, fifthCategoryPairTwo.Id);
+
+        RegisterFirstMatchResult(context, tournament.Id, sixthCategoryGroup);
+        RegisterFirstMatchResult(context, tournament.Id, fifthCategoryGroup);
+
+        var ranking = context.RankingService.GetPlayerRankingByCategory(6);
+
+        Assert.AreEqual(4, ranking.Count);
+        Assert.IsTrue(ranking.All(item => item.Category == 6));
+        Assert.IsTrue(ranking.Any(item => item.PlayerId == sixthCategoryPairOne.PlayerOne.Id));
+        Assert.IsTrue(ranking.Any(item => item.PlayerId == sixthCategoryPairOne.PlayerTwo.Id));
+        Assert.IsTrue(ranking.Any(item => item.PlayerId == sixthCategoryPairTwo.PlayerOne.Id));
+        Assert.IsTrue(ranking.Any(item => item.PlayerId == sixthCategoryPairTwo.PlayerTwo.Id));
+        Assert.IsFalse(ranking.Any(item => item.PlayerId == fifthCategoryPairOne.PlayerOne.Id));
+        Assert.IsFalse(ranking.Any(item => item.PlayerId == fifthCategoryPairTwo.PlayerOne.Id));
+    }
+
+    [TestMethod]
+    public void GetPlayerRankingByCategory_WhenCategoryIsInvalid_ShouldThrowArgumentException()
+    {
+        var context = CreateContext();
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            context.RankingService.GetPlayerRankingByCategory(0));
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            context.RankingService.GetPlayerRankingByCategory(9));
+    }
+
     private static void AddPairToGroup(
         TestContext context,
         Guid tournamentId,
