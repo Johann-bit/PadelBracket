@@ -20,17 +20,17 @@ builder.Services.AddScoped<IPlayerAccountRepository, EfPlayerAccountRepository>(
 builder.Services.AddScoped<IOrganizerRepository, EfOrganizerRepository>();
 builder.Services.AddScoped<IOrganizerAccountRepository, EfOrganizerAccountRepository>();
 builder.Services.AddScoped<ITournamentRepository, EfTournamentRepository>();
+builder.Services.AddScoped<IPairRepository, EfPairRepository>();
 
 builder.Services.AddScoped<PlayerService>();
 builder.Services.AddScoped<PlayerAccountService>();
 builder.Services.AddScoped<OrganizerService>();
 builder.Services.AddScoped<OrganizerAccountService>();
+builder.Services.AddScoped<PairService>();
 builder.Services.AddScoped<TournamentService>();
 builder.Services.AddScoped<MatchHistoryService>();
 builder.Services.AddScoped<RankingService>();
 
-builder.Services.AddSingleton<IPairRepository, InMemoryPairRepository>();
-builder.Services.AddSingleton<PairService>();
 builder.Services.AddSingleton<StandingService>();
 builder.Services.AddSingleton<QualificationService>();
 builder.Services.AddSingleton<KnockoutService>();

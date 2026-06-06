@@ -33,4 +33,8 @@ public class InMemoryPairRepository : IPairRepository
             (pair.PlayerOne.Id == playerOneId && pair.PlayerTwo.Id == playerTwoId) ||
             (pair.PlayerOne.Id == playerTwoId && pair.PlayerTwo.Id == playerOneId));
     }
+
+    public void SaveChanges()
+    {
+    }
 }

@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<OrganizerAccount> OrganizerAccounts => Set<OrganizerAccount>();
     public DbSet<Tournament> Tournaments => Set<Tournament>();
     public DbSet<TournamentCategory> TournamentCategories => Set<TournamentCategory>();
+    public DbSet<Pair> Pairs => Set<Pair>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -180,6 +181,29 @@ public class ApplicationDbContext : DbContext
             entity.Property(category => category.RegistrationFee)
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
+        });
+
+        modelBuilder.Entity<Pair>(entity =>
+        {
+            entity.ToTable("Pairs");
+
+            entity.HasKey(pair => pair.Id);
+
+            entity.HasOne(pair => pair.PlayerOne)
+                .WithMany()
+                .HasForeignKey("PlayerOneId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            entity.HasOne(pair => pair.PlayerTwo)
+                .WithMany()
+                .HasForeignKey("PlayerTwoId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            entity.Property(pair => pair.Category);
+
+            entity.Ignore(pair => pair.DisplayName);
         });
     }
 }

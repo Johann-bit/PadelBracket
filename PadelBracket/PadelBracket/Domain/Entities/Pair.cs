@@ -9,6 +9,12 @@ public class Pair
 
     public string DisplayName => $"{PlayerOne.Name} / {PlayerTwo.Name}";
 
+    private Pair()
+    {
+        PlayerOne = null!;
+        PlayerTwo = null!;
+    }
+
     public Pair(Player playerOne, Player playerTwo)
     {
         PlayerOne = playerOne ?? throw new ArgumentNullException(nameof(playerOne));

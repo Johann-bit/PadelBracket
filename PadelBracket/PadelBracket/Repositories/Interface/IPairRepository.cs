@@ -9,4 +9,5 @@ public interface IPairRepository
     void Add(Pair pair);
     void Delete(Pair pair);
     bool ExistsByPlayers(Guid playerOneId, Guid playerTwoId);
+    void SaveChanges();
 }
