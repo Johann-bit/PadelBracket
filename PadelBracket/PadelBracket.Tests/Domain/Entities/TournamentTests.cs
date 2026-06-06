@@ -12,12 +12,30 @@ public class TournamentTests
         Tournament tournament = new Tournament("Summer Cup");
 
         Assert.AreNotEqual(Guid.Empty, tournament.Id);
+        Assert.IsNull(tournament.OrganizerId);
         Assert.AreEqual("Summer Cup", tournament.Name);
         Assert.AreEqual(TournamentStatus.Draft, tournament.Status);
         Assert.AreEqual("Borrador", tournament.StatusLabel);
         Assert.AreEqual(0, tournament.Groups.Count);
         Assert.AreEqual(0, tournament.TournamentCategories.Count);
         Assert.AreEqual(0, tournament.Registrations.Count);
+    }
+
+    [TestMethod]
+    public void Constructor_WithOrganizerId_ShouldCreateTournamentWithOrganizer()
+    {
+        Guid organizerId = Guid.NewGuid();
+
+        Tournament tournament = new Tournament("Summer Cup", organizerId);
+
+        Assert.AreEqual(organizerId, tournament.OrganizerId);
+    }
+
+    [TestMethod]
+    public void Constructor_WithEmptyOrganizerId_ShouldThrowArgumentException()
+    {
+        Assert.ThrowsException<ArgumentException>(() =>
+            new Tournament("Summer Cup", Guid.Empty));
     }
 
     [TestMethod]
@@ -474,35 +492,6 @@ public class TournamentTests
         Assert.ThrowsException<InvalidOperationException>(() => tournament.Cancel());
     }
 
-    private static Pair CreateVerifiedPair(string playerOneName, string playerTwoName, int category)
-    {
-        Player playerOne = CreateVerifiedPlayer(
-            playerOneName,
-            $"{playerOneName.ToLower()}@mail.com",
-            category);
-
-        Player playerTwo = CreateVerifiedPlayer(
-            playerTwoName,
-            $"{playerTwoName.ToLower()}@mail.com",
-            category);
-
-        return new Pair(playerOne, playerTwo);
-    }
-
-    private static Player CreateVerifiedPlayer(string name, string email, int category)
-    {
-        Player player = new Player(
-            name,
-            email,
-            DominantHand.Right,
-            PreferredSide.Drive,
-            category);
-
-        player.Verify();
-
-        return player;
-    }
-
     [TestMethod]
     public void Constructor_WithDetails_ShouldCreateTournamentWithClubLocationAndStartDate()
     {
@@ -520,6 +509,24 @@ public class TournamentTests
         Assert.AreEqual("Montevideo", tournament.City);
         Assert.AreEqual("Av. Italia 1234", tournament.Address);
         Assert.AreEqual(startDate.Date, tournament.StartDate);
+        Assert.IsNull(tournament.OrganizerId);
+    }
+
+    [TestMethod]
+    public void Constructor_WithDetailsAndOrganizerId_ShouldCreateTournamentWithOrganizer()
+    {
+        Guid organizerId = Guid.NewGuid();
+
+        Tournament tournament = new Tournament(
+            "Torneo Apertura",
+            "Club Carrasco",
+            "Montevideo",
+            "Av. Italia 1234",
+            new DateTime(2026, 7, 15),
+            organizerId);
+
+        Assert.AreEqual(organizerId, tournament.OrganizerId);
+        Assert.AreEqual("Club Carrasco", tournament.ClubName);
     }
 
     [TestMethod]
@@ -550,5 +557,34 @@ public class TournamentTests
         Assert.AreEqual("Montevideo", tournament.City);
         Assert.AreEqual("Camino Castro 900", tournament.Address);
         Assert.AreEqual(startDate.Date, tournament.StartDate);
+    }
+
+    private static Pair CreateVerifiedPair(string playerOneName, string playerTwoName, int category)
+    {
+        Player playerOne = CreateVerifiedPlayer(
+            playerOneName,
+            $"{playerOneName.ToLower()}@mail.com",
+            category);
+
+        Player playerTwo = CreateVerifiedPlayer(
+            playerTwoName,
+            $"{playerTwoName.ToLower()}@mail.com",
+            category);
+
+        return new Pair(playerOne, playerTwo);
+    }
+
+    private static Player CreateVerifiedPlayer(string name, string email, int category)
+    {
+        Player player = new Player(
+            name,
+            email,
+            DominantHand.Right,
+            PreferredSide.Drive,
+            category);
+
+        player.Verify();
+
+        return player;
     }
 }

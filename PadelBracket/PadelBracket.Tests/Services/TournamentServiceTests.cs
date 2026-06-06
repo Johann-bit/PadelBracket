@@ -43,6 +43,26 @@ public class TournamentServiceTests
     }
 
     [TestMethod]
+    public void CreateTournament_WithOrganizerId_ShouldAssignOrganizer()
+    {
+        var service = CreateTournamentService();
+        Guid organizerId = Guid.NewGuid();
+
+        var tournament = service.CreateTournament("Torneo Apertura", organizerId);
+
+        Assert.AreEqual(organizerId, tournament.OrganizerId);
+    }
+
+    [TestMethod]
+    public void CreateTournament_WithEmptyOrganizerId_ShouldThrowArgumentException()
+    {
+        var service = CreateTournamentService();
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            service.CreateTournament("Torneo Apertura", Guid.Empty));
+    }
+
+    [TestMethod]
     public void CreateTournament_WithDetails_ShouldCreateTournamentWithClubLocationAndStartDate()
     {
         var service = CreateTournamentService();
@@ -60,6 +80,25 @@ public class TournamentServiceTests
         Assert.AreEqual("Montevideo", tournament.City);
         Assert.AreEqual("Av. Italia 1234", tournament.Address);
         Assert.AreEqual(startDate.Date, tournament.StartDate);
+        Assert.IsNull(tournament.OrganizerId);
+    }
+
+    [TestMethod]
+    public void CreateTournament_WithDetailsAndOrganizerId_ShouldAssignOrganizer()
+    {
+        var service = CreateTournamentService();
+        Guid organizerId = Guid.NewGuid();
+
+        var tournament = service.CreateTournament(
+            "Torneo Apertura",
+            "Club Carrasco",
+            "Montevideo",
+            "Av. Italia 1234",
+            new DateTime(2026, 7, 15),
+            organizerId);
+
+        Assert.AreEqual(organizerId, tournament.OrganizerId);
+        Assert.AreEqual("Club Carrasco", tournament.ClubName);
     }
 
     [TestMethod]
@@ -67,21 +106,55 @@ public class TournamentServiceTests
     {
         var service = CreateTournamentService();
         DateTime startDate = new DateTime(2026, 7, 15);
+        Guid organizerId = Guid.NewGuid();
 
         var tournament = service.CreateTournament(
             "Torneo Apertura",
             "Club Carrasco",
             "Montevideo",
             "Av. Italia 1234",
-            startDate);
+            startDate,
+            organizerId);
 
         var dto = service.GetTournamentDtoById(tournament.Id);
 
         Assert.IsNotNull(dto);
+        Assert.AreEqual(organizerId, dto.OrganizerId);
         Assert.AreEqual("Club Carrasco", dto.ClubName);
         Assert.AreEqual("Montevideo", dto.City);
         Assert.AreEqual("Av. Italia 1234", dto.Address);
         Assert.AreEqual(startDate.Date, dto.StartDate);
+    }
+
+    [TestMethod]
+    public void GetTournamentDtosByOrganizerId_ShouldReturnOnlyOrganizerTournaments()
+    {
+        var service = CreateTournamentService();
+        Guid organizerId = Guid.NewGuid();
+        Guid anotherOrganizerId = Guid.NewGuid();
+
+        var organizerTournament = service.CreateTournament(
+            "Torneo Apertura",
+            organizerId);
+
+        service.CreateTournament(
+            "Torneo Clausura",
+            anotherOrganizerId);
+
+        var tournaments = service.GetTournamentDtosByOrganizerId(organizerId);
+
+        Assert.AreEqual(1, tournaments.Count);
+        Assert.AreEqual(organizerTournament.Id, tournaments[0].Id);
+        Assert.AreEqual(organizerId, tournaments[0].OrganizerId);
+    }
+
+    [TestMethod]
+    public void GetTournamentDtosByOrganizerId_WithEmptyOrganizerId_ShouldThrowArgumentException()
+    {
+        var service = CreateTournamentService();
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            service.GetTournamentDtosByOrganizerId(Guid.Empty));
     }
 
     [TestMethod]
