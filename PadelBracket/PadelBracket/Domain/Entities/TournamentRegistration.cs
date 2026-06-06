@@ -12,6 +12,11 @@ public class TournamentRegistration
     public PaymentStatus PaymentStatus { get; private set; }
     public DateTime RegisteredAt { get; private set; }
 
+    private TournamentRegistration()
+    {
+        Pair = null!;
+    }
+
     public TournamentRegistration(Guid tournamentId, Pair pair, int category)
     {
         if (tournamentId == Guid.Empty)

@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Tournament> Tournaments => Set<Tournament>();
     public DbSet<TournamentCategory> TournamentCategories => Set<TournamentCategory>();
     public DbSet<Pair> Pairs => Set<Pair>();
+    public DbSet<TournamentRegistration> TournamentRegistrations => Set<TournamentRegistration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -161,8 +162,12 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey("TournamentId")
                 .OnDelete(DeleteBehavior.Cascade);
 
+            entity.HasMany(tournament => tournament.Registrations)
+                .WithOne()
+                .HasForeignKey(registration => registration.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.Ignore(tournament => tournament.Groups);
-            entity.Ignore(tournament => tournament.Registrations);
             entity.Ignore(tournament => tournament.StatusLabel);
         });
 
@@ -180,6 +185,34 @@ public class ApplicationDbContext : DbContext
 
             entity.Property(category => category.RegistrationFee)
                 .HasColumnType("decimal(18,2)")
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<TournamentRegistration>(entity =>
+        {
+            entity.ToTable("TournamentRegistrations");
+
+            entity.HasKey(registration => registration.Id);
+
+            entity.Property(registration => registration.TournamentId)
+                .IsRequired();
+
+            entity.HasOne(registration => registration.Pair)
+                .WithMany()
+                .HasForeignKey("PairId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            entity.Property(registration => registration.Category)
+                .IsRequired();
+
+            entity.Property(registration => registration.Status)
+                .IsRequired();
+
+            entity.Property(registration => registration.PaymentStatus)
+                .IsRequired();
+
+            entity.Property(registration => registration.RegisteredAt)
                 .IsRequired();
         });
 
