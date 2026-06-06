@@ -358,7 +358,7 @@ else
                 <div>
                     <h4 class="card-title mb-1">Inscripciones</h4>
                     <p class="text-muted mb-0">
-                        Revisá parejas anotadas, confirmá lugares y gestioná pagos.
+                        Revisá parejas anotadas, confirmá lugares, gestioná pagos y controlá qué falta asignar a grupos.
                     </p>
                 </div>
 
@@ -366,6 +366,39 @@ else
                     @tournament.Registrations.Count total
                 </span>
             </div>
+
+            @if (tournament.Registrations.Any())
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Pendientes</div>
+                            <div class="stat-value">@PendingRegistrationsCount</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Confirmadas sin grupo</div>
+                            <div class="stat-value">@ConfirmedUnassignedRegistrationsCount</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Asignadas a grupo</div>
+                            <div class="stat-value">@AssignedRegistrationsCount</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Pagas</div>
+                            <div class="stat-value">@PaidRegistrationsCount</div>
+                        </div>
+                    </div>
+                </div>
+            }
 
             @if (!tournament.Registrations.Any())
             {
@@ -386,6 +419,7 @@ else
                                 <th>Categoría</th>
                                 <th>Estado</th>
                                 <th>Pago</th>
+                                <th>Grupo</th>
                                 <th>Fecha</th>
                                 <th class="text-end">Acciones</th>
                             </tr>
@@ -395,6 +429,8 @@ else
                             @foreach (var registration in tournament.Registrations
                                                                    .OrderByDescending(registration => registration.RegisteredAt))
                             {
+                                var assignedGroup = GetAssignedGroup(registration);
+
                                 <tr>
                                     <td>
                                         <strong>@registration.Pair.DisplayName</strong>
@@ -416,6 +452,28 @@ else
                                         <span class="@GetPaymentStatusBadgeClass(registration.PaymentStatus)">
                                             @GetPaymentStatusLabel(registration.PaymentStatus)
                                         </span>
+                                    </td>
+
+                                    <td>
+                                        @if (assignedGroup != null)
+                                        {
+                                            <a class="badge bg-success text-decoration-none"
+                                               href="@($"/tournaments/{tournament.Id}/groups/{assignedGroup.Id}")">
+                                                @assignedGroup.Name
+                                            </a>
+                                        }
+                                        else if (registration.Status == RegistrationStatus.Confirmed)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                Sin grupo
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark">
+                                                No aplica
+                                            </span>
+                                        }
                                     </td>
 
                                     <td>
@@ -720,6 +778,23 @@ else
         CurrentOrganizer != null &&
         tournament.OrganizerId == CurrentOrganizer.Id;
 
+    private int PendingRegistrationsCount =>
+        tournament?.Registrations.Count(registration =>
+            registration.Status == RegistrationStatus.Pending) ?? 0;
+
+    private int ConfirmedUnassignedRegistrationsCount =>
+        tournament?.Registrations.Count(registration =>
+            registration.Status == RegistrationStatus.Confirmed &&
+            GetAssignedGroup(registration) == null) ?? 0;
+
+    private int AssignedRegistrationsCount =>
+        tournament?.Registrations.Count(registration =>
+            GetAssignedGroup(registration) != null) ?? 0;
+
+    private int PaidRegistrationsCount =>
+        tournament?.Registrations.Count(registration =>
+            registration.PaymentStatus == PaymentStatus.Paid) ?? 0;
+
     protected override void OnInitialized()
     {
         LoadTournament();
@@ -991,6 +1066,15 @@ else
         {
             errorMessage = ex.Message;
         }
+    }
+
+    private Group? GetAssignedGroup(TournamentRegistration registration)
+    {
+        if (tournament == null)
+            return null;
+
+        return tournament.Groups.FirstOrDefault(group =>
+            group.Pairs.Any(pair => pair.Id == registration.Pair.Id));
     }
 
     private static bool CanConfirmOrReject(TournamentRegistration registration)
