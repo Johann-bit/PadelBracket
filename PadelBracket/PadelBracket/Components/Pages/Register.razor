@@ -105,6 +105,9 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
     private string realName = string.Empty;
     private string email = string.Empty;
     private string password = string.Empty;
@@ -114,13 +117,13 @@
     private int category = 6;
     private string errorMessage = string.Empty;
 
-    private void RegisterPlayer()
+    private async Task RegisterPlayer()
     {
         errorMessage = string.Empty;
 
         try
         {
-            PlayerAccountService.Register(
+            await PlayerAccountService.RegisterAsync(
                 realName,
                 email,
                 password,
@@ -129,11 +132,22 @@
                 preferredSide,
                 category);
 
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo(GetSafeReturnUrl());
         }
         catch (Exception exception)
         {
             errorMessage = exception.Message;
         }
+    }
+
+    private string GetSafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+            return "/";
+
+        if (!ReturnUrl.StartsWith("/") || ReturnUrl.StartsWith("//"))
+            return "/";
+
+        return ReturnUrl;
     }
 }
