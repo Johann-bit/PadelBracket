@@ -1,35 +1,40 @@
 ﻿using PadelBracket.Domain.Entities;
+using PadelBracket.Repositories;
+using PadelBracket.Repositories.Interface;
 
 namespace PadelBracket.Services;
 
 public class KnockoutService
 {
-    private readonly StandingService _standingService;
-    private readonly List<KnockoutBracket> _brackets = new();
+    private readonly StandingService standingService;
+    private readonly IKnockoutBracketRepository knockoutBracketRepository;
 
     public KnockoutService(StandingService standingService)
+        : this(standingService, new InMemoryKnockoutBracketRepository())
     {
-        _standingService = standingService ?? throw new ArgumentNullException(nameof(standingService));
+    }
+
+    public KnockoutService(
+        StandingService standingService,
+        IKnockoutBracketRepository knockoutBracketRepository)
+    {
+        this.standingService = standingService ?? throw new ArgumentNullException(nameof(standingService));
+        this.knockoutBracketRepository = knockoutBracketRepository ?? throw new ArgumentNullException(nameof(knockoutBracketRepository));
     }
 
     public List<KnockoutBracket> GetAllBrackets()
     {
-        return _brackets.ToList();
+        return knockoutBracketRepository.GetAll();
     }
 
     public List<KnockoutBracket> GetBracketsByTournament(Guid tournamentId)
     {
-        return _brackets
-            .Where(bracket => bracket.TournamentId == tournamentId)
-            .ToList();
+        return knockoutBracketRepository.GetByTournamentId(tournamentId);
     }
 
     public KnockoutBracket? GetBracket(Guid tournamentId, int category)
     {
-        return _brackets.FirstOrDefault(bracket =>
-            bracket.TournamentId == tournamentId &&
-            bracket.Category == category
-        );
+        return knockoutBracketRepository.GetByTournamentAndCategory(tournamentId, category);
     }
 
     public KnockoutBracket GenerateBracket(
@@ -69,9 +74,8 @@ public class KnockoutService
 
         var bracket = new KnockoutBracket(tournament.Id, category, matches);
 
-        _brackets.Add(bracket);
-
         tournament.StartKnockoutStage();
+        knockoutBracketRepository.Add(bracket);
 
         return bracket;
     }
@@ -83,12 +87,12 @@ public class KnockoutService
         if (bracket == null)
             throw new InvalidOperationException("No existe una llave generada para esta categoría.");
 
-        _brackets.Remove(bracket);
+        knockoutBracketRepository.Delete(bracket);
     }
 
     public void DeleteBracketsByTournament(Guid tournamentId)
     {
-        _brackets.RemoveAll(bracket => bracket.TournamentId == tournamentId);
+        knockoutBracketRepository.DeleteByTournamentId(tournamentId);
     }
 
     public bool BracketHasResults(Guid tournamentId, int category)
@@ -133,6 +137,7 @@ public class KnockoutService
         match.RegisterResult(result);
 
         AdvanceWinnerToNextRound(bracket, match);
+        knockoutBracketRepository.SaveChanges();
     }
 
     public void ClearMatchResult(
@@ -153,6 +158,7 @@ public class KnockoutService
         ClearNextRoundsFromMatch(bracket, match);
 
         match.ClearResult();
+        knockoutBracketRepository.SaveChanges();
     }
 
     public List<KnockoutMatch> GenerateSemifinals(
@@ -214,7 +220,7 @@ public class KnockoutService
 
         foreach (var group in groups)
         {
-            var standings = _standingService.CalculateStandings(group);
+            var standings = standingService.CalculateStandings(group);
 
             for (int i = 0; i < qualifiedPairsPerGroup; i++)
             {
@@ -382,7 +388,7 @@ public class KnockoutService
             .OrderBy(group => GetRoundOrder(group.Key))
             .Select(group => new RoundData(
                 group.Key,
-                group.ToList()
+                group.OrderBy(match => match.SortOrder).ToList()
             ))
             .ToList();
     }

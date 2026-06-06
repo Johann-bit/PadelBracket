@@ -21,6 +21,7 @@ builder.Services.AddScoped<IOrganizerRepository, EfOrganizerRepository>();
 builder.Services.AddScoped<IOrganizerAccountRepository, EfOrganizerAccountRepository>();
 builder.Services.AddScoped<ITournamentRepository, EfTournamentRepository>();
 builder.Services.AddScoped<IPairRepository, EfPairRepository>();
+builder.Services.AddScoped<IKnockoutBracketRepository, EfKnockoutBracketRepository>();
 
 builder.Services.AddScoped<PlayerService>();
 builder.Services.AddScoped<PlayerAccountService>();
@@ -30,10 +31,10 @@ builder.Services.AddScoped<PairService>();
 builder.Services.AddScoped<TournamentService>();
 builder.Services.AddScoped<MatchHistoryService>();
 builder.Services.AddScoped<RankingService>();
+builder.Services.AddScoped<KnockoutService>();
 
 builder.Services.AddSingleton<StandingService>();
 builder.Services.AddSingleton<QualificationService>();
-builder.Services.AddSingleton<KnockoutService>();
 builder.Services.AddSingleton<TournamentRegistrationService>();
 
 var app = builder.Build();
