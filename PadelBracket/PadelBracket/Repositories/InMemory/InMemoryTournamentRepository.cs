@@ -39,4 +39,8 @@ public class InMemoryTournamentRepository : ITournamentRepository
             tournament.Id != id &&
             string.Equals(tournament.Name, name.Trim(), StringComparison.OrdinalIgnoreCase));
     }
+
+    public void SaveChanges()
+    {
+    }
 }

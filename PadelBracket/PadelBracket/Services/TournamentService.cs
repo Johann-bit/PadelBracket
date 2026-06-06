@@ -158,6 +158,7 @@ public class TournamentService
             throw new ArgumentException("A tournament with the same name already exists.");
 
         tournament.Rename(name);
+        tournamentRepository.SaveChanges();
     }
 
     public void DeleteTournament(Guid tournamentId)
@@ -172,6 +173,7 @@ public class TournamentService
         var tournament = GetTournamentOrThrow(tournamentId);
 
         tournament.Finish();
+        tournamentRepository.SaveChanges();
     }
 
     public void CancelTournament(Guid tournamentId)
@@ -179,6 +181,7 @@ public class TournamentService
         var tournament = GetTournamentOrThrow(tournamentId);
 
         tournament.Cancel();
+        tournamentRepository.SaveChanges();
     }
 
     public TournamentCategory AddCategoryToTournament(
@@ -195,6 +198,7 @@ public class TournamentService
             registrationFee);
 
         tournament.AddCategory(tournamentCategory);
+        tournamentRepository.SaveChanges();
 
         return tournamentCategory;
     }
@@ -204,6 +208,7 @@ public class TournamentService
         var tournament = GetTournamentOrThrow(tournamentId);
 
         tournament.RemoveCategory(category);
+        tournamentRepository.SaveChanges();
     }
 
     public TournamentRegistration RegisterPairToTournament(
@@ -216,10 +221,14 @@ public class TournamentService
         Pair pair = pairService.GetById(pairId)
             ?? throw new ArgumentException("Pair not found.");
 
-        return tournamentRegistrationService.RegisterPair(
+        TournamentRegistration registration = tournamentRegistrationService.RegisterPair(
             tournament,
             pair,
             category);
+
+        tournamentRepository.SaveChanges();
+
+        return registration;
     }
 
     public void CancelRegistration(
@@ -233,11 +242,12 @@ public class TournamentService
             ?? throw new ArgumentException("Registration not found.");
 
         tournamentRegistrationService.CancelRegistration(registration);
+        tournamentRepository.SaveChanges();
     }
 
     public void ConfirmRegistration(
-    Guid tournamentId,
-    Guid registrationId)
+        Guid tournamentId,
+        Guid registrationId)
     {
         Tournament tournament = GetTournamentOrThrow(tournamentId);
 
@@ -246,6 +256,7 @@ public class TournamentService
             ?? throw new ArgumentException("Registration not found.");
 
         tournamentRegistrationService.ConfirmRegistration(registration);
+        tournamentRepository.SaveChanges();
     }
 
     public void RejectRegistration(
@@ -259,6 +270,7 @@ public class TournamentService
             ?? throw new ArgumentException("Registration not found.");
 
         tournamentRegistrationService.RejectRegistration(registration);
+        tournamentRepository.SaveChanges();
     }
 
     public void MarkRegistrationAsPaid(
@@ -272,6 +284,7 @@ public class TournamentService
             ?? throw new ArgumentException("Registration not found.");
 
         tournamentRegistrationService.MarkRegistrationAsPaid(registration);
+        tournamentRepository.SaveChanges();
     }
 
     public void RefundRegistration(
@@ -285,6 +298,7 @@ public class TournamentService
             ?? throw new ArgumentException("Registration not found.");
 
         tournamentRegistrationService.RefundRegistration(registration);
+        tournamentRepository.SaveChanges();
     }
 
     public Group AddGroupToTournament(Guid tournamentId, string groupName, int category)
@@ -293,6 +307,7 @@ public class TournamentService
 
         var group = new Group(groupName, category);
         tournament.AddGroup(group);
+        tournamentRepository.SaveChanges();
 
         return group;
     }
@@ -305,6 +320,7 @@ public class TournamentService
         var tournament = GetTournamentOrThrow(tournamentId);
 
         tournament.RenameGroup(groupId, groupName);
+        tournamentRepository.SaveChanges();
     }
 
     public void DeleteGroupFromTournament(
@@ -314,6 +330,7 @@ public class TournamentService
         var tournament = GetTournamentOrThrow(tournamentId);
 
         tournament.RemoveGroup(groupId);
+        tournamentRepository.SaveChanges();
     }
 
     public Pair AddPairToGroup(
@@ -330,6 +347,7 @@ public class TournamentService
         var pair = new Pair(playerOne, playerTwo);
 
         group.AddPair(pair);
+        tournamentRepository.SaveChanges();
 
         return pair;
     }
@@ -345,6 +363,7 @@ public class TournamentService
             ?? throw new ArgumentException("Pair not found.");
 
         group.AddPair(pair);
+        tournamentRepository.SaveChanges();
 
         return pair;
     }
@@ -374,9 +393,11 @@ public class TournamentService
             throw new ArgumentException("Registration category must match group category.");
 
         group.AddPair(registration.Pair);
+        tournamentRepository.SaveChanges();
 
         return registration.Pair;
     }
+
     public void UpdatePairInGroup(
         Guid tournamentId,
         Guid groupId,
@@ -387,6 +408,7 @@ public class TournamentService
         var group = GetGroupOrThrow(tournamentId, groupId);
 
         group.RenamePair(pairId, playerOneName, playerTwoName);
+        tournamentRepository.SaveChanges();
     }
 
     public void RemovePairFromGroup(
@@ -397,6 +419,7 @@ public class TournamentService
         var group = GetGroupOrThrow(tournamentId, groupId);
 
         group.RemovePair(pairId);
+        tournamentRepository.SaveChanges();
     }
 
     public void GenerateGroupMatches(Guid tournamentId, Guid groupId)
@@ -410,6 +433,7 @@ public class TournamentService
 
         group.GenerateMatches();
         tournament.StartGroupStage();
+        tournamentRepository.SaveChanges();
     }
 
     public void RegisterMatchResult(
@@ -423,6 +447,7 @@ public class TournamentService
         var result = new MatchResult(sets);
 
         match.RegisterResult(result);
+        tournamentRepository.SaveChanges();
     }
 
     public void ClearMatchResult(
@@ -433,6 +458,7 @@ public class TournamentService
         var match = GetMatchOrThrow(tournamentId, groupId, matchId);
 
         match.ClearResult();
+        tournamentRepository.SaveChanges();
     }
 
     private Tournament GetTournamentOrThrow(Guid tournamentId)

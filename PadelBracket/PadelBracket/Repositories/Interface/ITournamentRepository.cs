@@ -10,4 +10,5 @@ public interface ITournamentRepository
     void Delete(Tournament tournament);
     bool ExistsByName(string name);
     bool ExistsByNameExceptId(string name, Guid id);
+    void SaveChanges();
 }

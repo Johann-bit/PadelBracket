@@ -17,6 +17,17 @@ public class Tournament
 
     public string StatusLabel => GetStatusLabel(Status);
 
+    private Tournament()
+    {
+        Name = string.Empty;
+        ClubName = string.Empty;
+        City = string.Empty;
+        Address = string.Empty;
+        Groups = new List<Group>();
+        TournamentCategories = new List<TournamentCategory>();
+        Registrations = new List<TournamentRegistration>();
+    }
+
     public Tournament(string name)
         : this(
             name,

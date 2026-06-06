@@ -7,6 +7,10 @@ public class TournamentCategory
     public int MaxPairs { get; private set; }
     public decimal RegistrationFee { get; private set; }
 
+    private TournamentCategory()
+    {
+    }
+
     public TournamentCategory(int category, int maxPairs, decimal registrationFee)
     {
         ValidateCategory(category);
