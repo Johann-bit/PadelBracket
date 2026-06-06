@@ -3,6 +3,7 @@
 public class Tournament
 {
     public Guid Id { get; private set; }
+    public Guid? OrganizerId { get; private set; }
     public string Name { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public TournamentStatus Status { get; private set; }
@@ -26,19 +27,68 @@ public class Tournament
     {
     }
 
+    public Tournament(string name, Guid organizerId)
+        : this(
+            name,
+            "Club sin definir",
+            "Montevideo",
+            "Dirección sin definir",
+            DateTime.Today,
+            organizerId)
+    {
+    }
+
     public Tournament(
         string name,
         string clubName,
         string city,
         string address,
         DateTime startDate)
+        : this(
+            name,
+            clubName,
+            city,
+            address,
+            startDate,
+            null)
+    {
+    }
+
+    public Tournament(
+        string name,
+        string clubName,
+        string city,
+        string address,
+        DateTime startDate,
+        Guid organizerId)
+        : this(
+            name,
+            clubName,
+            city,
+            address,
+            startDate,
+            (Guid?)organizerId)
+    {
+    }
+
+    private Tournament(
+        string name,
+        string clubName,
+        string city,
+        string address,
+        DateTime startDate,
+        Guid? organizerId)
     {
         ValidateName(name);
         ValidateRequiredText(clubName, "Club name is required.");
         ValidateRequiredText(city, "City is required.");
         ValidateRequiredText(address, "Address is required.");
 
+        if (organizerId.HasValue && organizerId.Value == Guid.Empty)
+            throw new ArgumentException("Organizer id is required.");
+
         Id = Guid.NewGuid();
+        OrganizerId = organizerId;
         Name = name.Trim();
         ClubName = clubName.Trim();
         City = city.Trim();

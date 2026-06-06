@@ -35,6 +35,24 @@ public class TournamentService
         return tournament;
     }
 
+    public Tournament CreateTournament(string name, Guid organizerId)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tournament name is required.");
+
+        if (organizerId == Guid.Empty)
+            throw new ArgumentException("Organizer id is required.");
+
+        if (tournamentRepository.ExistsByName(name))
+            throw new ArgumentException("A tournament with the same name already exists.");
+
+        var tournament = new Tournament(name, organizerId);
+
+        tournamentRepository.Add(tournament);
+
+        return tournament;
+    }
+
     public Tournament CreateTournament(
         string name,
         string clubName,
@@ -60,6 +78,36 @@ public class TournamentService
         return tournament;
     }
 
+    public Tournament CreateTournament(
+        string name,
+        string clubName,
+        string city,
+        string address,
+        DateTime startDate,
+        Guid organizerId)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tournament name is required.");
+
+        if (organizerId == Guid.Empty)
+            throw new ArgumentException("Organizer id is required.");
+
+        if (tournamentRepository.ExistsByName(name))
+            throw new ArgumentException("A tournament with the same name already exists.");
+
+        var tournament = new Tournament(
+            name,
+            clubName,
+            city,
+            address,
+            startDate,
+            organizerId);
+
+        tournamentRepository.Add(tournament);
+
+        return tournament;
+    }
+
     public List<Tournament> GetAllTournaments()
     {
         return tournamentRepository.GetAll();
@@ -68,6 +116,17 @@ public class TournamentService
     public List<TournamentDto> GetAllTournamentDtos()
     {
         return tournamentRepository.GetAll()
+            .Select(ToDto)
+            .ToList();
+    }
+
+    public List<TournamentDto> GetTournamentDtosByOrganizerId(Guid organizerId)
+    {
+        if (organizerId == Guid.Empty)
+            throw new ArgumentException("Organizer id is required.");
+
+        return tournamentRepository.GetAll()
+            .Where(tournament => tournament.OrganizerId == organizerId)
             .Select(ToDto)
             .ToList();
     }
@@ -334,6 +393,7 @@ public class TournamentService
         return new TournamentDto
         {
             Id = tournament.Id,
+            OrganizerId = tournament.OrganizerId,
             Name = tournament.Name,
             ClubName = tournament.ClubName,
             City = tournament.City,
