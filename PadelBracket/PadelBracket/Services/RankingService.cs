@@ -35,6 +35,37 @@ public class RankingService
         return BuildPlayerRanking(category);
     }
 
+    public PlayerRankingSummary GetPlayerRankingSummary(Guid playerId, int category)
+    {
+        if (playerId == Guid.Empty)
+            throw new ArgumentException("Player id is required.");
+
+        ValidateCategory(category);
+
+        List<PlayerRankingItem> ranking = GetPlayerRankingByCategory(category);
+
+        int positionIndex = ranking.FindIndex(item => item.PlayerId == playerId);
+
+        if (positionIndex < 0)
+        {
+            return new PlayerRankingSummary
+            {
+                PlayerId = playerId,
+                Category = category,
+                Position = null,
+                Ranking = null
+            };
+        }
+
+        return new PlayerRankingSummary
+        {
+            PlayerId = playerId,
+            Category = category,
+            Position = positionIndex + 1,
+            Ranking = ranking[positionIndex]
+        };
+    }
+
     private List<RankingItem> BuildPairRanking(int? category)
     {
         Dictionary<(Guid PairId, int Category), RankingItem> ranking = new();

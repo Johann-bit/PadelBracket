@@ -275,6 +275,84 @@ public class RankingServiceTests
             pairId);
     }
 
+    [TestMethod]
+    public void GetPlayerRankingSummary_WhenPlayerIsRanked_ShouldReturnPositionAndStats()
+    {
+        var context = CreateContext();
+
+        var tournament = context.TournamentService.CreateTournament("Torneo Apertura");
+
+        var group = context.TournamentService.AddGroupToTournament(
+            tournament.Id,
+            "Grupo A",
+            6);
+
+        var winningPair = CreateCompletePair(
+            context.PairService,
+            "Juan Perez",
+            "Pedro Gomez",
+            6);
+
+        var losingPair = CreateCompletePair(
+            context.PairService,
+            "Nico Silva",
+            "Santi Lopez",
+            6);
+
+        AddPairToGroup(context, tournament.Id, group.Id, winningPair.Id);
+        AddPairToGroup(context, tournament.Id, group.Id, losingPair.Id);
+
+        RegisterFirstMatchResult(context, tournament.Id, group);
+
+        var summary = context.RankingService.GetPlayerRankingSummary(
+            winningPair.PlayerOne.Id,
+            6);
+
+        Assert.IsTrue(summary.IsRanked);
+        Assert.AreEqual(winningPair.PlayerOne.Id, summary.PlayerId);
+        Assert.AreEqual(6, summary.Category);
+        Assert.AreEqual(1, summary.Position);
+        Assert.IsNotNull(summary.Ranking);
+        Assert.AreEqual(3, summary.Ranking.Points);
+        Assert.AreEqual(1, summary.Ranking.Wins);
+        Assert.AreEqual(0, summary.Ranking.Losses);
+    }
+
+    [TestMethod]
+    public void GetPlayerRankingSummary_WhenPlayerHasNoResults_ShouldReturnUnrankedSummary()
+    {
+        var context = CreateContext();
+        Guid playerId = Guid.NewGuid();
+
+        var summary = context.RankingService.GetPlayerRankingSummary(playerId, 6);
+
+        Assert.IsFalse(summary.IsRanked);
+        Assert.AreEqual(playerId, summary.PlayerId);
+        Assert.AreEqual(6, summary.Category);
+        Assert.IsNull(summary.Position);
+        Assert.IsNull(summary.Ranking);
+    }
+
+    [TestMethod]
+    public void GetPlayerRankingSummary_WhenPlayerIdIsEmpty_ShouldThrowArgumentException()
+    {
+        var context = CreateContext();
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            context.RankingService.GetPlayerRankingSummary(Guid.Empty, 6));
+    }
+
+    [TestMethod]
+    public void GetPlayerRankingSummary_WhenCategoryIsInvalid_ShouldThrowArgumentException()
+    {
+        var context = CreateContext();
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            context.RankingService.GetPlayerRankingSummary(Guid.NewGuid(), 0));
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            context.RankingService.GetPlayerRankingSummary(Guid.NewGuid(), 9));
+    }
     private static void RegisterFirstMatchResult(
         TestContext context,
         Guid tournamentId,
