@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using PadelBracket.Components;
+using PadelBracket.Data;
 using PadelBracket.Repositories;
 using PadelBracket.Repositories.Interface;
 using PadelBracket.Services;
@@ -7,6 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection") ??
+        "Data Source=arenapadel.db"));
 
 builder.Services.AddSingleton<IPlayerRepository, InMemoryPlayerRepository>();
 builder.Services.AddSingleton<IPairRepository, InMemoryPairRepository>();
