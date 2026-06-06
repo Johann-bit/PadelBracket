@@ -58,11 +58,11 @@
         </div>
 
         <div class="d-flex gap-2 flex-wrap">
-            <a class="btn btn-primary" href="/login">
+            <a class="btn btn-primary" href="/login?returnUrl=/pairs">
                 Ingresar
             </a>
 
-            <a class="btn btn-outline-primary" href="/register">
+            <a class="btn btn-outline-primary" href="/register?returnUrl=/pairs">
                 Registrarme
             </a>
         </div>
@@ -315,6 +315,16 @@ else
     protected override void OnInitialized()
     {
         LoadData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await PlayerAccountService.RestoreSessionAsync();
+        LoadData();
+        StateHasChanged();
     }
 
     private void LoadData()

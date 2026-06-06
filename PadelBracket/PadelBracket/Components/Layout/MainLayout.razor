@@ -66,9 +66,9 @@
 </div>
 
 @code {
-    private void LogoutPlayer()
+    private async Task LogoutPlayer()
     {
-        PlayerAccountService.Logout();
+        await PlayerAccountService.LogoutAsync();
         NavigationManager.NavigateTo("/");
     }
 
@@ -76,5 +76,14 @@
     {
         OrganizerAccountService.Logout();
         NavigationManager.NavigateTo("/");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await PlayerAccountService.RestoreSessionAsync();
+        StateHasChanged();
     }
 }

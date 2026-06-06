@@ -2,6 +2,7 @@
 using PadelBracket.Domain.Entities;
 using PadelBracket.Domain.Enums;
 using PadelBracket.Repositories.Interface;
+using Microsoft.JSInterop;
 
 namespace PadelBracket.Services;
 
@@ -10,6 +11,8 @@ public class PlayerAccountService
     private readonly PlayerService playerService;
     private readonly IPlayerAccountRepository accountRepository;
     private Guid? currentPlayerId;
+    private const string CurrentPlayerStorageKey = "arenapadel.currentPlayerId";
+    private readonly IJSRuntime? jsRuntime;
 
     public PlayerAccountService(
         PlayerService playerService,
@@ -17,6 +20,15 @@ public class PlayerAccountService
     {
         this.playerService = playerService;
         this.accountRepository = accountRepository;
+    }
+
+    public PlayerAccountService(
+        PlayerService playerService,
+        IPlayerAccountRepository accountRepository,
+        IJSRuntime jsRuntime)
+        : this(playerService, accountRepository)
+    {
+        this.jsRuntime = jsRuntime;
     }
 
     public bool IsLoggedIn => currentPlayerId.HasValue;
@@ -83,6 +95,29 @@ public class PlayerAccountService
         return player;
     }
 
+    public async Task<Player> RegisterAsync(
+        string realName,
+        string email,
+        string password,
+        string confirmPassword,
+        DominantHand dominantHand,
+        PreferredSide preferredSide,
+        int category)
+    {
+        Player player = Register(
+            realName,
+            email,
+            password,
+            confirmPassword,
+            dominantHand,
+            preferredSide,
+            category);
+
+        await SaveCurrentPlayerAsync(player.Id);
+
+        return player;
+    }
+
     public Player Login(string email, string password)
     {
         if (string.IsNullOrWhiteSpace(email))
@@ -102,6 +137,73 @@ public class PlayerAccountService
             ?? throw new InvalidOperationException("No se encontró el jugador asociado a la cuenta.");
 
         return player;
+    }
+
+    public async Task<Player> LoginAsync(string email, string password)
+    {
+        Player player = Login(email, password);
+        await SaveCurrentPlayerAsync(player.Id);
+
+        return player;
+    }
+
+    public async Task RestoreSessionAsync()
+    {
+        if (currentPlayerId.HasValue || jsRuntime == null)
+            return;
+
+        try
+        {
+            string? storedPlayerId = await jsRuntime.InvokeAsync<string?>(
+                "localStorage.getItem",
+                CurrentPlayerStorageKey);
+
+            if (!Guid.TryParse(storedPlayerId, out Guid playerId))
+                return;
+
+            if (playerService.GetById(playerId) == null)
+                return;
+
+            currentPlayerId = playerId;
+        }
+        catch
+        {
+        }
+    }
+
+    public async Task LogoutAsync()
+    {
+        Logout();
+
+        if (jsRuntime == null)
+            return;
+
+        try
+        {
+            await jsRuntime.InvokeVoidAsync(
+                "localStorage.removeItem",
+                CurrentPlayerStorageKey);
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task SaveCurrentPlayerAsync(Guid playerId)
+    {
+        if (jsRuntime == null)
+            return;
+
+        try
+        {
+            await jsRuntime.InvokeVoidAsync(
+                "localStorage.setItem",
+                CurrentPlayerStorageKey,
+                playerId.ToString());
+        }
+        catch
+        {
+        }
     }
 
     public void Logout()
