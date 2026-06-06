@@ -1,5 +1,6 @@
 ﻿@page "/tournaments/{TournamentId:guid}"
 @using PadelBracket.Domain.Entities
+@using PadelBracket.Domain.Enums
 @using PadelBracket.Services
 @inject TournamentService TournamentService
 @inject OrganizerAccountService OrganizerAccountService
@@ -343,6 +344,135 @@ else
                                         </td>
                                     </tr>
                                 }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                    <h4 class="card-title mb-1">Inscripciones</h4>
+                    <p class="text-muted mb-0">
+                        Revisá parejas anotadas, confirmá lugares y gestioná pagos.
+                    </p>
+                </div>
+
+                <span class="badge bg-dark">
+                    @tournament.Registrations.Count total
+                </span>
+            </div>
+
+            @if (!tournament.Registrations.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-state-title">Todavía no hay inscripciones.</div>
+                    <div>
+                        Cuando una pareja se anote al torneo, va a aparecer en esta sección.
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Pareja</th>
+                                <th>Categoría</th>
+                                <th>Estado</th>
+                                <th>Pago</th>
+                                <th>Fecha</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var registration in tournament.Registrations
+                                                                   .OrderByDescending(registration => registration.RegisteredAt))
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@registration.Pair.DisplayName</strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            @GetCategoryLabel(registration.Category)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="@GetRegistrationStatusBadgeClass(registration.Status)">
+                                            @GetRegistrationStatusLabel(registration.Status)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="@GetPaymentStatusBadgeClass(registration.PaymentStatus)">
+                                            @GetPaymentStatusLabel(registration.PaymentStatus)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @registration.RegisteredAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+
+                                    <td class="text-end">
+                                        <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                            @if (CanConfirmOrReject(registration))
+                                            {
+                                                <button class="btn btn-sm btn-outline-success"
+                                                        @onclick="() => ConfirmRegistration(registration.Id)">
+                                                    Confirmar
+                                                </button>
+
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        @onclick="() => RejectRegistration(registration.Id)">
+                                                    Rechazar
+                                                </button>
+                                            }
+
+                                            @if (CanMarkAsPaid(registration))
+                                            {
+                                                <button class="btn btn-sm btn-outline-primary"
+                                                        @onclick="() => MarkRegistrationAsPaid(registration.Id)">
+                                                    Marcar pago
+                                                </button>
+                                            }
+
+                                            @if (CanRefund(registration))
+                                            {
+                                                <button class="btn btn-sm btn-outline-warning"
+                                                        @onclick="() => RefundRegistration(registration.Id)">
+                                                    Reembolsar
+                                                </button>
+                                            }
+
+                                            @if (CanCancelRegistration(registration))
+                                            {
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                        @onclick="() => CancelRegistration(registration.Id)">
+                                                    Cancelar
+                                                </button>
+                                            }
+
+                                            @if (!CanConfirmOrReject(registration) &&
+                                                 !CanMarkAsPaid(registration) &&
+                                                 !CanRefund(registration) &&
+                                                 !CanCancelRegistration(registration))
+                                            {
+                                                <span class="text-muted small">
+                                                    Sin acciones
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -753,6 +883,137 @@ else
         return tournament.GetActiveRegistrationsByCategory(category).Any();
     }
 
+    private void ConfirmRegistration(Guid registrationId)
+    {
+        if (!EnsureCanManageTournament() || tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.ConfirmRegistration(tournament.Id, registrationId);
+
+            LoadTournament();
+
+            successMessage = "Inscripción confirmada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void RejectRegistration(Guid registrationId)
+    {
+        if (!EnsureCanManageTournament() || tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.RejectRegistration(tournament.Id, registrationId);
+
+            LoadTournament();
+
+            successMessage = "Inscripción rechazada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void MarkRegistrationAsPaid(Guid registrationId)
+    {
+        if (!EnsureCanManageTournament() || tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.MarkRegistrationAsPaid(tournament.Id, registrationId);
+
+            LoadTournament();
+
+            successMessage = "Pago marcado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void RefundRegistration(Guid registrationId)
+    {
+        if (!EnsureCanManageTournament() || tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.RefundRegistration(tournament.Id, registrationId);
+
+            LoadTournament();
+
+            successMessage = "Pago reembolsado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void CancelRegistration(Guid registrationId)
+    {
+        if (!EnsureCanManageTournament() || tournament == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            TournamentService.CancelRegistration(tournament.Id, registrationId);
+
+            LoadTournament();
+
+            successMessage = "Inscripción cancelada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private static bool CanConfirmOrReject(TournamentRegistration registration)
+    {
+        return registration.Status == RegistrationStatus.Pending;
+    }
+
+    private static bool CanMarkAsPaid(TournamentRegistration registration)
+    {
+        return registration.IsActive() &&
+               registration.PaymentStatus == PaymentStatus.Pending;
+    }
+
+    private static bool CanRefund(TournamentRegistration registration)
+    {
+        return registration.PaymentStatus == PaymentStatus.Paid;
+    }
+
+    private static bool CanCancelRegistration(TournamentRegistration registration)
+    {
+        return registration.IsActive();
+    }
+
     private void CreateGroup()
     {
         if (!EnsureCanManageTournament() || tournament == null)
@@ -889,6 +1150,54 @@ else
             7 => "7ma categoría",
             8 => "8va categoría",
             _ => $"{category} categoría"
+        };
+    }
+
+    private static string GetRegistrationStatusLabel(RegistrationStatus status)
+    {
+        return status switch
+        {
+            RegistrationStatus.Pending => "Pendiente",
+            RegistrationStatus.Confirmed => "Confirmada",
+            RegistrationStatus.Rejected => "Rechazada",
+            RegistrationStatus.Cancelled => "Cancelada",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetRegistrationStatusBadgeClass(RegistrationStatus status)
+    {
+        return status switch
+        {
+            RegistrationStatus.Pending => "badge bg-warning text-dark",
+            RegistrationStatus.Confirmed => "badge bg-success",
+            RegistrationStatus.Rejected => "badge bg-danger",
+            RegistrationStatus.Cancelled => "badge bg-secondary",
+            _ => "badge bg-secondary"
+        };
+    }
+
+    private static string GetPaymentStatusLabel(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Pending => "Pendiente",
+            PaymentStatus.Paid => "Pago",
+            PaymentStatus.Refunded => "Reembolsado",
+            PaymentStatus.Cancelled => "Cancelado",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetPaymentStatusBadgeClass(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Pending => "badge bg-warning text-dark",
+            PaymentStatus.Paid => "badge bg-success",
+            PaymentStatus.Refunded => "badge bg-info text-dark",
+            PaymentStatus.Cancelled => "badge bg-secondary",
+            _ => "badge bg-secondary"
         };
     }
 }
