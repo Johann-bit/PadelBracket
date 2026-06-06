@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PadelBracket.Domain.Entities;
+using System.Text.Json;
 
 namespace PadelBracket.Data;
 
@@ -19,6 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Pair> Pairs => Set<Pair>();
     public DbSet<TournamentRegistration> TournamentRegistrations => Set<TournamentRegistration>();
     public DbSet<Group> Groups => Set<Group>();
+    public DbSet<Match> Matches => Set<Match>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -234,7 +236,10 @@ public class ApplicationDbContext : DbContext
                 .IsRequired();
 
             entity.Ignore(group => group.CategoryLabel);
-            entity.Ignore(group => group.Matches);
+            entity.HasMany(group => group.Matches)
+                .WithOne()
+                .HasForeignKey("GroupId")
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(group => group.Pairs)
                 .WithMany()
@@ -253,6 +258,35 @@ public class ApplicationDbContext : DbContext
                         join.ToTable("GroupPairs");
                         join.HasKey("GroupId", "PairId");
                     });
+        });
+
+        modelBuilder.Entity<Match>(entity =>
+        {
+            entity.ToTable("Matches");
+
+            entity.HasKey(match => match.Id);
+
+            entity.HasOne(match => match.PairOne)
+                .WithMany()
+                .HasForeignKey("PairOneId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            entity.HasOne(match => match.PairTwo)
+                .WithMany()
+                .HasForeignKey("PairTwoId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            entity.Property(match => match.Result)
+                .HasConversion(
+                    result => SerializeMatchResult(result),
+                    value => DeserializeMatchResult(value))
+                .HasColumnName("ResultJson");
+
+            entity.Ignore(match => match.HasResult);
+            entity.Ignore(match => match.Winner);
+            entity.Ignore(match => match.Loser);
         });
 
         modelBuilder.Entity<Pair>(entity =>
@@ -277,5 +311,44 @@ public class ApplicationDbContext : DbContext
 
             entity.Ignore(pair => pair.DisplayName);
         });
+    }
+    private static string? SerializeMatchResult(MatchResult? result)
+    {
+        if (result == null)
+            return null;
+
+        var sets = result.Sets
+            .Select(set => new StoredMatchSet
+            {
+                PairOneScore = set.PairOneScore,
+                PairTwoScore = set.PairTwoScore,
+                IsSuperTieBreak = set.IsSuperTieBreak
+            })
+            .ToList();
+
+        return JsonSerializer.Serialize(sets);
+    }
+
+    private static MatchResult? DeserializeMatchResult(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        var sets = JsonSerializer.Deserialize<List<StoredMatchSet>>(value)
+            ?? new List<StoredMatchSet>();
+
+        return new MatchResult(sets
+            .Select(set => new MatchSet(
+                set.PairOneScore,
+                set.PairTwoScore,
+                set.IsSuperTieBreak))
+            .ToList());
+    }
+
+    private sealed class StoredMatchSet
+    {
+        public int PairOneScore { get; set; }
+        public int PairTwoScore { get; set; }
+        public bool IsSuperTieBreak { get; set; }
     }
 }

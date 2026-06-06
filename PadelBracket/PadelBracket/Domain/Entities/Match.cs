@@ -7,6 +7,12 @@ public class Match
     public Pair PairTwo { get; private set; }
     public MatchResult? Result { get; private set; }
 
+    private Match()
+    {
+        PairOne = null!;
+        PairTwo = null!;
+    }
+
     public Match(Pair pairOne, Pair pairTwo)
     {
         PairOne = pairOne ?? throw new ArgumentNullException(nameof(pairOne));
