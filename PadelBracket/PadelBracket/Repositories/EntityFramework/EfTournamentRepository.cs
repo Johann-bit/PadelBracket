@@ -18,6 +18,12 @@ public class EfTournamentRepository : ITournamentRepository
     {
         return dbContext.Tournaments
             .Include(tournament => tournament.TournamentCategories)
+            .Include(tournament => tournament.Groups)
+                .ThenInclude(group => group.Pairs)
+                    .ThenInclude(pair => pair.PlayerOne)
+            .Include(tournament => tournament.Groups)
+                .ThenInclude(group => group.Pairs)
+                    .ThenInclude(pair => pair.PlayerTwo)
             .Include(tournament => tournament.Registrations)
                 .ThenInclude(registration => registration.Pair)
                     .ThenInclude(pair => pair.PlayerOne)
@@ -32,6 +38,12 @@ public class EfTournamentRepository : ITournamentRepository
     {
         return dbContext.Tournaments
             .Include(tournament => tournament.TournamentCategories)
+            .Include(tournament => tournament.Groups)
+                .ThenInclude(group => group.Pairs)
+                    .ThenInclude(pair => pair.PlayerOne)
+            .Include(tournament => tournament.Groups)
+                .ThenInclude(group => group.Pairs)
+                    .ThenInclude(pair => pair.PlayerTwo)
             .Include(tournament => tournament.Registrations)
                 .ThenInclude(registration => registration.Pair)
                     .ThenInclude(pair => pair.PlayerOne)

@@ -10,6 +10,13 @@ public class Group
 
     public string CategoryLabel => GetCategoryLabel(Category);
 
+    private Group()
+    {
+        Name = string.Empty;
+        Pairs = new List<Pair>();
+        Matches = new List<Match>();
+    }
+
     public Group(string name, int category)
     {
         if (string.IsNullOrWhiteSpace(name))

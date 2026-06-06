@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TournamentCategory> TournamentCategories => Set<TournamentCategory>();
     public DbSet<Pair> Pairs => Set<Pair>();
     public DbSet<TournamentRegistration> TournamentRegistrations => Set<TournamentRegistration>();
+    public DbSet<Group> Groups => Set<Group>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -167,7 +168,10 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(registration => registration.TournamentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.Ignore(tournament => tournament.Groups);
+            entity.HasMany(tournament => tournament.Groups)
+                .WithOne()
+                .HasForeignKey("TournamentId")
+                .OnDelete(DeleteBehavior.Cascade);
             entity.Ignore(tournament => tournament.StatusLabel);
         });
 
@@ -214,6 +218,41 @@ public class ApplicationDbContext : DbContext
 
             entity.Property(registration => registration.RegisteredAt)
                 .IsRequired();
+        });
+
+        modelBuilder.Entity<Group>(entity =>
+        {
+            entity.ToTable("Groups");
+
+            entity.HasKey(group => group.Id);
+
+            entity.Property(group => group.Name)
+                .HasMaxLength(80)
+                .IsRequired();
+
+            entity.Property(group => group.Category)
+                .IsRequired();
+
+            entity.Ignore(group => group.CategoryLabel);
+            entity.Ignore(group => group.Matches);
+
+            entity.HasMany(group => group.Pairs)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "GroupPairs",
+                    right => right.HasOne<Pair>()
+                        .WithMany()
+                        .HasForeignKey("PairId")
+                        .OnDelete(DeleteBehavior.Restrict),
+                    left => left.HasOne<Group>()
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    join =>
+                    {
+                        join.ToTable("GroupPairs");
+                        join.HasKey("GroupId", "PairId");
+                    });
         });
 
         modelBuilder.Entity<Pair>(entity =>
