@@ -1,11 +1,16 @@
-﻿<div class="sidebar-brand">
+@implements IDisposable
+@using PadelBracket.Services
+@inject PlayerAccountService PlayerAccountService
+@inject OrganizerAccountService OrganizerAccountService
+
+<div class="sidebar-brand">
     <a href="/" class="sidebar-logo">
         <span class="sidebar-logo-mark">PB</span>
         <span>PadelBracket</span>
     </a>
 </div>
 
-<input type="checkbox" title="Menú de navegación" class="navbar-toggler" />
+<input type="checkbox" title="Menu de navegacion" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="sidebar-nav">
@@ -14,44 +19,103 @@
             <span>Inicio</span>
         </NavLink>
 
-        <NavLink class="sidebar-link" href="tournaments" Match="NavLinkMatch.All">
-            <span class="sidebar-icon">TR</span>
-            <span>Torneos</span>
-        </NavLink>
+        @if (IsOrganizerMode)
+        {
+            <NavLink class="sidebar-link" href="tournaments" Match="NavLinkMatch.All">
+                <span class="sidebar-icon">TR</span>
+                <span>Mis torneos</span>
+            </NavLink>
 
-        <NavLink class="sidebar-link" href="tournaments/available">
-            <span class="sidebar-icon">TD</span>
-            <span>Disponibles</span>
-        </NavLink>
+            <NavLink class="sidebar-link" href="players">
+                <span class="sidebar-icon">JG</span>
+                <span>Jugadores</span>
+            </NavLink>
 
-        <NavLink class="sidebar-link" href="my-registrations">
-            <span class="sidebar-icon">MI</span>
-            <span>Mis inscripciones</span>
-        </NavLink>
+            <NavLink class="sidebar-link" href="matches/history">
+                <span class="sidebar-icon">HT</span>
+                <span>Historial</span>
+            </NavLink>
 
-        <NavLink class="sidebar-link" href="players">
-            <span class="sidebar-icon">JG</span>
-            <span>Jugadores</span>
-        </NavLink>
+            <NavLink class="sidebar-link" href="ranking">
+                <span class="sidebar-icon">RK</span>
+                <span>Ranking</span>
+            </NavLink>
 
-        <NavLink class="sidebar-link" href="pairs">
-            <span class="sidebar-icon">PR</span>
-            <span>Parejas</span>
-        </NavLink>
+            <NavLink class="sidebar-link" href="dashboard">
+                <span class="sidebar-icon">DB</span>
+                <span>Dashboard</span>
+            </NavLink>
+        }
+        else if (IsPlayerMode)
+        {
+            <NavLink class="sidebar-link" href="profile">
+                <span class="sidebar-icon">MP</span>
+                <span>Mi perfil</span>
+            </NavLink>
 
-        <NavLink class="sidebar-link" href="matches/history">
-            <span class="sidebar-icon">HT</span>
-            <span>Historial</span>
-        </NavLink>
+            <NavLink class="sidebar-link" href="tournaments/available">
+                <span class="sidebar-icon">TD</span>
+                <span>Disponibles</span>
+            </NavLink>
 
-        <NavLink class="sidebar-link" href="ranking">
-            <span class="sidebar-icon">RK</span>
-            <span>Ranking</span>
-        </NavLink>
+            <NavLink class="sidebar-link" href="my-registrations">
+                <span class="sidebar-icon">MI</span>
+                <span>Mis inscripciones</span>
+            </NavLink>
 
-        <NavLink class="sidebar-link" href="dashboard">
-            <span class="sidebar-icon">DB</span>
-            <span>Dashboard</span>
-        </NavLink>
+            <NavLink class="sidebar-link" href="pairs">
+                <span class="sidebar-icon">PR</span>
+                <span>Mi pareja</span>
+            </NavLink>
+
+            <NavLink class="sidebar-link" href="matches/history">
+                <span class="sidebar-icon">HT</span>
+                <span>Historial</span>
+            </NavLink>
+
+            <NavLink class="sidebar-link" href="ranking">
+                <span class="sidebar-icon">RK</span>
+                <span>Ranking</span>
+            </NavLink>
+        }
+        else
+        {
+            <NavLink class="sidebar-link" href="tournaments/available">
+                <span class="sidebar-icon">TD</span>
+                <span>Disponibles</span>
+            </NavLink>
+
+            <NavLink class="sidebar-link" href="ranking">
+                <span class="sidebar-icon">RK</span>
+                <span>Ranking</span>
+            </NavLink>
+        }
     </nav>
 </div>
+
+@code {
+    private bool IsOrganizerMode =>
+        OrganizerAccountService.IsLoggedIn &&
+        OrganizerAccountService.CurrentOrganizer != null;
+
+    private bool IsPlayerMode =>
+        PlayerAccountService.IsLoggedIn &&
+        PlayerAccountService.CurrentPlayer != null;
+
+    protected override void OnInitialized()
+    {
+        PlayerAccountService.SessionChanged += RefreshMenu;
+        OrganizerAccountService.SessionChanged += RefreshMenu;
+    }
+
+    private void RefreshMenu()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        PlayerAccountService.SessionChanged -= RefreshMenu;
+        OrganizerAccountService.SessionChanged -= RefreshMenu;
+    }
+}

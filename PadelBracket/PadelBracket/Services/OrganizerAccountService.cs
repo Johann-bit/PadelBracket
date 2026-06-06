@@ -10,6 +10,8 @@ public class OrganizerAccountService
     private readonly IOrganizerAccountRepository accountRepository;
     private Guid? currentOrganizerId;
 
+    public event Action? SessionChanged;
+
     public OrganizerAccountService(
         OrganizerService organizerService,
         IOrganizerAccountRepository accountRepository)
@@ -60,6 +62,7 @@ public class OrganizerAccountService
             password));
 
         currentOrganizerId = organizer.Id;
+        SessionChanged?.Invoke();
 
         return organizer;
     }
@@ -77,6 +80,7 @@ public class OrganizerAccountService
             throw new InvalidOperationException("Email o contraseña incorrectos.");
 
         currentOrganizerId = account.OrganizerId;
+        SessionChanged?.Invoke();
 
         Organizer organizer = organizerService.GetById(account.OrganizerId)
             ?? throw new InvalidOperationException("No se encontró el organizador asociado a la cuenta.");
@@ -87,6 +91,7 @@ public class OrganizerAccountService
     public void Logout()
     {
         currentOrganizerId = null;
+        SessionChanged?.Invoke();
     }
 
     public void UpdateCurrentOrganizerProfile(
@@ -115,6 +120,7 @@ public class OrganizerAccountService
 
         account.ChangeEmail(email);
         accountRepository.SaveChanges();
+        SessionChanged?.Invoke();
     }
 
     private bool EmailAlreadyExists(string email)
