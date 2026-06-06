@@ -5,6 +5,7 @@
 @inject StandingService StandingService
 @inject QualificationService QualificationService
 @inject PairService PairService
+@inject OrganizerAccountService OrganizerAccountService
 @rendermode InteractiveServer
 
 <PageTitle>Detalle del grupo</PageTitle>
@@ -18,6 +19,54 @@
     <a class="btn btn-secondary" href="/tournaments">
         Volver a torneos
     </a>
+}
+else if (CurrentOrganizer == null)
+{
+    <div class="page-header">
+        <div class="page-eyebrow">Panel de organizador</div>
+        <h1 class="page-title">Acceso de organizador</h1>
+        <p class="page-subtitle">
+            Iniciá sesión como organizador para administrar este grupo.
+        </p>
+    </div>
+
+    <div class="empty-state">
+        <div class="empty-state-title">No hay una sesión de organizador activa.</div>
+        <div class="mb-3">
+            Entrá con tu cuenta de organizador para ver y editar grupos.
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary" href="/organizer/login">
+                Ingresar como organizador
+            </a>
+
+            <a class="btn btn-outline-primary" href="/tournaments">
+                Volver a torneos
+            </a>
+        </div>
+    </div>
+}
+else if (!CanManageTournament)
+{
+    <div class="page-header">
+        <div class="page-eyebrow">Panel de organizador</div>
+        <h1 class="page-title">Acceso denegado</h1>
+        <p class="page-subtitle">
+            Este grupo pertenece a un torneo de otra cuenta de organizador.
+        </p>
+    </div>
+
+    <div class="empty-state">
+        <div class="empty-state-title">No podés administrar este grupo.</div>
+        <div class="mb-3">
+            Solo el organizador dueño del torneo puede editar parejas, partidos y resultados.
+        </div>
+
+        <a class="btn btn-primary" href="/tournaments">
+            Volver a mis torneos
+        </a>
+    </div>
 }
 else
 {
@@ -466,6 +515,13 @@ else
     private Dictionary<Guid, MatchInput> matchInputs = new();
     private HashSet<Guid> editingMatchIds = new();
 
+    private Organizer? CurrentOrganizer => OrganizerAccountService.CurrentOrganizer;
+
+    private bool CanManageTournament =>
+        tournament != null &&
+        CurrentOrganizer != null &&
+        tournament.OrganizerId == CurrentOrganizer.Id;
+
     private List<Pair> AvailablePairs
     {
         get
@@ -504,6 +560,26 @@ else
         }
     }
 
+    private bool EnsureCanManageTournament()
+    {
+        if (tournament == null || group == null)
+            return false;
+
+        if (CurrentOrganizer == null)
+        {
+            errorMessage = "Tenés que iniciar sesión como organizador.";
+            return false;
+        }
+
+        if (tournament.OrganizerId != CurrentOrganizer.Id)
+        {
+            errorMessage = "Solo podés administrar torneos asociados a tu cuenta.";
+            return false;
+        }
+
+        return true;
+    }
+
     private void RefreshStandings()
     {
         if (group == null)
@@ -535,7 +611,7 @@ else
 
     private void AddPair()
     {
-        if (tournament == null || group == null)
+        if (!EnsureCanManageTournament() || tournament == null || group == null)
             return;
 
         errorMessage = null;
@@ -566,7 +642,7 @@ else
 
     private void RemovePair(Guid pairId)
     {
-        if (tournament == null || group == null)
+        if (!EnsureCanManageTournament() || tournament == null || group == null)
             return;
 
         errorMessage = null;
@@ -592,7 +668,7 @@ else
 
     private void GenerateMatches()
     {
-        if (tournament == null || group == null)
+        if (!EnsureCanManageTournament() || tournament == null || group == null)
             return;
 
         errorMessage = null;
@@ -628,7 +704,7 @@ else
 
     private void StartEditResult(Guid matchId)
     {
-        if (group == null)
+        if (!EnsureCanManageTournament() || group == null)
             return;
 
         var match = group.Matches.FirstOrDefault(match => match.Id == matchId);
@@ -663,7 +739,7 @@ else
 
     private void ClearResult(Guid matchId)
     {
-        if (tournament == null || group == null)
+        if (!EnsureCanManageTournament() || tournament == null || group == null)
             return;
 
         errorMessage = null;
@@ -692,7 +768,7 @@ else
 
     private void RegisterResult(Guid matchId)
     {
-        if (tournament == null || group == null)
+        if (!EnsureCanManageTournament() || tournament == null || group == null)
             return;
 
         errorMessage = null;
