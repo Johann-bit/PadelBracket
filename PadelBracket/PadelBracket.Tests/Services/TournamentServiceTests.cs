@@ -471,6 +471,78 @@ public class TournamentServiceTests
         Assert.AreEqual(PaymentStatus.Refunded, registration.PaymentStatus);
     }
 
+    [TestMethod]
+    public void AddConfirmedRegistrationPairToGroup_WhenRegistrationIsConfirmed_ShouldAddPairToGroup()
+    {
+        var context = CreateTournamentContext();
+        var service = context.TournamentService;
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        service.AddCategoryToTournament(tournament.Id, 6, 16, 800);
+
+        var group = service.AddGroupToTournament(tournament.Id, "Grupo A", 6);
+        var pair = CreateCompletePair(context.PairService, "Juan Perez", "Pedro Gomez", 6);
+        var registration = service.RegisterPairToTournament(tournament.Id, pair.Id, 6);
+
+        service.ConfirmRegistration(tournament.Id, registration.Id);
+
+        var addedPair = service.AddConfirmedRegistrationPairToGroup(
+            tournament.Id,
+            group.Id,
+            registration.Id);
+
+        Assert.AreEqual(pair.Id, addedPair.Id);
+        Assert.AreEqual(1, group.Pairs.Count);
+        Assert.AreEqual(pair.Id, group.Pairs[0].Id);
+    }
+
+    [TestMethod]
+    public void AddConfirmedRegistrationPairToGroup_WhenRegistrationIsPending_ShouldThrowInvalidOperationException()
+    {
+        var context = CreateTournamentContext();
+        var service = context.TournamentService;
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        service.AddCategoryToTournament(tournament.Id, 6, 16, 800);
+
+        var group = service.AddGroupToTournament(tournament.Id, "Grupo A", 6);
+        var pair = CreateCompletePair(context.PairService, "Juan Perez", "Pedro Gomez", 6);
+        var registration = service.RegisterPairToTournament(tournament.Id, pair.Id, 6);
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            service.AddConfirmedRegistrationPairToGroup(
+                tournament.Id,
+                group.Id,
+                registration.Id));
+
+        Assert.AreEqual(0, group.Pairs.Count);
+    }
+
+    [TestMethod]
+    public void AddConfirmedRegistrationPairToGroup_WhenRegistrationCategoryDoesNotMatchGroup_ShouldThrowArgumentException()
+    {
+        var context = CreateTournamentContext();
+        var service = context.TournamentService;
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        service.AddCategoryToTournament(tournament.Id, 6, 16, 800);
+        service.AddCategoryToTournament(tournament.Id, 5, 16, 800);
+
+        var group = service.AddGroupToTournament(tournament.Id, "Grupo A", 5);
+        var pair = CreateCompletePair(context.PairService, "Juan Perez", "Pedro Gomez", 6);
+        var registration = service.RegisterPairToTournament(tournament.Id, pair.Id, 6);
+
+        service.ConfirmRegistration(tournament.Id, registration.Id);
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            service.AddConfirmedRegistrationPairToGroup(
+                tournament.Id,
+                group.Id,
+                registration.Id));
+
+        Assert.AreEqual(0, group.Pairs.Count);
+    }
+
     private static Pair CreateCompletePair(
         PairService pairService,
         string playerOneName,

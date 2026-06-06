@@ -1,5 +1,6 @@
 ﻿using PadelBracket.Domain.DTOs;
 using PadelBracket.Domain.Entities;
+using PadelBracket.Domain.Enums;
 using PadelBracket.Repositories.Interface;
 
 namespace PadelBracket.Services;
@@ -348,6 +349,34 @@ public class TournamentService
         return pair;
     }
 
+    public Pair AddConfirmedRegistrationPairToGroup(
+        Guid tournamentId,
+        Guid groupId,
+        Guid registrationId)
+    {
+        var tournament = GetTournamentOrThrow(tournamentId);
+
+        var group = tournament.Groups.FirstOrDefault(group => group.Id == groupId);
+
+        if (group == null)
+            throw new ArgumentException("Group not found.");
+
+        var registration = tournament.Registrations
+            .FirstOrDefault(registration => registration.Id == registrationId);
+
+        if (registration == null)
+            throw new ArgumentException("Registration not found.");
+
+        if (registration.Status != RegistrationStatus.Confirmed)
+            throw new InvalidOperationException("Only confirmed registrations can be added to a group.");
+
+        if (registration.Category != group.Category)
+            throw new ArgumentException("Registration category must match group category.");
+
+        group.AddPair(registration.Pair);
+
+        return registration.Pair;
+    }
     public void UpdatePairInGroup(
         Guid tournamentId,
         Guid groupId,
