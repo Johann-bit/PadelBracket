@@ -4,6 +4,7 @@ public class RankingItem
 {
     public Guid PairId { get; set; }
     public string PairName { get; set; } = string.Empty;
+    public int Category { get; set; }
     public int MatchesPlayed { get; set; }
     public int Wins { get; set; }
     public int Losses { get; set; }
