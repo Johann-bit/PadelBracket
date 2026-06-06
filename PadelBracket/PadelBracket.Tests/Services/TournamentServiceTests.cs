@@ -402,6 +402,75 @@ public class TournamentServiceTests
         );
     }
 
+    [TestMethod]
+    public void ConfirmRegistration_WhenRegistrationExists_ShouldConfirmRegistration()
+    {
+        var context = CreateTournamentContext();
+        var service = context.TournamentService;
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        service.AddCategoryToTournament(tournament.Id, 6, 16, 800);
+
+        var pair = CreateCompletePair(context.PairService, "Juan Perez", "Pedro Gomez", 6);
+        var registration = service.RegisterPairToTournament(tournament.Id, pair.Id, 6);
+
+        service.ConfirmRegistration(tournament.Id, registration.Id);
+
+        Assert.AreEqual(RegistrationStatus.Confirmed, registration.Status);
+    }
+
+    [TestMethod]
+    public void RejectRegistration_WhenRegistrationExists_ShouldRejectRegistration()
+    {
+        var context = CreateTournamentContext();
+        var service = context.TournamentService;
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        service.AddCategoryToTournament(tournament.Id, 6, 16, 800);
+
+        var pair = CreateCompletePair(context.PairService, "Juan Perez", "Pedro Gomez", 6);
+        var registration = service.RegisterPairToTournament(tournament.Id, pair.Id, 6);
+
+        service.RejectRegistration(tournament.Id, registration.Id);
+
+        Assert.AreEqual(RegistrationStatus.Rejected, registration.Status);
+    }
+
+    [TestMethod]
+    public void MarkRegistrationAsPaid_WhenRegistrationExists_ShouldMarkPaymentAsPaid()
+    {
+        var context = CreateTournamentContext();
+        var service = context.TournamentService;
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        service.AddCategoryToTournament(tournament.Id, 6, 16, 800);
+
+        var pair = CreateCompletePair(context.PairService, "Juan Perez", "Pedro Gomez", 6);
+        var registration = service.RegisterPairToTournament(tournament.Id, pair.Id, 6);
+
+        service.MarkRegistrationAsPaid(tournament.Id, registration.Id);
+
+        Assert.AreEqual(PaymentStatus.Paid, registration.PaymentStatus);
+    }
+
+    [TestMethod]
+    public void RefundRegistration_WhenRegistrationIsPaid_ShouldRefundPayment()
+    {
+        var context = CreateTournamentContext();
+        var service = context.TournamentService;
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        service.AddCategoryToTournament(tournament.Id, 6, 16, 800);
+
+        var pair = CreateCompletePair(context.PairService, "Juan Perez", "Pedro Gomez", 6);
+        var registration = service.RegisterPairToTournament(tournament.Id, pair.Id, 6);
+
+        service.MarkRegistrationAsPaid(tournament.Id, registration.Id);
+        service.RefundRegistration(tournament.Id, registration.Id);
+
+        Assert.AreEqual(PaymentStatus.Refunded, registration.PaymentStatus);
+    }
+
     private static Pair CreateCompletePair(
         PairService pairService,
         string playerOneName,

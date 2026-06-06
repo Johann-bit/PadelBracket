@@ -234,6 +234,58 @@ public class TournamentService
         tournamentRegistrationService.CancelRegistration(registration);
     }
 
+    public void ConfirmRegistration(
+    Guid tournamentId,
+    Guid registrationId)
+    {
+        Tournament tournament = GetTournamentOrThrow(tournamentId);
+
+        TournamentRegistration registration = tournament.Registrations
+            .FirstOrDefault(registration => registration.Id == registrationId)
+            ?? throw new ArgumentException("Registration not found.");
+
+        tournamentRegistrationService.ConfirmRegistration(registration);
+    }
+
+    public void RejectRegistration(
+        Guid tournamentId,
+        Guid registrationId)
+    {
+        Tournament tournament = GetTournamentOrThrow(tournamentId);
+
+        TournamentRegistration registration = tournament.Registrations
+            .FirstOrDefault(registration => registration.Id == registrationId)
+            ?? throw new ArgumentException("Registration not found.");
+
+        tournamentRegistrationService.RejectRegistration(registration);
+    }
+
+    public void MarkRegistrationAsPaid(
+        Guid tournamentId,
+        Guid registrationId)
+    {
+        Tournament tournament = GetTournamentOrThrow(tournamentId);
+
+        TournamentRegistration registration = tournament.Registrations
+            .FirstOrDefault(registration => registration.Id == registrationId)
+            ?? throw new ArgumentException("Registration not found.");
+
+        tournamentRegistrationService.MarkRegistrationAsPaid(registration);
+    }
+
+    public void RefundRegistration(
+        Guid tournamentId,
+        Guid registrationId)
+    {
+        Tournament tournament = GetTournamentOrThrow(tournamentId);
+
+        TournamentRegistration registration = tournament.Registrations
+            .FirstOrDefault(registration => registration.Id == registrationId)
+            ?? throw new ArgumentException("Registration not found.");
+
+        tournamentRegistrationService.RefundRegistration(registration);
+    }
+
     public Group AddGroupToTournament(Guid tournamentId, string groupName, int category)
     {
         var tournament = GetTournamentOrThrow(tournamentId);
