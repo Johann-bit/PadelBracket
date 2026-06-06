@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Player> Players => Set<Player>();
+    public DbSet<PlayerAccount> PlayerAccounts => Set<PlayerAccount>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +45,27 @@ public class ApplicationDbContext : DbContext
 
             entity.Ignore(player => player.IsVerified);
             entity.Ignore(player => player.HasCompleteProfile);
+        });
+        modelBuilder.Entity<PlayerAccount>(entity =>
+        {
+            entity.ToTable("PlayerAccounts");
+
+            entity.HasKey(account => account.PlayerId);
+
+            entity.Property(account => account.Email)
+                .HasMaxLength(120)
+                .IsRequired();
+
+            entity.Property(account => account.PasswordHash)
+                .IsRequired();
+
+            entity.Property(account => account.PasswordSalt)
+                .IsRequired();
+
+            entity.Property(account => account.PasswordResetCode)
+                .HasMaxLength(6);
+
+            entity.Property(account => account.PasswordResetRequestedAt);
         });
     }
 }

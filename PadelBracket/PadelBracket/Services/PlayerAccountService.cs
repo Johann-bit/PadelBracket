@@ -1,19 +1,22 @@
-﻿using System.Security.Cryptography;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using PadelBracket.Domain.Entities;
 using PadelBracket.Domain.Enums;
+using PadelBracket.Repositories.Interface;
 
 namespace PadelBracket.Services;
 
 public class PlayerAccountService
 {
     private readonly PlayerService playerService;
-    private readonly Dictionary<Guid, PlayerAccount> accountsByPlayerId = new();
+    private readonly IPlayerAccountRepository accountRepository;
     private Guid? currentPlayerId;
 
-    public PlayerAccountService(PlayerService playerService)
+    public PlayerAccountService(
+        PlayerService playerService,
+        IPlayerAccountRepository accountRepository)
     {
         this.playerService = playerService;
+        this.accountRepository = accountRepository;
     }
 
     public bool IsLoggedIn => currentPlayerId.HasValue;
@@ -70,10 +73,10 @@ public class PlayerAccountService
             preferredSide,
             category);
 
-        accountsByPlayerId[player.Id] = PlayerAccount.Create(
+        accountRepository.Add(PlayerAccount.Create(
             player.Id,
             player.Email,
-            password);
+            password));
 
         currentPlayerId = player.Id;
 
@@ -88,8 +91,7 @@ public class PlayerAccountService
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("La contraseña es obligatoria.");
 
-        PlayerAccount? account = accountsByPlayerId.Values.FirstOrDefault(account =>
-            string.Equals(account.Email, email.Trim(), StringComparison.OrdinalIgnoreCase));
+        PlayerAccount? account = accountRepository.GetByEmail(email);
 
         if (account == null || !account.VerifyPassword(password))
             throw new InvalidOperationException("Email o contraseña incorrectos.");
@@ -117,8 +119,11 @@ public class PlayerAccountService
 
         playerService.UpdatePersonalData(player.Id, realName, email);
 
-        if (accountsByPlayerId.TryGetValue(player.Id, out PlayerAccount? account))
-            account.ChangeEmail(email);
+        PlayerAccount account = accountRepository.GetByPlayerId(player.Id)
+            ?? throw new InvalidOperationException("No se encontró la cuenta del jugador.");
+
+        account.ChangeEmail(email);
+        accountRepository.SaveChanges();
     }
 
     public void ChangeCurrentPlayerPassword(
@@ -129,7 +134,7 @@ public class PlayerAccountService
         Player player = CurrentPlayer
             ?? throw new InvalidOperationException("No hay una sesión activa.");
 
-        PlayerAccount account = accountsByPlayerId.GetValueOrDefault(player.Id)
+        PlayerAccount account = accountRepository.GetByPlayerId(player.Id)
             ?? throw new InvalidOperationException("No se encontró la cuenta del jugador.");
 
         if (string.IsNullOrWhiteSpace(currentPassword))
@@ -141,17 +146,20 @@ public class PlayerAccountService
         ValidatePassword(newPassword, confirmNewPassword, player.Name, player.Email);
 
         account.ChangePassword(newPassword);
+        accountRepository.SaveChanges();
     }
 
     public string RequestPasswordReset(string email)
     {
         ValidateEmail(email);
 
-        PlayerAccount account = accountsByPlayerId.Values.FirstOrDefault(account =>
-            string.Equals(account.Email, email.Trim(), StringComparison.OrdinalIgnoreCase))
+        PlayerAccount account = accountRepository.GetByEmail(email)
             ?? throw new InvalidOperationException("No existe una cuenta registrada con ese email.");
 
-        return account.CreatePasswordResetCode();
+        string resetCode = account.CreatePasswordResetCode();
+        accountRepository.SaveChanges();
+
+        return resetCode;
     }
 
     public void ResetPassword(
@@ -165,8 +173,7 @@ public class PlayerAccountService
         if (string.IsNullOrWhiteSpace(resetCode))
             throw new ArgumentException("El código de recuperación es obligatorio.");
 
-        PlayerAccount account = accountsByPlayerId.Values.FirstOrDefault(account =>
-            string.Equals(account.Email, email.Trim(), StringComparison.OrdinalIgnoreCase))
+        PlayerAccount account = accountRepository.GetByEmail(email)
             ?? throw new InvalidOperationException("No existe una cuenta registrada con ese email.");
 
         Player player = playerService.GetById(account.PlayerId)
@@ -179,6 +186,7 @@ public class PlayerAccountService
 
         account.ChangePassword(newPassword);
         account.ClearPasswordResetCode();
+        accountRepository.SaveChanges();
     }
 
     private bool EmailAlreadyExists(string email)
@@ -267,93 +275,6 @@ public class PlayerAccountService
         {
             if (namePart.Length >= 3 && normalizedPassword.Contains(namePart))
                 throw new ArgumentException("La contraseña no puede contener partes de tu nombre.");
-        }
-    }
-
-    private class PlayerAccount
-    {
-        public Guid PlayerId { get; }
-        public string Email { get; private set; }
-        private byte[] PasswordHash { get; set; }
-        private byte[] PasswordSalt { get; set; }
-        private string? PasswordResetCode { get; set; }
-        private DateTime? PasswordResetRequestedAt { get; set; }
-
-        private PlayerAccount(
-            Guid playerId,
-            string email,
-            byte[] passwordHash,
-            byte[] passwordSalt)
-        {
-            PlayerId = playerId;
-            Email = email.Trim().ToLower();
-            PasswordHash = passwordHash;
-            PasswordSalt = passwordSalt;
-        }
-
-        public static PlayerAccount Create(Guid playerId, string email, string password)
-        {
-            byte[] salt = RandomNumberGenerator.GetBytes(16);
-            byte[] hash = HashPassword(password, salt);
-
-            return new PlayerAccount(
-                playerId,
-                email,
-                hash,
-                salt);
-        }
-
-        public void ChangeEmail(string email)
-        {
-            Email = email.Trim().ToLower();
-        }
-
-        public void ChangePassword(string password)
-        {
-            PasswordSalt = RandomNumberGenerator.GetBytes(16);
-            PasswordHash = HashPassword(password, PasswordSalt);
-        }
-
-        public string CreatePasswordResetCode()
-        {
-            PasswordResetCode = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
-            PasswordResetRequestedAt = DateTime.UtcNow;
-
-            return PasswordResetCode;
-        }
-
-        public bool HasValidPasswordResetCode(string resetCode)
-        {
-            if (string.IsNullOrWhiteSpace(PasswordResetCode) || !PasswordResetRequestedAt.HasValue)
-                return false;
-
-            if (DateTime.UtcNow - PasswordResetRequestedAt.Value > TimeSpan.FromMinutes(15))
-                return false;
-
-            return string.Equals(PasswordResetCode, resetCode.Trim(), StringComparison.Ordinal);
-        }
-
-        public void ClearPasswordResetCode()
-        {
-            PasswordResetCode = null;
-            PasswordResetRequestedAt = null;
-        }
-
-        public bool VerifyPassword(string password)
-        {
-            byte[] hash = HashPassword(password, PasswordSalt);
-
-            return CryptographicOperations.FixedTimeEquals(hash, PasswordHash);
-        }
-
-        private static byte[] HashPassword(string password, byte[] salt)
-        {
-            return Rfc2898DeriveBytes.Pbkdf2(
-                password,
-                salt,
-                100_000,
-                HashAlgorithmName.SHA256,
-                32);
         }
     }
 }

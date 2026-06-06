@@ -230,9 +230,12 @@ public class PlayerAccountServiceTests
     private static PlayerAccountService CreateService()
     {
         var playerRepository = new InMemoryPlayerRepository();
+        var playerAccountRepository = new InMemoryPlayerAccountRepository();
         var playerService = new PlayerService(playerRepository);
 
-        return new PlayerAccountService(playerService);
+        return new PlayerAccountService(
+            playerService,
+            playerAccountRepository);
     }
 
     [TestMethod]

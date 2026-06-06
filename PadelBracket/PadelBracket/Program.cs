@@ -16,6 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         "Data Source=arenapadel.db"));
 
 builder.Services.AddScoped<IPlayerRepository, EfPlayerRepository>();
+builder.Services.AddScoped<IPlayerAccountRepository, EfPlayerAccountRepository>();
 builder.Services.AddSingleton<IPairRepository, InMemoryPairRepository>();
 builder.Services.AddSingleton<ITournamentRepository, InMemoryTournamentRepository>();
 
