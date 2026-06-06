@@ -2,6 +2,7 @@
 @using PadelBracket.Domain.Entities
 @using PadelBracket.Services
 @inject TournamentService TournamentService
+@inject OrganizerAccountService OrganizerAccountService
 @rendermode InteractiveServer
 
 <PageTitle>Detalle del torneo</PageTitle>
@@ -15,6 +16,54 @@
     <a class="btn btn-secondary" href="/tournaments">
         Volver a torneos
     </a>
+}
+else if (CurrentOrganizer == null)
+{
+    <div class="page-header">
+        <div class="page-eyebrow">Panel de organizador</div>
+        <h1 class="page-title">Acceso de organizador</h1>
+        <p class="page-subtitle">
+            Iniciá sesión como organizador para administrar este torneo.
+        </p>
+    </div>
+
+    <div class="empty-state">
+        <div class="empty-state-title">No hay una sesión de organizador activa.</div>
+        <div class="mb-3">
+            Entrá con tu cuenta de organizador para ver y editar torneos.
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary" href="/organizer/login">
+                Ingresar como organizador
+            </a>
+
+            <a class="btn btn-outline-primary" href="/tournaments">
+                Volver a torneos
+            </a>
+        </div>
+    </div>
+}
+else if (!CanManageTournament)
+{
+    <div class="page-header">
+        <div class="page-eyebrow">Panel de organizador</div>
+        <h1 class="page-title">Acceso denegado</h1>
+        <p class="page-subtitle">
+            Este torneo pertenece a otra cuenta de organizador.
+        </p>
+    </div>
+
+    <div class="empty-state">
+        <div class="empty-state-title">No podés administrar este torneo.</div>
+        <div class="mb-3">
+            Solo el organizador dueño puede editar datos, categorías, grupos y resultados.
+        </div>
+
+        <a class="btn btn-primary" href="/tournaments">
+            Volver a mis torneos
+        </a>
+    </div>
 }
 else
 {
@@ -352,8 +401,8 @@ else
     else
     {
         @foreach (var categoryGroup in tournament.Groups
-                                    .GroupBy(g => g.Category)
-                                    .OrderByDescending(g => g.Key))
+                                            .GroupBy(g => g.Category)
+                                            .OrderByDescending(g => g.Key))
         {
             <section class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -534,6 +583,13 @@ else
 
     private Guid? groupIdToDelete;
 
+    private Organizer? CurrentOrganizer => OrganizerAccountService.CurrentOrganizer;
+
+    private bool CanManageTournament =>
+        tournament != null &&
+        CurrentOrganizer != null &&
+        tournament.OrganizerId == CurrentOrganizer.Id;
+
     protected override void OnInitialized()
     {
         LoadTournament();
@@ -544,9 +600,29 @@ else
         tournament = TournamentService.GetTournamentById(TournamentId);
     }
 
-    private void StartDetailsEdit()
+    private bool EnsureCanManageTournament()
     {
         if (tournament == null)
+            return false;
+
+        if (CurrentOrganizer == null)
+        {
+            errorMessage = "Tenés que iniciar sesión como organizador.";
+            return false;
+        }
+
+        if (tournament.OrganizerId != CurrentOrganizer.Id)
+        {
+            errorMessage = "Solo podés administrar torneos asociados a tu cuenta.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private void StartDetailsEdit()
+    {
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         isEditingDetails = true;
@@ -573,7 +649,7 @@ else
 
     private void SaveDetailsEdit()
     {
-        if (tournament == null)
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         errorMessage = null;
@@ -601,7 +677,7 @@ else
 
     private void CreateCategory()
     {
-        if (tournament == null)
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         errorMessage = null;
@@ -631,6 +707,9 @@ else
 
     private void AskDeleteCategory(int category)
     {
+        if (!EnsureCanManageTournament())
+            return;
+
         categoryToDelete = category;
 
         errorMessage = null;
@@ -644,7 +723,7 @@ else
 
     private void DeleteCategory(int category)
     {
-        if (tournament == null)
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         errorMessage = null;
@@ -676,7 +755,7 @@ else
 
     private void CreateGroup()
     {
-        if (tournament == null)
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         errorMessage = null;
@@ -703,6 +782,9 @@ else
 
     private void StartGroupEdit(Group group)
     {
+        if (!EnsureCanManageTournament())
+            return;
+
         editingGroupId = group.Id;
         editGroupName = group.Name;
         groupIdToDelete = null;
@@ -722,7 +804,7 @@ else
 
     private void SaveGroupEdit(Guid groupId)
     {
-        if (tournament == null)
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         errorMessage = null;
@@ -751,6 +833,9 @@ else
 
     private void AskDeleteGroup(Guid groupId)
     {
+        if (!EnsureCanManageTournament())
+            return;
+
         editingGroupId = null;
         editGroupName = string.Empty;
         groupIdToDelete = groupId;
@@ -766,7 +851,7 @@ else
 
     private void DeleteGroup(Guid groupId)
     {
-        if (tournament == null)
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         errorMessage = null;
