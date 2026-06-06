@@ -30,9 +30,10 @@ builder.Services.AddSingleton<MatchHistoryService>();
 builder.Services.AddSingleton<RankingService>();
 builder.Services.AddSingleton<TournamentRegistrationService>();
 builder.Services.AddScoped<PlayerAccountService>();
-builder.Services.AddSingleton<IOrganizerRepository, InMemoryOrganizerRepository>();
-builder.Services.AddSingleton<OrganizerService>();
-builder.Services.AddSingleton<OrganizerAccountService>();
+builder.Services.AddScoped<IOrganizerRepository, EfOrganizerRepository>();
+builder.Services.AddScoped<IOrganizerAccountRepository, EfOrganizerAccountRepository>();
+builder.Services.AddScoped<OrganizerService>();
+builder.Services.AddScoped<OrganizerAccountService>();
 
 var app = builder.Build();
 

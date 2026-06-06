@@ -10,4 +10,5 @@ public interface IOrganizerRepository
     void Delete(Organizer organizer);
     bool ExistsByEmail(string email);
     bool ExistsByEmailExceptId(string email, Guid id);
+    void SaveChanges();
 }

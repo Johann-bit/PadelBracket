@@ -39,4 +39,8 @@ public class InMemoryOrganizerRepository : IOrganizerRepository
             organizer.Id != id &&
             string.Equals(organizer.Email, email.Trim(), StringComparison.OrdinalIgnoreCase));
     }
+
+    public void SaveChanges()
+    {
+    }
 }

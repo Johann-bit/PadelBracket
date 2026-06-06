@@ -17,6 +17,15 @@ public class Organizer
         !string.IsNullOrWhiteSpace(City) &&
         !string.IsNullOrWhiteSpace(Phone);
 
+    private Organizer()
+    {
+        RealName = string.Empty;
+        Email = string.Empty;
+        ClubName = string.Empty;
+        City = string.Empty;
+        Phone = string.Empty;
+    }
+
     public Organizer(
         string realName,
         string email,

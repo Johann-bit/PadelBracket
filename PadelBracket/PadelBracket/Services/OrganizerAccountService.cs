@@ -1,18 +1,21 @@
-﻿using System.Security.Cryptography;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using PadelBracket.Domain.Entities;
+using PadelBracket.Repositories.Interface;
 
 namespace PadelBracket.Services;
 
 public class OrganizerAccountService
 {
     private readonly OrganizerService organizerService;
-    private readonly Dictionary<Guid, OrganizerAccount> accountsByOrganizerId = new();
+    private readonly IOrganizerAccountRepository accountRepository;
     private Guid? currentOrganizerId;
 
-    public OrganizerAccountService(OrganizerService organizerService)
+    public OrganizerAccountService(
+        OrganizerService organizerService,
+        IOrganizerAccountRepository accountRepository)
     {
         this.organizerService = organizerService;
+        this.accountRepository = accountRepository;
     }
 
     public bool IsLoggedIn => currentOrganizerId.HasValue;
@@ -51,10 +54,10 @@ public class OrganizerAccountService
             city,
             phone);
 
-        accountsByOrganizerId[organizer.Id] = OrganizerAccount.Create(
+        accountRepository.Add(OrganizerAccount.Create(
             organizer.Id,
             organizer.Email,
-            password);
+            password));
 
         currentOrganizerId = organizer.Id;
 
@@ -68,8 +71,7 @@ public class OrganizerAccountService
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("La contraseña es obligatoria.");
 
-        OrganizerAccount? account = accountsByOrganizerId.Values.FirstOrDefault(account =>
-            string.Equals(account.Email, email.Trim(), StringComparison.OrdinalIgnoreCase));
+        OrganizerAccount? account = accountRepository.GetByEmail(email);
 
         if (account == null || !account.VerifyPassword(password))
             throw new InvalidOperationException("Email o contraseña incorrectos.");
@@ -108,8 +110,11 @@ public class OrganizerAccountService
             city,
             phone);
 
-        if (accountsByOrganizerId.TryGetValue(organizer.Id, out OrganizerAccount? account))
-            account.ChangeEmail(email);
+        OrganizerAccount account = accountRepository.GetByOrganizerId(organizer.Id)
+            ?? throw new InvalidOperationException("No se encontró la cuenta del organizador.");
+
+        account.ChangeEmail(email);
+        accountRepository.SaveChanges();
     }
 
     private bool EmailAlreadyExists(string email)
@@ -198,60 +203,6 @@ public class OrganizerAccountService
         {
             if (namePart.Length >= 3 && normalizedPassword.Contains(namePart))
                 throw new ArgumentException("La contraseña no puede contener partes de tu nombre.");
-        }
-    }
-
-    private class OrganizerAccount
-    {
-        public Guid OrganizerId { get; }
-        public string Email { get; private set; }
-        private byte[] PasswordHash { get; set; }
-        private byte[] PasswordSalt { get; set; }
-
-        private OrganizerAccount(
-            Guid organizerId,
-            string email,
-            byte[] passwordHash,
-            byte[] passwordSalt)
-        {
-            OrganizerId = organizerId;
-            Email = email.Trim().ToLower();
-            PasswordHash = passwordHash;
-            PasswordSalt = passwordSalt;
-        }
-
-        public static OrganizerAccount Create(Guid organizerId, string email, string password)
-        {
-            byte[] salt = RandomNumberGenerator.GetBytes(16);
-            byte[] hash = HashPassword(password, salt);
-
-            return new OrganizerAccount(
-                organizerId,
-                email,
-                hash,
-                salt);
-        }
-
-        public void ChangeEmail(string email)
-        {
-            Email = email.Trim().ToLower();
-        }
-
-        public bool VerifyPassword(string password)
-        {
-            byte[] hash = HashPassword(password, PasswordSalt);
-
-            return CryptographicOperations.FixedTimeEquals(hash, PasswordHash);
-        }
-
-        private static byte[] HashPassword(string password, byte[] salt)
-        {
-            return Rfc2898DeriveBytes.Pbkdf2(
-                password,
-                salt,
-                100_000,
-                HashAlgorithmName.SHA256,
-                32);
         }
     }
 }

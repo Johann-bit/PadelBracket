@@ -12,6 +12,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Player> Players => Set<Player>();
     public DbSet<PlayerAccount> PlayerAccounts => Set<PlayerAccount>();
+    public DbSet<Organizer> Organizers => Set<Organizer>();
+    public DbSet<OrganizerAccount> OrganizerAccounts => Set<OrganizerAccount>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,6 +48,7 @@ public class ApplicationDbContext : DbContext
             entity.Ignore(player => player.IsVerified);
             entity.Ignore(player => player.HasCompleteProfile);
         });
+
         modelBuilder.Entity<PlayerAccount>(entity =>
         {
             entity.ToTable("PlayerAccounts");
@@ -66,6 +69,55 @@ public class ApplicationDbContext : DbContext
                 .HasMaxLength(6);
 
             entity.Property(account => account.PasswordResetRequestedAt);
+        });
+
+        modelBuilder.Entity<Organizer>(entity =>
+        {
+            entity.ToTable("Organizers");
+
+            entity.HasKey(organizer => organizer.Id);
+
+            entity.Property(organizer => organizer.RealName)
+                .HasMaxLength(80)
+                .IsRequired();
+
+            entity.Property(organizer => organizer.Email)
+                .HasMaxLength(120)
+                .IsRequired();
+
+            entity.Property(organizer => organizer.ClubName)
+                .HasMaxLength(120)
+                .IsRequired();
+
+            entity.Property(organizer => organizer.City)
+                .HasMaxLength(80)
+                .IsRequired();
+
+            entity.Property(organizer => organizer.Phone)
+                .HasMaxLength(40)
+                .IsRequired();
+
+            entity.Property(organizer => organizer.CreatedAt)
+                .IsRequired();
+
+            entity.Ignore(organizer => organizer.HasCompleteProfile);
+        });
+
+        modelBuilder.Entity<OrganizerAccount>(entity =>
+        {
+            entity.ToTable("OrganizerAccounts");
+
+            entity.HasKey(account => account.OrganizerId);
+
+            entity.Property(account => account.Email)
+                .HasMaxLength(120)
+                .IsRequired();
+
+            entity.Property(account => account.PasswordHash)
+                .IsRequired();
+
+            entity.Property(account => account.PasswordSalt)
+                .IsRequired();
         });
     }
 }

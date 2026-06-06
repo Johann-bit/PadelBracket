@@ -200,8 +200,11 @@ public class OrganizerAccountServiceTests
     private static OrganizerAccountService CreateService()
     {
         var organizerRepository = new InMemoryOrganizerRepository();
+        var organizerAccountRepository = new InMemoryOrganizerAccountRepository();
         var organizerService = new OrganizerService(organizerRepository);
 
-        return new OrganizerAccountService(organizerService);
+        return new OrganizerAccountService(
+            organizerService,
+            organizerAccountRepository);
     }
 }

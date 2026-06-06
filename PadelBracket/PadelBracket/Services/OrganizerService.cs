@@ -82,6 +82,7 @@ public class OrganizerService
             clubName,
             city,
             phone);
+        organizerRepository.SaveChanges();
     }
 
     public void Delete(Guid id)
