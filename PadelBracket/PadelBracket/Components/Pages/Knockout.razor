@@ -3,6 +3,7 @@
 @using PadelBracket.Services
 @inject TournamentService TournamentService
 @inject KnockoutService KnockoutService
+@inject OrganizerAccountService OrganizerAccountService
 @rendermode InteractiveServer
 
 <PageTitle>Llave eliminatoria</PageTitle>
@@ -16,6 +17,54 @@
     <a class="btn btn-secondary" href="/tournaments">
         Volver a torneos
     </a>
+}
+else if (CurrentOrganizer == null)
+{
+    <div class="page-header">
+        <div class="page-eyebrow">Panel de organizador</div>
+        <h1 class="page-title">Acceso de organizador</h1>
+        <p class="page-subtitle">
+            Iniciá sesión como organizador para administrar esta llave.
+        </p>
+    </div>
+
+    <div class="empty-state">
+        <div class="empty-state-title">No hay una sesión de organizador activa.</div>
+        <div class="mb-3">
+            Entrá con tu cuenta de organizador para ver y editar llaves eliminatorias.
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary" href="/organizer/login">
+                Ingresar como organizador
+            </a>
+
+            <a class="btn btn-outline-primary" href="/tournaments">
+                Volver a torneos
+            </a>
+        </div>
+    </div>
+}
+else if (!CanManageTournament)
+{
+    <div class="page-header">
+        <div class="page-eyebrow">Panel de organizador</div>
+        <h1 class="page-title">Acceso denegado</h1>
+        <p class="page-subtitle">
+            Esta llave pertenece a un torneo de otra cuenta de organizador.
+        </p>
+    </div>
+
+    <div class="empty-state">
+        <div class="empty-state-title">No podés administrar esta llave.</div>
+        <div class="mb-3">
+            Solo el organizador dueño del torneo puede generar llaves y cargar resultados.
+        </div>
+
+        <a class="btn btn-primary" href="/tournaments">
+            Volver a mis torneos
+        </a>
+    </div>
 }
 else
 {
@@ -337,6 +386,13 @@ else
 
     private Dictionary<Guid, MatchInput> matchInputs = new();
 
+    private Organizer? CurrentOrganizer => OrganizerAccountService.CurrentOrganizer;
+
+    private bool CanManageTournament =>
+        tournament != null &&
+        CurrentOrganizer != null &&
+        tournament.OrganizerId == CurrentOrganizer.Id;
+
     protected override void OnInitialized()
     {
         tournament = TournamentService.GetTournamentById(TournamentId);
@@ -349,9 +405,29 @@ else
         InitializeMatchInputs();
     }
 
-    private void GenerateBracket()
+    private bool EnsureCanManageTournament()
     {
         if (tournament == null)
+            return false;
+
+        if (CurrentOrganizer == null)
+        {
+            errorMessage = "Tenés que iniciar sesión como organizador.";
+            return false;
+        }
+
+        if (tournament.OrganizerId != CurrentOrganizer.Id)
+        {
+            errorMessage = "Solo podés administrar torneos asociados a tu cuenta.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private void GenerateBracket()
+    {
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         errorMessage = null;
@@ -375,7 +451,7 @@ else
 
     private void DeleteBracket()
     {
-        if (tournament == null)
+        if (!EnsureCanManageTournament() || tournament == null)
             return;
 
         errorMessage = null;
@@ -400,6 +476,9 @@ else
 
     private void ToggleDeleteConfirmation()
     {
+        if (!EnsureCanManageTournament())
+            return;
+
         showDeleteConfirmation = !showDeleteConfirmation;
         errorMessage = null;
         successMessage = null;
@@ -421,7 +500,7 @@ else
 
     private void RegisterResult(Guid matchId)
     {
-        if (tournament == null || bracket == null)
+        if (!EnsureCanManageTournament() || tournament == null || bracket == null)
             return;
 
         errorMessage = null;
@@ -470,6 +549,9 @@ else
 
     private void StartEditResult(KnockoutMatch match)
     {
+        if (!EnsureCanManageTournament())
+            return;
+
         if (match.Result == null)
             return;
 
@@ -509,7 +591,7 @@ else
 
     private void ClearResult(Guid matchId)
     {
-        if (tournament == null || bracket == null)
+        if (!EnsureCanManageTournament() || tournament == null || bracket == null)
             return;
 
         errorMessage = null;
