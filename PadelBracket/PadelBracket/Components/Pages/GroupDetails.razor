@@ -1,10 +1,10 @@
 ﻿@page "/tournaments/{TournamentId:guid}/groups/{GroupId:guid}"
 @using PadelBracket.Domain.Entities
+@using PadelBracket.Domain.Enums
 @using PadelBracket.Services
 @inject TournamentService TournamentService
 @inject StandingService StandingService
 @inject QualificationService QualificationService
-@inject PairService PairService
 @inject OrganizerAccountService OrganizerAccountService
 @rendermode InteractiveServer
 
@@ -110,43 +110,45 @@ else
 
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
-            <h4 class="card-title mb-3">Agregar pareja registrada</h4>
+            <h4 class="card-title mb-3">Agregar pareja confirmada</h4>
 
             <p class="text-muted mb-4">
-                Seleccioná una pareja creada previamente en la sección Parejas.
+                Seleccioná una inscripción confirmada de este torneo y de esta categoría.
             </p>
 
             <div class="mb-3">
-                <label class="form-label">Pareja</label>
+                <label class="form-label">Inscripción</label>
 
                 <select class="form-select"
                         disabled="@group.Matches.Any()"
-                        @bind="selectedPairId">
-                    <option value="">Seleccionar pareja</option>
+                        @bind="selectedRegistrationId">
+                    <option value="">Seleccionar inscripción</option>
 
-                    @foreach (var pair in AvailablePairs)
+                    @foreach (var registration in AvailableRegistrations)
                     {
-                        <option value="@pair.Id">@pair.DisplayName</option>
+                        <option value="@registration.Id">
+                            @registration.Pair.DisplayName
+                        </option>
                     }
                 </select>
             </div>
 
             <button class="btn btn-primary"
-                    disabled="@(group.Matches.Any() || !AvailablePairs.Any())"
+                    disabled="@(group.Matches.Any() || !AvailableRegistrations.Any())"
                     @onclick="AddPair">
                 Agregar pareja
             </button>
 
-            @if (!PairService.GetAll().Any())
+            @if (!tournament.Registrations.Any())
             {
                 <small class="text-muted ms-2">
-                    Primero tenés que crear parejas en la sección Parejas.
+                    Todavía no hay inscripciones en este torneo.
                 </small>
             }
-            else if (!AvailablePairs.Any() && !group.Matches.Any())
+            else if (!AvailableRegistrations.Any() && !group.Matches.Any())
             {
                 <small class="text-muted ms-2">
-                    Todas las parejas registradas ya están en este grupo.
+                    No hay inscripciones confirmadas disponibles para esta categoría.
                 </small>
             }
 
@@ -508,7 +510,7 @@ else
     private List<PairQualification> qualifications = new();
     private Dictionary<Guid, PairQualification> qualificationByPairId = new();
 
-    private string selectedPairId = string.Empty;
+    private string selectedRegistrationId = string.Empty;
     private string? errorMessage;
     private string? successMessage;
 
@@ -522,16 +524,23 @@ else
         CurrentOrganizer != null &&
         tournament.OrganizerId == CurrentOrganizer.Id;
 
-    private List<Pair> AvailablePairs
+    private List<TournamentRegistration> AvailableRegistrations
     {
         get
         {
-            if (group == null)
-                return new List<Pair>();
+            if (tournament == null || group == null)
+                return new List<TournamentRegistration>();
 
-            return PairService
-                .GetAll()
-                .Where(pair => group.Pairs.All(groupPair => groupPair.Id != pair.Id))
+            var assignedPairIds = tournament.Groups
+                .SelectMany(group => group.Pairs)
+                .Select(pair => pair.Id)
+                .ToHashSet();
+
+            return tournament.Registrations
+                .Where(registration => registration.Status == RegistrationStatus.Confirmed)
+                .Where(registration => registration.Category == group.Category)
+                .Where(registration => !assignedPairIds.Contains(registration.Pair.Id))
+                .OrderBy(registration => registration.Pair.DisplayName)
                 .ToList();
         }
     }
@@ -619,16 +628,16 @@ else
 
         try
         {
-            if (string.IsNullOrWhiteSpace(selectedPairId))
-                throw new ArgumentException("You must select a pair.");
+            if (string.IsNullOrWhiteSpace(selectedRegistrationId))
+                throw new ArgumentException("You must select a registration.");
 
-            TournamentService.AddExistingPairToGroup(
+            TournamentService.AddConfirmedRegistrationPairToGroup(
                 tournament.Id,
                 group.Id,
-                Guid.Parse(selectedPairId)
+                Guid.Parse(selectedRegistrationId)
             );
 
-            selectedPairId = string.Empty;
+            selectedRegistrationId = string.Empty;
 
             LoadData();
 
