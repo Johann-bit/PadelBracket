@@ -9,7 +9,7 @@
     <div class="page-eyebrow">Tabla competitiva</div>
     <h1 class="page-title">Ranking</h1>
     <p class="page-subtitle">
-        Clasificación general de parejas según resultados cargados en los partidos de fase de grupos.
+        Clasificación de parejas por categoría según resultados cargados en partidos de fase de grupos.
     </p>
 </div>
 
@@ -25,18 +25,39 @@
     </div>
 
     <div class="stat-card">
-        <div class="stat-label">Sistema</div>
-        <div class="stat-value">3 pts</div>
+        <div class="stat-label">Categoría</div>
+        <div class="stat-value">@SelectedCategoryLabel</div>
     </div>
 </div>
 
 <div class="card mb-4">
     <div class="card-body">
-        <h4 class="card-title mb-2">Criterios del ranking</h4>
+        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+            <div>
+                <h4 class="card-title mb-2">Criterios del ranking</h4>
 
-        <p class="text-muted mb-0">
-            Cada victoria suma 3 puntos. En caso de empate, se ordena por victorias, diferencia de games y games ganados.
-        </p>
+                <p class="text-muted mb-0">
+                    Cada victoria suma 3 puntos. En caso de empate, se ordena por victorias, diferencia de games y games ganados.
+                </p>
+            </div>
+
+            <div style="min-width: 220px;">
+                <label class="form-label">Filtrar categoría</label>
+                <select class="form-select"
+                        @bind="selectedCategory"
+                        @bind:after="LoadRanking">
+                    <option value="0">Todas</option>
+                    <option value="8">8va categoría</option>
+                    <option value="7">7ma categoría</option>
+                    <option value="6">6ta categoría</option>
+                    <option value="5">5ta categoría</option>
+                    <option value="4">4ta categoría</option>
+                    <option value="3">3ra categoría</option>
+                    <option value="2">2da categoría</option>
+                    <option value="1">1ra categoría</option>
+                </select>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -70,6 +91,7 @@ else
                 <tr>
                     <th>Posición</th>
                     <th>Pareja</th>
+                    <th>Categoría</th>
                     <th>Puntos</th>
                     <th>Jugados</th>
                     <th>Victorias</th>
@@ -94,6 +116,12 @@ else
 
                         <td>
                             <strong>@item.PairName</strong>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-dark">
+                                @GetCategoryLabel(item.Category)
+                            </span>
                         </td>
 
                         <td>
@@ -130,8 +158,12 @@ else
 
 @code {
     private List<RankingItem> ranking = new();
+    private int selectedCategory;
 
     private string LeaderName => ranking.Any() ? ranking.First().PairName : "Sin datos";
+
+    private string SelectedCategoryLabel =>
+        selectedCategory == 0 ? "Todas" : GetCategoryLabel(selectedCategory);
 
     protected override void OnInitialized()
     {
@@ -140,7 +172,9 @@ else
 
     private void LoadRanking()
     {
-        ranking = RankingService.GetRanking();
+        ranking = selectedCategory == 0
+            ? RankingService.GetRanking()
+            : RankingService.GetRankingByCategory(selectedCategory);
     }
 
     private string GetPositionBadgeClass(int index)
@@ -162,5 +196,21 @@ else
     private string FormatDifference(int difference)
     {
         return difference > 0 ? $"+{difference}" : difference.ToString();
+    }
+
+    private string GetCategoryLabel(int category)
+    {
+        return category switch
+        {
+            1 => "1ra",
+            2 => "2da",
+            3 => "3ra",
+            4 => "4ta",
+            5 => "5ta",
+            6 => "6ta",
+            7 => "7ma",
+            8 => "8va",
+            _ => "Sin categoría"
+        };
     }
 }
