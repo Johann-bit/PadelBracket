@@ -4,6 +4,7 @@
 @using PadelBracket.Services
 @inject PlayerAccountService PlayerAccountService
 @inject PlayerService PlayerService
+@inject RankingService RankingService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -36,7 +37,7 @@ else
         <div class="page-eyebrow">Cuenta de jugador</div>
         <h1 class="page-title">Mi perfil</h1>
         <p class="page-subtitle">
-            Revisá tus datos personales y deportivos para competir en torneos.
+            Revisá tus datos personales, deportivos y tu posición competitiva.
         </p>
     </div>
 
@@ -66,8 +67,98 @@ else
         </div>
 
         <div class="stat-card">
-            <div class="stat-label">Puntos</div>
+            <div class="stat-label">Puntos base</div>
             <div class="stat-value">@CurrentPlayer.RankingPoints</div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                <div>
+                    <h4 class="card-title mb-2">Ranking actual</h4>
+
+                    <p class="text-muted mb-0">
+                        Tu posición se calcula con los resultados cargados en torneos de tu categoría.
+                    </p>
+                </div>
+
+                <a class="btn btn-outline-primary" href="/ranking">
+                    Ver ranking
+                </a>
+            </div>
+
+            @if (rankingSummary == null || !CurrentPlayer.Category.HasValue)
+            {
+                <div class="empty-state">
+                    <div class="empty-state-title">Ranking no disponible.</div>
+                    <div>
+                        Completá tus datos deportivos para aparecer en el ranking de tu categoría.
+                    </div>
+                </div>
+            }
+            else if (!rankingSummary.IsRanked || rankingSummary.Ranking == null)
+            {
+                <div class="empty-state">
+                    <div class="empty-state-title">Todavía no tenés resultados rankeados.</div>
+                    <div>
+                        Cuando juegues partidos con resultados cargados, tu posición aparecerá acá.
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Posición</div>
+                            <div class="stat-value">#@rankingSummary.Position</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Puntos competitivos</div>
+                            <div class="stat-value">@rankingSummary.Ranking.Points</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Partidos</div>
+                            <div class="stat-value">@rankingSummary.Ranking.MatchesPlayed</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Win rate</div>
+                            <div class="stat-value">@rankingSummary.Ranking.WinRate.ToString("0.0")%</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-label">Victorias</div>
+                            <div class="stat-value">@rankingSummary.Ranking.Wins</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-label">Derrotas</div>
+                            <div class="stat-value">@rankingSummary.Ranking.Losses</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-label">Diferencia de games</div>
+                            <div class="stat-value">@FormatDifference(rankingSummary.Ranking.GameDifference)</div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 
@@ -212,6 +303,7 @@ else
     private string confirmNewPassword = string.Empty;
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
+    private PlayerRankingSummary? rankingSummary;
 
     private Player? CurrentPlayer => PlayerAccountService.CurrentPlayer;
 
@@ -230,6 +322,21 @@ else
         dominantHand = CurrentPlayer.DominantHand ?? DominantHand.Right;
         preferredSide = CurrentPlayer.PreferredSide ?? PreferredSide.Drive;
         category = CurrentPlayer.Category ?? 6;
+
+        LoadRankingSummary();
+    }
+
+    private void LoadRankingSummary()
+    {
+        if (CurrentPlayer == null || !CurrentPlayer.Category.HasValue)
+        {
+            rankingSummary = null;
+            return;
+        }
+
+        rankingSummary = RankingService.GetPlayerRankingSummary(
+            CurrentPlayer.Id,
+            CurrentPlayer.Category.Value);
     }
 
     private void SavePersonalData()
@@ -336,6 +443,11 @@ else
             PlayerVerificationStatus.Rejected => "bg-danger",
             _ => "bg-secondary"
         };
+    }
+
+    private static string FormatDifference(int difference)
+    {
+        return difference > 0 ? $"+{difference}" : difference.ToString();
     }
 
     private void ClearMessages()
