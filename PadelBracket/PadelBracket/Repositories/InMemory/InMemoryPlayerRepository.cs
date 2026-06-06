@@ -44,4 +44,8 @@ public class InMemoryPlayerRepository : IPlayerRepository
     {
         return players.Any();
     }
+
+    public void SaveChanges()
+    {
+    }
 }

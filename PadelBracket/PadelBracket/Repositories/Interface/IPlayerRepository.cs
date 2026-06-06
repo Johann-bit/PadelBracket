@@ -11,4 +11,5 @@ public interface IPlayerRepository
     bool ExistsByName(string name);
     bool ExistsByNameExceptId(string name, Guid id);
     bool HasAny();
+    void SaveChanges();
 }

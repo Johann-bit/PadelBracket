@@ -22,6 +22,12 @@ public class Player
         PreferredSide.HasValue &&
         Category.HasValue;
 
+    private Player()
+    {
+        Name = string.Empty;
+        Email = string.Empty;
+    }
+
     public Player(string name)
     {
         ValidateName(name);

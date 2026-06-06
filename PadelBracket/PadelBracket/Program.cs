@@ -15,7 +15,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection") ??
         "Data Source=arenapadel.db"));
 
-builder.Services.AddSingleton<IPlayerRepository, InMemoryPlayerRepository>();
+builder.Services.AddScoped<IPlayerRepository, EfPlayerRepository>();
 builder.Services.AddSingleton<IPairRepository, InMemoryPairRepository>();
 builder.Services.AddSingleton<ITournamentRepository, InMemoryTournamentRepository>();
 
@@ -23,17 +23,23 @@ builder.Services.AddSingleton<TournamentService>();
 builder.Services.AddSingleton<StandingService>();
 builder.Services.AddSingleton<QualificationService>();
 builder.Services.AddSingleton<KnockoutService>();
-builder.Services.AddSingleton<PlayerService>();
+builder.Services.AddScoped<PlayerService>();
 builder.Services.AddSingleton<PairService>();
 builder.Services.AddSingleton<MatchHistoryService>();
 builder.Services.AddSingleton<RankingService>();
 builder.Services.AddSingleton<TournamentRegistrationService>();
-builder.Services.AddSingleton<PlayerAccountService>();
+builder.Services.AddScoped<PlayerAccountService>();
 builder.Services.AddSingleton<IOrganizerRepository, InMemoryOrganizerRepository>();
 builder.Services.AddSingleton<OrganizerService>();
 builder.Services.AddSingleton<OrganizerAccountService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.EnsureCreated();
+}
 
 if (!app.Environment.IsDevelopment())
 {

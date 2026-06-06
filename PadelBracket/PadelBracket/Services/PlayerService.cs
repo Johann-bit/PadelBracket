@@ -92,6 +92,7 @@ public class PlayerService
             throw new ArgumentException("A player with that name already exists.");
 
         player.Rename(name);
+        playerRepository.SaveChanges();
     }
 
     public void UpdatePersonalData(Guid id, string name, string email)
@@ -105,6 +106,7 @@ public class PlayerService
             throw new ArgumentException("A player with that email already exists.");
 
         player.UpdatePersonalData(name, email);
+        playerRepository.SaveChanges();
     }
 
     public void UpdateSportData(
@@ -116,6 +118,7 @@ public class PlayerService
         Player player = GetById(id) ?? throw new ArgumentException("Player not found.");
 
         player.UpdateSportData(dominantHand, preferredSide, category);
+        playerRepository.SaveChanges();
     }
 
     public void Verify(Guid id)
@@ -123,6 +126,7 @@ public class PlayerService
         Player player = GetById(id) ?? throw new ArgumentException("Player not found.");
 
         player.Verify();
+        playerRepository.SaveChanges();
     }
 
     public void RejectVerification(Guid id)
@@ -130,6 +134,7 @@ public class PlayerService
         Player player = GetById(id) ?? throw new ArgumentException("Player not found.");
 
         player.RejectVerification();
+        playerRepository.SaveChanges();
     }
 
     public void Delete(Guid id)
