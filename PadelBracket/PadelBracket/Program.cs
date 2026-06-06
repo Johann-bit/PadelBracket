@@ -42,7 +42,27 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.EnsureCreated();
+
+    if (app.Environment.IsDevelopment())
+    {
+        bool resetDatabaseOnStartup = app.Configuration.GetValue(
+            "DevelopmentSeed:ResetDatabaseOnStartup",
+            false);
+
+        if (resetDatabaseOnStartup)
+        {
+            DevelopmentDataSeeder.ResetAndSeed(dbContext);
+        }
+        else
+        {
+            dbContext.Database.EnsureCreated();
+            DevelopmentDataSeeder.Seed(dbContext);
+        }
+    }
+    else
+    {
+        dbContext.Database.EnsureCreated();
+    }
 }
 
 if (!app.Environment.IsDevelopment())
