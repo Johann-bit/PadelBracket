@@ -1,18 +1,21 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.JSInterop;
 using PadelBracket.Domain.Entities;
 using PadelBracket.Domain.Enums;
 using PadelBracket.Repositories.Interface;
-using Microsoft.JSInterop;
 
 namespace PadelBracket.Services;
 
 public class PlayerAccountService
 {
+    private const string CurrentPlayerStorageKey = "arenapadel.currentPlayerId";
+
     private readonly PlayerService playerService;
     private readonly IPlayerAccountRepository accountRepository;
-    private Guid? currentPlayerId;
-    private const string CurrentPlayerStorageKey = "arenapadel.currentPlayerId";
     private readonly IJSRuntime? jsRuntime;
+    private Guid? currentPlayerId;
+
+    public event Action? SessionChanged;
 
     public PlayerAccountService(
         PlayerService playerService,
@@ -91,6 +94,7 @@ public class PlayerAccountService
             password));
 
         currentPlayerId = player.Id;
+        SessionChanged?.Invoke();
 
         return player;
     }
@@ -132,6 +136,7 @@ public class PlayerAccountService
             throw new InvalidOperationException("Email o contraseña incorrectos.");
 
         currentPlayerId = account.PlayerId;
+        SessionChanged?.Invoke();
 
         Player player = playerService.GetById(account.PlayerId)
             ?? throw new InvalidOperationException("No se encontró el jugador asociado a la cuenta.");
@@ -142,6 +147,7 @@ public class PlayerAccountService
     public async Task<Player> LoginAsync(string email, string password)
     {
         Player player = Login(email, password);
+
         await SaveCurrentPlayerAsync(player.Id);
 
         return player;
@@ -165,10 +171,17 @@ public class PlayerAccountService
                 return;
 
             currentPlayerId = playerId;
+            SessionChanged?.Invoke();
         }
         catch
         {
         }
+    }
+
+    public void Logout()
+    {
+        currentPlayerId = null;
+        SessionChanged?.Invoke();
     }
 
     public async Task LogoutAsync()
@@ -189,28 +202,6 @@ public class PlayerAccountService
         }
     }
 
-    private async Task SaveCurrentPlayerAsync(Guid playerId)
-    {
-        if (jsRuntime == null)
-            return;
-
-        try
-        {
-            await jsRuntime.InvokeVoidAsync(
-                "localStorage.setItem",
-                CurrentPlayerStorageKey,
-                playerId.ToString());
-        }
-        catch
-        {
-        }
-    }
-
-    public void Logout()
-    {
-        currentPlayerId = null;
-    }
-
     public void UpdateCurrentPlayerPersonalData(string realName, string email)
     {
         Player player = CurrentPlayer
@@ -226,6 +217,8 @@ public class PlayerAccountService
 
         account.ChangeEmail(email);
         accountRepository.SaveChanges();
+
+        SessionChanged?.Invoke();
     }
 
     public void ChangeCurrentPlayerPassword(
@@ -289,6 +282,23 @@ public class PlayerAccountService
         account.ChangePassword(newPassword);
         account.ClearPasswordResetCode();
         accountRepository.SaveChanges();
+    }
+
+    private async Task SaveCurrentPlayerAsync(Guid playerId)
+    {
+        if (jsRuntime == null)
+            return;
+
+        try
+        {
+            await jsRuntime.InvokeVoidAsync(
+                "localStorage.setItem",
+                CurrentPlayerStorageKey,
+                playerId.ToString());
+        }
+        catch
+        {
+        }
     }
 
     private bool EmailAlreadyExists(string email)

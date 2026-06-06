@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@implements IDisposable
+@inherits LayoutComponentBase
 @using PadelBracket.Services
 @inject PlayerAccountService PlayerAccountService
 @inject OrganizerAccountService OrganizerAccountService
@@ -66,6 +67,20 @@
 </div>
 
 @code {
+    protected override void OnInitialized()
+    {
+        PlayerAccountService.SessionChanged += RefreshTopbar;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await PlayerAccountService.RestoreSessionAsync();
+        StateHasChanged();
+    }
+
     private async Task LogoutPlayer()
     {
         await PlayerAccountService.LogoutAsync();
@@ -78,12 +93,13 @@
         NavigationManager.NavigateTo("/");
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private void RefreshTopbar()
     {
-        if (!firstRender)
-            return;
+        InvokeAsync(StateHasChanged);
+    }
 
-        await PlayerAccountService.RestoreSessionAsync();
-        StateHasChanged();
+    public void Dispose()
+    {
+        PlayerAccountService.SessionChanged -= RefreshTopbar;
     }
 }

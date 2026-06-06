@@ -66,23 +66,37 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
     private string email = string.Empty;
     private string password = string.Empty;
     private string errorMessage = string.Empty;
 
-    private void LoginPlayer()
+    private async Task LoginPlayer()
     {
         errorMessage = string.Empty;
 
         try
         {
-            PlayerAccountService.Login(email, password);
+            await PlayerAccountService.LoginAsync(email, password);
 
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo(GetSafeReturnUrl());
         }
         catch (Exception exception)
         {
             errorMessage = exception.Message;
         }
+    }
+
+    private string GetSafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+            return "/";
+
+        if (!ReturnUrl.StartsWith("/") || ReturnUrl.StartsWith("//"))
+            return "/";
+
+        return ReturnUrl;
     }
 }
