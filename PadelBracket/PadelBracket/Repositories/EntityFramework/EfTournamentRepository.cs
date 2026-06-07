@@ -17,6 +17,7 @@ public class EfTournamentRepository : ITournamentRepository
     public List<Tournament> GetAll()
     {
         return dbContext.Tournaments
+            .AsNoTracking()
             .AsSplitQuery()
             .Include(tournament => tournament.TournamentCategories)
             .Include(tournament => tournament.Groups)
@@ -53,6 +54,8 @@ public class EfTournamentRepository : ITournamentRepository
 
     public Tournament? GetById(Guid id)
     {
+        dbContext.ChangeTracker.Clear();
+
         return dbContext.Tournaments
             .AsSplitQuery()
             .Include(tournament => tournament.TournamentCategories)
@@ -90,6 +93,14 @@ public class EfTournamentRepository : ITournamentRepository
     public void Add(Tournament tournament)
     {
         dbContext.Tournaments.Add(tournament);
+        dbContext.SaveChanges();
+    }
+
+    public void AddRegistration(TournamentRegistration registration)
+    {
+        dbContext.ChangeTracker.Clear();
+        dbContext.Attach(registration.Pair);
+        dbContext.TournamentRegistrations.Add(registration);
         dbContext.SaveChanges();
     }
 

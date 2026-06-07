@@ -22,6 +22,10 @@ public class InMemoryTournamentRepository : ITournamentRepository
         tournaments.Add(tournament);
     }
 
+    public void AddRegistration(TournamentRegistration registration)
+    {
+    }
+
     public void Delete(Tournament tournament)
     {
         tournaments.Remove(tournament);

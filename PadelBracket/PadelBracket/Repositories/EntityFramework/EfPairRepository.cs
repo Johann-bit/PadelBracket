@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PadelBracket.Data;
 using PadelBracket.Domain.Entities;
 using PadelBracket.Repositories.Interface;
@@ -17,6 +17,7 @@ public class EfPairRepository : IPairRepository
     public IReadOnlyList<Pair> GetAll()
     {
         return dbContext.Pairs
+            .AsNoTracking()
             .Include(pair => pair.PlayerOne)
             .Include(pair => pair.PlayerTwo)
             .OrderBy(pair => pair.PlayerOne.Name)

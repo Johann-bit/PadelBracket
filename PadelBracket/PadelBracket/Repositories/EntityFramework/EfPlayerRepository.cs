@@ -1,4 +1,5 @@
-﻿using PadelBracket.Data;
+using Microsoft.EntityFrameworkCore;
+using PadelBracket.Data;
 using PadelBracket.Domain.Entities;
 using PadelBracket.Repositories.Interface;
 
@@ -16,6 +17,7 @@ public class EfPlayerRepository : IPlayerRepository
     public IReadOnlyList<Player> GetAll()
     {
         return dbContext.Players
+            .AsNoTracking()
             .OrderBy(player => player.Name)
             .ToList();
     }

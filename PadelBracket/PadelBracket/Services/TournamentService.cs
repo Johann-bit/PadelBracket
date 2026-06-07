@@ -226,7 +226,7 @@ public class TournamentService
             pair,
             category);
 
-        tournamentRepository.SaveChanges();
+        tournamentRepository.AddRegistration(registration);
 
         return registration;
     }

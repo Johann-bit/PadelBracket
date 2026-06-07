@@ -7,6 +7,7 @@ public interface ITournamentRepository
     List<Tournament> GetAll();
     Tournament? GetById(Guid id);
     void Add(Tournament tournament);
+    void AddRegistration(TournamentRegistration registration);
     void Delete(Tournament tournament);
     bool ExistsByName(string name);
     bool ExistsByNameExceptId(string name, Guid id);
