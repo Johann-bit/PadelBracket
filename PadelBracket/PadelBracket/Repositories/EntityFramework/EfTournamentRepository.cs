@@ -112,6 +112,30 @@ public class EfTournamentRepository : ITournamentRepository
         dbContext.SaveChanges();
     }
 
+    public void AddGroupMatches(
+        Guid tournamentId,
+        Guid groupId,
+        List<Match> matches,
+        TournamentStatus tournamentStatus)
+    {
+        dbContext.ChangeTracker.Clear();
+
+        foreach (Match match in matches)
+        {
+            dbContext.Attach(match.PairOne);
+            dbContext.Attach(match.PairTwo);
+            dbContext.Matches.Add(match);
+            dbContext.Entry(match).Property("GroupId").CurrentValue = groupId;
+        }
+
+        dbContext.Tournaments
+            .Where(tournament => tournament.Id == tournamentId)
+            .ExecuteUpdate(setters => setters
+                .SetProperty(tournament => tournament.Status, tournamentStatus));
+
+        dbContext.SaveChanges();
+    }
+
     public void Delete(Tournament tournament)
     {
         dbContext.Tournaments.Remove(tournament);

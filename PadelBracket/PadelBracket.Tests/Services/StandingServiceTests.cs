@@ -31,9 +31,11 @@ public class StandingServiceTests
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
+        var pairThree = CreatePair("Lucas", "Mati");
 
         group.AddPair(pairOne);
         group.AddPair(pairTwo);
+        group.AddPair(pairThree);
         group.GenerateMatches();
 
         var match = group.Matches.First();
@@ -69,9 +71,11 @@ public class StandingServiceTests
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
+        var pairThree = CreatePair("Lucas", "Mati");
 
         group.AddPair(pairOne);
         group.AddPair(pairTwo);
+        group.AddPair(pairThree);
         group.GenerateMatches();
 
         var match = group.Matches.First();
@@ -105,9 +109,11 @@ public class StandingServiceTests
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
+        var pairThree = CreatePair("Lucas", "Mati");
 
         group.AddPair(pairOne);
         group.AddPair(pairTwo);
+        group.AddPair(pairThree);
         group.GenerateMatches();
 
         var match = group.Matches.First();
@@ -183,9 +189,11 @@ public class StandingServiceTests
 
         var pairOne = CreatePair("Juan", "Pedro");
         var pairTwo = CreatePair("Nico", "Santi");
+        var pairThree = CreatePair("Lucas", "Mati");
 
         group.AddPair(pairOne);
         group.AddPair(pairTwo);
+        group.AddPair(pairThree);
         group.GenerateMatches();
 
         var service = new StandingService();

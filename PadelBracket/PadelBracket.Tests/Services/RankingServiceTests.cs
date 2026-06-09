@@ -42,6 +42,8 @@ public class RankingServiceTests
             group.Id,
             pairTwo.Id);
 
+        AddRequiredThirdPair(context, tournament.Id, group, 6, "Ranking");
+
         context.TournamentService.GenerateGroupMatches(tournament.Id, group.Id);
 
         var match = group.Matches.First();
@@ -115,6 +117,8 @@ public class RankingServiceTests
         AddPairToGroup(context, tournament.Id, sixthCategoryGroup.Id, sixthCategoryPairTwo.Id);
         AddPairToGroup(context, tournament.Id, fifthCategoryGroup.Id, fifthCategoryPairOne.Id);
         AddPairToGroup(context, tournament.Id, fifthCategoryGroup.Id, fifthCategoryPairTwo.Id);
+        AddRequiredThirdPair(context, tournament.Id, sixthCategoryGroup, 6, "Sexta");
+        AddRequiredThirdPair(context, tournament.Id, fifthCategoryGroup, 5, "Quinta");
 
         RegisterFirstMatchResult(context, tournament.Id, sixthCategoryGroup);
         RegisterFirstMatchResult(context, tournament.Id, fifthCategoryGroup);
@@ -167,6 +171,7 @@ public class RankingServiceTests
 
         AddPairToGroup(context, tournament.Id, group.Id, winningPair.Id);
         AddPairToGroup(context, tournament.Id, group.Id, losingPair.Id);
+        AddRequiredThirdPair(context, tournament.Id, group, 6, "Players");
 
         RegisterFirstMatchResult(context, tournament.Id, group);
 
@@ -235,6 +240,8 @@ public class RankingServiceTests
         AddPairToGroup(context, tournament.Id, sixthCategoryGroup.Id, sixthCategoryPairTwo.Id);
         AddPairToGroup(context, tournament.Id, fifthCategoryGroup.Id, fifthCategoryPairOne.Id);
         AddPairToGroup(context, tournament.Id, fifthCategoryGroup.Id, fifthCategoryPairTwo.Id);
+        AddRequiredThirdPair(context, tournament.Id, sixthCategoryGroup, 6, "Sexta");
+        AddRequiredThirdPair(context, tournament.Id, fifthCategoryGroup, 5, "Quinta");
 
         RegisterFirstMatchResult(context, tournament.Id, sixthCategoryGroup);
         RegisterFirstMatchResult(context, tournament.Id, fifthCategoryGroup);
@@ -301,6 +308,7 @@ public class RankingServiceTests
 
         AddPairToGroup(context, tournament.Id, group.Id, winningPair.Id);
         AddPairToGroup(context, tournament.Id, group.Id, losingPair.Id);
+        AddRequiredThirdPair(context, tournament.Id, group, 6, "Summary");
 
         RegisterFirstMatchResult(context, tournament.Id, group);
 
@@ -371,6 +379,22 @@ public class RankingServiceTests
                 new MatchSet(6, 3),
                 new MatchSet(6, 4)
             });
+    }
+
+    private static void AddRequiredThirdPair(
+        TestContext context,
+        Guid tournamentId,
+        Group group,
+        int category,
+        string suffix)
+    {
+        var thirdPair = CreateCompletePair(
+            context.PairService,
+            $"Tercer Jugador {suffix}",
+            $"Cuarto Jugador {suffix}",
+            category);
+
+        AddPairToGroup(context, tournamentId, group.Id, thirdPair.Id);
     }
 
     private static Pair CreateCompletePair(

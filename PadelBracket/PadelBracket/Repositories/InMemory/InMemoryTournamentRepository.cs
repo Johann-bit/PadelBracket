@@ -33,6 +33,10 @@ public class InMemoryTournamentRepository : ITournamentRepository
         tournament.AddGroup(group);
     }
 
+    public void AddGroupMatches(Guid tournamentId, Guid groupId, List<Match> matches, TournamentStatus tournamentStatus)
+    {
+    }
+
     public void Delete(Tournament tournament)
     {
         tournaments.Remove(tournament);

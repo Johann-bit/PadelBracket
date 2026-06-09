@@ -114,6 +114,54 @@ public static class DevelopmentDataSeeder
             PreferredSide.Backhand,
             8);
 
+        Player camilo = CreatePlayer(
+            dbContext,
+            "Camilo Suarez",
+            "camilo@arenapadel.test",
+            DominantHand.Right,
+            PreferredSide.Drive,
+            5);
+
+        Player martin = CreatePlayer(
+            dbContext,
+            "Martin Acosta",
+            "martin@arenapadel.test",
+            DominantHand.Right,
+            PreferredSide.Backhand,
+            5);
+
+        Player federico = CreatePlayer(
+            dbContext,
+            "Federico Lima",
+            "federico@arenapadel.test",
+            DominantHand.Left,
+            PreferredSide.Drive,
+            5);
+
+        Player sebastian = CreatePlayer(
+            dbContext,
+            "Sebastian Torres",
+            "sebastian@arenapadel.test",
+            DominantHand.Right,
+            PreferredSide.Backhand,
+            5);
+
+        Player rodrigo = CreatePlayer(
+            dbContext,
+            "Rodrigo Mendez",
+            "rodrigo@arenapadel.test",
+            DominantHand.Right,
+            PreferredSide.Drive,
+            5);
+
+        Player agustin = CreatePlayer(
+            dbContext,
+            "Agustin Sosa",
+            "agustin@arenapadel.test",
+            DominantHand.Right,
+            PreferredSide.Backhand,
+            5);
+
         CreatePlayer(
             dbContext,
             "Nicolas Martinez",
@@ -126,8 +174,18 @@ public static class DevelopmentDataSeeder
         Pair pairTwo = new(josi, mateo);
         Pair pairThree = new(lucia, valentina);
         Pair pairFour = new(diego, bruno);
+        Pair pairFive = new(camilo, martin);
+        Pair pairSix = new(federico, sebastian);
+        Pair pairSeven = new(rodrigo, agustin);
 
-        dbContext.Pairs.AddRange(pairOne, pairTwo, pairThree, pairFour);
+        dbContext.Pairs.AddRange(
+            pairOne,
+            pairTwo,
+            pairThree,
+            pairFour,
+            pairFive,
+            pairSix,
+            pairSeven);
 
         TournamentRegistration pendingRegistration = new(
             tournament.Id,
@@ -146,9 +204,33 @@ public static class DevelopmentDataSeeder
             pairThree,
             7);
 
+        TournamentRegistration confirmedFifthCategoryRegistration = new(
+            tournament.Id,
+            pairFive,
+            5);
+        confirmedFifthCategoryRegistration.Confirm();
+        confirmedFifthCategoryRegistration.MarkAsPaid();
+
+        TournamentRegistration secondConfirmedFifthCategoryRegistration = new(
+            tournament.Id,
+            pairSix,
+            5);
+        secondConfirmedFifthCategoryRegistration.Confirm();
+        secondConfirmedFifthCategoryRegistration.MarkAsPaid();
+
+        TournamentRegistration thirdConfirmedFifthCategoryRegistration = new(
+            tournament.Id,
+            pairSeven,
+            5);
+        thirdConfirmedFifthCategoryRegistration.Confirm();
+        thirdConfirmedFifthCategoryRegistration.MarkAsPaid();
+
         tournament.AddRegistration(pendingRegistration);
         tournament.AddRegistration(confirmedRegistration);
         tournament.AddRegistration(secondPendingRegistration);
+        tournament.AddRegistration(confirmedFifthCategoryRegistration);
+        tournament.AddRegistration(secondConfirmedFifthCategoryRegistration);
+        tournament.AddRegistration(thirdConfirmedFifthCategoryRegistration);
 
         dbContext.Tournaments.Add(tournament);
         dbContext.SaveChanges();

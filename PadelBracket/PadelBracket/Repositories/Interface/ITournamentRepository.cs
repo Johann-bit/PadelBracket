@@ -9,6 +9,7 @@ public interface ITournamentRepository
     void Add(Tournament tournament);
     void AddRegistration(TournamentRegistration registration);
     void AddGroup(Guid tournamentId, Group group);
+    void AddGroupMatches(Guid tournamentId, Guid groupId, List<Match> matches, TournamentStatus tournamentStatus);
     void Delete(Tournament tournament);
     bool ExistsByName(string name);
     bool ExistsByNameExceptId(string name, Guid id);

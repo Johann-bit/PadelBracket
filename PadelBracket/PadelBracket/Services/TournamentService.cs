@@ -434,7 +434,11 @@ public class TournamentService
 
         group.GenerateMatches();
         tournament.StartGroupStage();
-        tournamentRepository.SaveChanges();
+        tournamentRepository.AddGroupMatches(
+            tournament.Id,
+            group.Id,
+            group.Matches.ToList(),
+            tournament.Status);
     }
 
     public void RegisterMatchResult(

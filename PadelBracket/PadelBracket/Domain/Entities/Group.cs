@@ -97,8 +97,8 @@ public class Group
 
     public void GenerateMatches()
     {
-        if (Pairs.Count < 2)
-            throw new InvalidOperationException("At least two pairs are required to generate matches.");
+        if (Pairs.Count < 3)
+            throw new InvalidOperationException("At least three pairs are required to generate matches.");
 
         if (Matches.Any())
             throw new InvalidOperationException("Matches have already been generated for this group.");

@@ -260,6 +260,21 @@ public class TournamentServiceTests
     }
 
     [TestMethod]
+    public void GenerateGroupMatches_WhenGroupHasTwoPairs_ThrowsInvalidOperationException()
+    {
+        var service = CreateTournamentService();
+
+        var tournament = service.CreateTournament("Torneo Apertura");
+        var group = service.AddGroupToTournament(tournament.Id, "Group A", 5);
+
+        service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
+        service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            service.GenerateGroupMatches(tournament.Id, group.Id));
+    }
+
+    [TestMethod]
     public void GenerateGroupMatches_WhenMatchesAlreadyExist_ThrowsExceptionAndKeepsExistingMatches()
     {
         var service = CreateTournamentService();
@@ -297,6 +312,7 @@ public class TournamentServiceTests
 
         service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
         service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
+        service.AddPairToGroup(tournament.Id, group.Id, "Lucas", "Mati");
 
         service.GenerateGroupMatches(tournament.Id, group.Id);
 
@@ -309,7 +325,7 @@ public class TournamentServiceTests
             )
         );
 
-        Assert.AreEqual(2, group.Pairs.Count);
+        Assert.AreEqual(3, group.Pairs.Count);
     }
 
     [TestMethod]
@@ -322,6 +338,7 @@ public class TournamentServiceTests
 
         service.AddPairToGroup(tournament.Id, group.Id, "Juan", "Pedro");
         service.AddPairToGroup(tournament.Id, group.Id, "Nico", "Santi");
+        service.AddPairToGroup(tournament.Id, group.Id, "Lucas", "Mati");
 
         service.GenerateGroupMatches(tournament.Id, group.Id);
 
