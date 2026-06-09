@@ -104,6 +104,14 @@ public class EfTournamentRepository : ITournamentRepository
         dbContext.SaveChanges();
     }
 
+    public void AddGroup(Guid tournamentId, Group group)
+    {
+        dbContext.ChangeTracker.Clear();
+        dbContext.Groups.Add(group);
+        dbContext.Entry(group).Property("TournamentId").CurrentValue = tournamentId;
+        dbContext.SaveChanges();
+    }
+
     public void Delete(Tournament tournament)
     {
         dbContext.Tournaments.Remove(tournament);

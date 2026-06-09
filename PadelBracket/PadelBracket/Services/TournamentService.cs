@@ -306,8 +306,9 @@ public class TournamentService
         var tournament = GetTournamentOrThrow(tournamentId);
 
         var group = new Group(groupName, category);
-        tournament.AddGroup(group);
-        tournamentRepository.SaveChanges();
+
+        EnsureGroupCanBeAdded(tournament, group);
+        tournamentRepository.AddGroup(tournamentId, group);
 
         return group;
     }
@@ -469,6 +470,16 @@ public class TournamentService
             throw new ArgumentException("Tournament not found.");
 
         return tournament;
+    }
+
+    private static void EnsureGroupCanBeAdded(Tournament tournament, Group group)
+    {
+        if (tournament.Groups.Any(existingGroup =>
+                existingGroup.Category == group.Category &&
+                string.Equals(existingGroup.Name, group.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("A group with the same name already exists in this category.");
+        }
     }
 
     private Group GetGroupOrThrow(Guid tournamentId, Guid groupId)

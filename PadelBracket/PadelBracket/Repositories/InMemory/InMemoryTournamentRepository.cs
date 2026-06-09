@@ -26,6 +26,13 @@ public class InMemoryTournamentRepository : ITournamentRepository
     {
     }
 
+    public void AddGroup(Guid tournamentId, Group group)
+    {
+        Tournament tournament = tournaments.First(tournament => tournament.Id == tournamentId);
+
+        tournament.AddGroup(group);
+    }
+
     public void Delete(Tournament tournament)
     {
         tournaments.Remove(tournament);
