@@ -176,195 +176,214 @@ else
             </div>
         }
 
-        @foreach (var round in GetRounds())
-        {
-            <section class="mb-5">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="mb-0">@round.Name</h3>
+        var rounds = GetRounds();
+        var bracketRows = GetBracketRows(rounds);
 
-                    <span class="badge bg-secondary">
-                        @round.Matches.Count partidos
-                    </span>
-                </div>
+        <div class="knockout-board-wrapper">
+            <div class="knockout-board" style="--round-count: @rounds.Count; --bracket-rows: @bracketRows">
+                @for (int roundIndex = 0; roundIndex < rounds.Count; roundIndex++)
+                {
+                    var round = rounds[roundIndex];
 
-                <div class="row">
-                    @foreach (var match in round.Matches)
-                    {
-                        var input = GetMatchInput(match.Id);
+                    <section class="knockout-round">
+                        <div class="knockout-round-header">
+                            <div>
+                                <h3>@round.Name</h3>
+                                <span>@round.Matches.Count partidos</span>
+                            </div>
+                        </div>
 
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-header bg-dark text-white">
-                                    <strong>@match.RoundName</strong>
-                                </div>
+                        <div class="knockout-match-list">
+                            @for (int matchIndex = 0; matchIndex < round.Matches.Count; matchIndex++)
+                            {
+                                var match = round.Matches[matchIndex];
 
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span>
-                                            <strong>@GetPairName(match.PairOne)</strong>
-                                        </span>
-                                        <span class="badge bg-secondary">Pareja 1</span>
-                                    </div>
-
-                                    <div class="text-center text-muted mb-3">
-                                        vs
-                                    </div>
-
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span>
-                                            <strong>@GetPairName(match.PairTwo)</strong>
-                                        </span>
-                                        <span class="badge bg-secondary">Pareja 2</span>
-                                    </div>
-
-                                    @if (match.IsReadyToPlay && (!match.HasResult || editingMatchId == match.Id))
+                                <article class="@GetKnockoutMatchClass(match)" style="@GetMatchStyle(roundIndex, matchIndex)">
+                                    @if (roundIndex > 0)
                                     {
-                                        <hr />
+                                        <span class="knockout-merge-line" aria-hidden="true"></span>
+                                    }
 
-                                        <h6 class="mb-3">
-                                            @(match.HasResult ? "Editar resultado" : "Cargar resultado")
-                                        </h6>
+                                    <div class="knockout-match-header">
+                                        <span>@match.RoundName</span>
 
-                                        <div class="mb-3">
-                                            <label class="form-label">Set 1</label>
-                                            <div class="d-flex gap-2 align-items-center">
-                                                <input type="number"
-                                                       min="0"
-                                                       max="7"
-                                                       class="form-control"
-                                                       @bind="input.SetOnePairOne" />
-                                                <span>-</span>
-                                                <input type="number"
-                                                       min="0"
-                                                       max="7"
-                                                       class="form-control"
-                                                       @bind="input.SetOnePairTwo" />
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Set 2</label>
-                                            <div class="d-flex gap-2 align-items-center">
-                                                <input type="number"
-                                                       min="0"
-                                                       max="7"
-                                                       class="form-control"
-                                                       @bind="input.SetTwoPairOne" />
-                                                <span>-</span>
-                                                <input type="number"
-                                                       min="0"
-                                                       max="7"
-                                                       class="form-control"
-                                                       @bind="input.SetTwoPairTwo" />
-                                            </div>
-                                        </div>
-
-                                        @if (FirstTwoSetsAreSplit(input))
+                                        @if (match.HasResult && match.Result != null)
                                         {
-                                            <div class="form-check mb-3">
-                                                <input class="form-check-input"
-                                                       type="checkbox"
-                                                       @bind="input.UseSuperTieBreak" />
-                                                <label class="form-check-label">
-                                                    Usar super tie-break
-                                                </label>
-                                            </div>
-
-                                            @if (input.UseSuperTieBreak)
-                                            {
-                                                <div class="mb-3">
-                                                    <label class="form-label">Super tie-break</label>
-                                                    <div class="d-flex gap-2 align-items-center">
-                                                        <input type="number"
-                                                               min="0"
-                                                               class="form-control"
-                                                               @bind="input.SuperTieBreakPairOne" />
-                                                        <span>-</span>
-                                                        <input type="number"
-                                                               min="0"
-                                                               class="form-control"
-                                                               @bind="input.SuperTieBreakPairTwo" />
-                                                    </div>
-                                                </div>
-                                            }
+                                            <strong>@match.Result.DisplayScore</strong>
+                                        }
+                                        else if (match.IsReadyToPlay)
+                                        {
+                                            <strong>Pendiente</strong>
                                         }
                                         else
                                         {
-                                            <div class="mb-3">
-                                                <span class="text-muted">
-                                                    Super tie-break no necesario.
-                                                </span>
-                                            </div>
+                                            <strong>Esperando</strong>
                                         }
+                                    </div>
 
-                                        <div class="d-flex gap-2">
+                                    <div class="@GetKnockoutTeamClass(match, match.PairOne)">
+                                        <span>@GetPairName(match.PairOne)</span>
+                                        <small>1</small>
+                                    </div>
+
+                                    <div class="@GetKnockoutTeamClass(match, match.PairTwo)">
+                                        <span>@GetPairName(match.PairTwo)</span>
+                                        <small>2</small>
+                                    </div>
+
+                                    <div class="knockout-quick-actions">
+                                        @if (match.HasResult && match.Result != null)
+                                        {
                                             <button class="btn btn-sm btn-outline-primary"
-                                                    @onclick="() => RegisterResult(match.Id)">
-                                                Guardar resultado
+                                                    @onclick="() => StartEditResult(match)">
+                                                Editar
                                             </button>
 
-                                            @if (editingMatchId == match.Id)
-                                            {
-                                                <button class="btn btn-sm btn-outline-secondary"
-                                                        @onclick="CancelEditResult">
-                                                    Cancelar
-                                                </button>
-                                            }
-                                        </div>
-                                    }
-                                </div>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    @onclick="() => ClearResult(match.Id)">
+                                                Limpiar
+                                            </button>
+                                        }
+                                        else if (match.IsReadyToPlay)
+                                        {
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => StartRegisterResult(match)">
+                                                Cargar
+                                            </button>
+                                        }
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </section>
+                }
 
-                                <div class="card-footer text-muted">
-                                    @if (match.HasResult && match.Result != null)
-                                    {
-                                        <div>
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="badge bg-success">
-                                                    @match.Result.DisplayScore
-                                                </span>
+                <section class="knockout-round knockout-champion-round">
+                    <div class="knockout-round-header">
+                        <div>
+                            <h3>Campeones</h3>
+                            <span>@GetCategoryLabel(Category)</span>
+                        </div>
+                    </div>
 
-                                                <span>
-                                                    Ganó: <strong>@GetPairName(match.Winner)</strong>
-                                                </span>
-                                            </div>
+                    <div class="knockout-champion-card">
+                        <div class="knockout-trophy-mark">Copa</div>
 
-                                            @if (editingMatchId != match.Id)
-                                            {
-                                                <div class="d-flex gap-2">
-                                                    <button class="btn btn-sm btn-outline-warning"
-                                                            @onclick="() => StartEditResult(match)">
-                                                        Editar
-                                                    </button>
+                        @if (GetChampion() != null)
+                        {
+                            <div class="knockout-champion-label">Ganadores</div>
+                            <strong>@GetPairName(GetChampion())</strong>
+                        }
+                        else
+                        {
+                            <div class="knockout-champion-label">Final pendiente</div>
+                            <strong>Esperando campeones</strong>
+                        }
+                    </div>
+                </section>
+            </div>
+        </div>
 
-                                                    <button class="btn btn-sm btn-outline-danger"
-                                                            @onclick="() => ClearResult(match.Id)">
-                                                        Borrar
-                                                    </button>
-                                                </div>
-                                            }
-                                        </div>
-                                    }
-                                    else if (match.IsReadyToPlay)
-                                    {
-                                        <span>Resultado pendiente</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Esperando ganadores</span>
-                                    }
-                                </div>
+        @if (SelectedMatch != null)
+        {
+            var selectedMatch = SelectedMatch;
+            var selectedInput = GetMatchInput(selectedMatch.Id);
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                        <div>
+                            <h4 class="card-title mb-1">
+                                @(selectedMatch.HasResult ? "Editar resultado" : "Cargar resultado")
+                            </h4>
+
+                            <p class="text-muted mb-0">
+                                @selectedMatch.RoundName · @GetPairName(selectedMatch.PairOne) vs @GetPairName(selectedMatch.PairTwo)
+                            </p>
+                        </div>
+
+                        <button class="btn btn-outline-secondary"
+                                @onclick="CancelEditResult">
+                            Cerrar
+                        </button>
+                    </div>
+
+                    <div class="knockout-result-panel">
+                        <div class="knockout-score-row">
+                            <label>Set 1</label>
+
+                            <div class="knockout-score-inputs">
+                                <input type="number"
+                                       min="0"
+                                       max="7"
+                                       class="form-control"
+                                       @bind="selectedInput.SetOnePairOne" />
+                                <span>-</span>
+                                <input type="number"
+                                       min="0"
+                                       max="7"
+                                       class="form-control"
+                                       @bind="selectedInput.SetOnePairTwo" />
                             </div>
                         </div>
-                    }
-                </div>
-            </section>
-        }
 
-        @if (GetChampion() != null)
-        {
-            <div class="alert alert-primary">
-                Campeones de @GetCategoryLabel(Category):
-                <strong>@GetPairName(GetChampion())</strong>
+                        <div class="knockout-score-row">
+                            <label>Set 2</label>
+
+                            <div class="knockout-score-inputs">
+                                <input type="number"
+                                       min="0"
+                                       max="7"
+                                       class="form-control"
+                                       @bind="selectedInput.SetTwoPairOne" />
+                                <span>-</span>
+                                <input type="number"
+                                       min="0"
+                                       max="7"
+                                       class="form-control"
+                                       @bind="selectedInput.SetTwoPairTwo" />
+                            </div>
+                        </div>
+
+                        @if (FirstTwoSetsAreSplit(selectedInput))
+                        {
+                            <div class="form-check knockout-stb-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       @bind="selectedInput.UseSuperTieBreak" />
+                                <label class="form-check-label">
+                                    Super tie-break
+                                </label>
+                            </div>
+
+                            @if (selectedInput.UseSuperTieBreak)
+                            {
+                                <div class="knockout-score-row">
+                                    <label>STB</label>
+
+                                    <div class="knockout-score-inputs">
+                                        <input type="number"
+                                               min="0"
+                                               class="form-control"
+                                               @bind="selectedInput.SuperTieBreakPairOne" />
+                                        <span>-</span>
+                                        <input type="number"
+                                               min="0"
+                                               class="form-control"
+                                               @bind="selectedInput.SuperTieBreakPairTwo" />
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        <div class="knockout-actions">
+                            <button class="btn btn-primary"
+                                    @onclick="() => RegisterResult(selectedMatch.Id)">
+                                Guardar resultado
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         }
     }
@@ -392,6 +411,9 @@ else
         tournament != null &&
         CurrentOrganizer != null &&
         tournament.OrganizerId == CurrentOrganizer.Id;
+
+    private KnockoutMatch? SelectedMatch =>
+        bracket?.Matches.FirstOrDefault(match => match.Id == editingMatchId);
 
     protected override void OnInitialized()
     {
@@ -582,6 +604,20 @@ else
         showDeleteConfirmation = false;
     }
 
+    private void StartRegisterResult(KnockoutMatch match)
+    {
+        if (!EnsureCanManageTournament())
+            return;
+
+        if (!match.IsReadyToPlay)
+            return;
+
+        editingMatchId = match.Id;
+        errorMessage = null;
+        successMessage = null;
+        showDeleteConfirmation = false;
+    }
+
     private void CancelEditResult()
     {
         editingMatchId = null;
@@ -732,6 +768,45 @@ else
             "Final" => 4,
             _ => 99
         };
+    }
+
+    private static int GetBracketRows(List<RoundViewModel> rounds)
+    {
+        int firstRoundMatchCount = rounds.FirstOrDefault()?.Matches.Count ?? 1;
+
+        return Math.Max(2, firstRoundMatchCount * 2);
+    }
+
+    private static string GetMatchStyle(int roundIndex, int matchIndex)
+    {
+        const int rowHeightPixels = 112;
+        int rowSpan = 1 << (roundIndex + 1);
+        int rowStart = (matchIndex * rowSpan) + 1;
+        int connectorHeight = Math.Max(rowHeightPixels, (rowSpan / 2) * rowHeightPixels);
+
+        return $"--match-row-start: {rowStart}; --match-row-span: {rowSpan}; --connector-height: {connectorHeight}px";
+    }
+
+    private string GetKnockoutMatchClass(KnockoutMatch match)
+    {
+        string statusClass = match.HasResult
+            ? "is-complete"
+            : match.IsReadyToPlay
+                ? "is-ready"
+                : "is-waiting";
+
+        return $"knockout-match-card {statusClass}";
+    }
+
+    private string GetKnockoutTeamClass(KnockoutMatch match, Pair? pair)
+    {
+        string winnerClass = match.Winner != null &&
+            pair != null &&
+            match.Winner.Id == pair.Id
+                ? " is-winner"
+                : string.Empty;
+
+        return $"knockout-team{winnerClass}";
     }
 
     private Pair? GetChampion()

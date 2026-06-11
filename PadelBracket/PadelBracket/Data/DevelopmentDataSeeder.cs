@@ -6,6 +6,8 @@ namespace PadelBracket.Data;
 public static class DevelopmentDataSeeder
 {
     private const string DemoPassword = "Demo#2026";
+    private const int DemoPairsPerCategory = 32;
+    private const int DemoPairsPerGroup = 4;
     private static readonly string[] PlayerFirstNames =
     {
         "Juan",
@@ -64,7 +66,7 @@ public static class DevelopmentDataSeeder
         "Olivera",
         "Molina",
         "Cabrera",
-        "Nuñez",
+        "Nunez",
         "Moreira",
         "Santos",
         "Ramos",
@@ -116,10 +118,10 @@ public static class DevelopmentDataSeeder
             DateTime.Today.AddDays(21),
             organizer.Id);
 
-        tournament.AddCategory(new TournamentCategory(5, 16, 900));
-        tournament.AddCategory(new TournamentCategory(6, 16, 850));
-        tournament.AddCategory(new TournamentCategory(7, 16, 800));
-        tournament.AddCategory(new TournamentCategory(8, 16, 750));
+        tournament.AddCategory(new TournamentCategory(5, DemoPairsPerCategory, 900));
+        tournament.AddCategory(new TournamentCategory(6, DemoPairsPerCategory, 850));
+        tournament.AddCategory(new TournamentCategory(7, DemoPairsPerCategory, 800));
+        tournament.AddCategory(new TournamentCategory(8, DemoPairsPerCategory, 750));
 
         SeedCategoryDemo(dbContext, tournament, 5);
         SeedCategoryDemo(dbContext, tournament, 6);
@@ -147,7 +149,7 @@ public static class DevelopmentDataSeeder
     {
         var pairs = new List<Pair>();
 
-        for (int index = 0; index < 16; index++)
+        for (int index = 0; index < DemoPairsPerCategory; index++)
         {
             Pair pair = CreatePair(dbContext, category, index);
             pairs.Add(pair);
@@ -165,8 +167,16 @@ public static class DevelopmentDataSeeder
 
         dbContext.Pairs.AddRange(pairs);
 
-        AddCompletedGroup(tournament, $"Grupo A - {GetCategoryLabel(category)}", category, pairs.Take(8).ToList());
-        AddCompletedGroup(tournament, $"Grupo B - {GetCategoryLabel(category)}", category, pairs.Skip(8).Take(8).ToList());
+        for (int groupIndex = 0; groupIndex < DemoPairsPerCategory / DemoPairsPerGroup; groupIndex++)
+        {
+            string groupName = $"Grupo {GetGroupLetter(groupIndex)} - {GetCategoryLabel(category)}";
+
+            AddCompletedGroup(
+                tournament,
+                groupName,
+                category,
+                pairs.Skip(groupIndex * DemoPairsPerGroup).Take(DemoPairsPerGroup).ToList());
+        }
     }
 
     private static Pair CreatePair(
@@ -174,7 +184,7 @@ public static class DevelopmentDataSeeder
         int category,
         int pairIndex)
     {
-        int firstPlayerIndex = (category - 5) * 32 + pairIndex * 2;
+        int firstPlayerIndex = (category - 5) * DemoPairsPerCategory * 2 + pairIndex * 2;
         int secondPlayerIndex = firstPlayerIndex + 1;
 
         Player playerOne = CreatePlayer(
@@ -287,5 +297,10 @@ public static class DevelopmentDataSeeder
             8 => "8va",
             _ => $"{category}ta"
         };
+    }
+
+    private static char GetGroupLetter(int groupIndex)
+    {
+        return (char)('A' + groupIndex);
     }
 }
