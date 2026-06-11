@@ -6,6 +6,77 @@ namespace PadelBracket.Data;
 public static class DevelopmentDataSeeder
 {
     private const string DemoPassword = "Demo#2026";
+    private static readonly string[] PlayerFirstNames =
+    {
+        "Juan",
+        "Nicolas",
+        "Camilo",
+        "Martin",
+        "Federico",
+        "Sebastian",
+        "Rodrigo",
+        "Agustin",
+        "Santiago",
+        "Mateo",
+        "Bruno",
+        "Diego",
+        "Facundo",
+        "Ignacio",
+        "Lucas",
+        "Tomas",
+        "Matias",
+        "Gonzalo",
+        "Emiliano",
+        "Joaquin",
+        "Valentin",
+        "Franco",
+        "Pablo",
+        "Andres",
+        "Lucia",
+        "Valentina",
+        "Sofia",
+        "Camila",
+        "Florencia",
+        "Martina",
+        "Paula",
+        "Agustina"
+    };
+
+    private static readonly string[] PlayerLastNames =
+    {
+        "Perez",
+        "Rosas",
+        "Suarez",
+        "Acosta",
+        "Lima",
+        "Torres",
+        "Mendez",
+        "Sosa",
+        "Silva",
+        "Fernandez",
+        "Castro",
+        "Alvarez",
+        "Rodriguez",
+        "Martinez",
+        "Gomez",
+        "Varela",
+        "Pereira",
+        "Olivera",
+        "Molina",
+        "Cabrera",
+        "Nuñez",
+        "Moreira",
+        "Santos",
+        "Ramos",
+        "Ibarra",
+        "Costa",
+        "Machado",
+        "Medina",
+        "Herrera",
+        "Barrios",
+        "Cardozo",
+        "Arias"
+    };
 
     public static void ResetAndSeed(ApplicationDbContext dbContext)
     {
@@ -50,190 +121,132 @@ public static class DevelopmentDataSeeder
         tournament.AddCategory(new TournamentCategory(7, 16, 800));
         tournament.AddCategory(new TournamentCategory(8, 16, 750));
 
-        Player johann = CreatePlayer(
-            dbContext,
-            "Johann Rosas",
-            "johann@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Backhand,
-            5);
-
-        Player joshua = CreatePlayer(
-            dbContext,
-            "Joshua Rosas",
-            "joshua@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Drive,
-            5);
-
-        Player josi = CreatePlayer(
-            dbContext,
-            "Josi Perez",
-            "josi@arenapadel.test",
-            DominantHand.Left,
-            PreferredSide.Drive,
-            6);
-
-        Player mateo = CreatePlayer(
-            dbContext,
-            "Mateo Silva",
-            "mateo@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Backhand,
-            6);
-
-        Player lucia = CreatePlayer(
-            dbContext,
-            "Lucia Fernandez",
-            "lucia@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Drive,
-            7);
-
-        Player valentina = CreatePlayer(
-            dbContext,
-            "Valentina Castro",
-            "valentina@arenapadel.test",
-            DominantHand.Left,
-            PreferredSide.Backhand,
-            7);
-
-        Player diego = CreatePlayer(
-            dbContext,
-            "Diego Alvarez",
-            "diego@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Drive,
-            8);
-
-        Player bruno = CreatePlayer(
-            dbContext,
-            "Bruno Rodriguez",
-            "bruno@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Backhand,
-            8);
-
-        Player camilo = CreatePlayer(
-            dbContext,
-            "Camilo Suarez",
-            "camilo@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Drive,
-            5);
-
-        Player martin = CreatePlayer(
-            dbContext,
-            "Martin Acosta",
-            "martin@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Backhand,
-            5);
-
-        Player federico = CreatePlayer(
-            dbContext,
-            "Federico Lima",
-            "federico@arenapadel.test",
-            DominantHand.Left,
-            PreferredSide.Drive,
-            5);
-
-        Player sebastian = CreatePlayer(
-            dbContext,
-            "Sebastian Torres",
-            "sebastian@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Backhand,
-            5);
-
-        Player rodrigo = CreatePlayer(
-            dbContext,
-            "Rodrigo Mendez",
-            "rodrigo@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Drive,
-            5);
-
-        Player agustin = CreatePlayer(
-            dbContext,
-            "Agustin Sosa",
-            "agustin@arenapadel.test",
-            DominantHand.Right,
-            PreferredSide.Backhand,
-            5);
+        SeedCategoryDemo(dbContext, tournament, 5);
+        SeedCategoryDemo(dbContext, tournament, 6);
+        SeedCategoryDemo(dbContext, tournament, 7);
+        SeedCategoryDemo(dbContext, tournament, 8);
 
         CreatePlayer(
             dbContext,
             "Nicolas Martinez",
-            "nicolas@arenapadel.test",
+            "nicolas.martinez@arenapadel.test",
             DominantHand.Right,
             PreferredSide.Both,
             6);
 
-        Pair pairOne = new(johann, joshua);
-        Pair pairTwo = new(josi, mateo);
-        Pair pairThree = new(lucia, valentina);
-        Pair pairFour = new(diego, bruno);
-        Pair pairFive = new(camilo, martin);
-        Pair pairSix = new(federico, sebastian);
-        Pair pairSeven = new(rodrigo, agustin);
-
-        dbContext.Pairs.AddRange(
-            pairOne,
-            pairTwo,
-            pairThree,
-            pairFour,
-            pairFive,
-            pairSix,
-            pairSeven);
-
-        TournamentRegistration pendingRegistration = new(
-            tournament.Id,
-            pairOne,
-            5);
-
-        TournamentRegistration confirmedRegistration = new(
-            tournament.Id,
-            pairTwo,
-            6);
-        confirmedRegistration.Confirm();
-        confirmedRegistration.MarkAsPaid();
-
-        TournamentRegistration secondPendingRegistration = new(
-            tournament.Id,
-            pairThree,
-            7);
-
-        TournamentRegistration confirmedFifthCategoryRegistration = new(
-            tournament.Id,
-            pairFive,
-            5);
-        confirmedFifthCategoryRegistration.Confirm();
-        confirmedFifthCategoryRegistration.MarkAsPaid();
-
-        TournamentRegistration secondConfirmedFifthCategoryRegistration = new(
-            tournament.Id,
-            pairSix,
-            5);
-        secondConfirmedFifthCategoryRegistration.Confirm();
-        secondConfirmedFifthCategoryRegistration.MarkAsPaid();
-
-        TournamentRegistration thirdConfirmedFifthCategoryRegistration = new(
-            tournament.Id,
-            pairSeven,
-            5);
-        thirdConfirmedFifthCategoryRegistration.Confirm();
-        thirdConfirmedFifthCategoryRegistration.MarkAsPaid();
-
-        tournament.AddRegistration(pendingRegistration);
-        tournament.AddRegistration(confirmedRegistration);
-        tournament.AddRegistration(secondPendingRegistration);
-        tournament.AddRegistration(confirmedFifthCategoryRegistration);
-        tournament.AddRegistration(secondConfirmedFifthCategoryRegistration);
-        tournament.AddRegistration(thirdConfirmedFifthCategoryRegistration);
+        tournament.StartGroupStage();
 
         dbContext.Tournaments.Add(tournament);
         dbContext.SaveChanges();
+    }
+
+    private static void SeedCategoryDemo(
+        ApplicationDbContext dbContext,
+        Tournament tournament,
+        int category)
+    {
+        var pairs = new List<Pair>();
+
+        for (int index = 0; index < 16; index++)
+        {
+            Pair pair = CreatePair(dbContext, category, index);
+            pairs.Add(pair);
+
+            TournamentRegistration registration = new(
+                tournament.Id,
+                pair,
+                category);
+
+            registration.Confirm();
+            registration.MarkAsPaid();
+
+            tournament.AddRegistration(registration);
+        }
+
+        dbContext.Pairs.AddRange(pairs);
+
+        AddCompletedGroup(tournament, $"Grupo A - {GetCategoryLabel(category)}", category, pairs.Take(8).ToList());
+        AddCompletedGroup(tournament, $"Grupo B - {GetCategoryLabel(category)}", category, pairs.Skip(8).Take(8).ToList());
+    }
+
+    private static Pair CreatePair(
+        ApplicationDbContext dbContext,
+        int category,
+        int pairIndex)
+    {
+        int firstPlayerIndex = (category - 5) * 32 + pairIndex * 2;
+        int secondPlayerIndex = firstPlayerIndex + 1;
+
+        Player playerOne = CreatePlayer(
+            dbContext,
+            CreatePlayerName(firstPlayerIndex),
+            CreateEmail(category, firstPlayerIndex),
+            firstPlayerIndex % 5 == 0 ? DominantHand.Left : DominantHand.Right,
+            PreferredSide.Drive,
+            category);
+
+        Player playerTwo = CreatePlayer(
+            dbContext,
+            CreatePlayerName(secondPlayerIndex),
+            CreateEmail(category, secondPlayerIndex),
+            secondPlayerIndex % 6 == 0 ? DominantHand.Left : DominantHand.Right,
+            PreferredSide.Backhand,
+            category);
+
+        return new Pair(playerOne, playerTwo);
+    }
+
+    private static string CreatePlayerName(int index)
+    {
+        string firstName = PlayerFirstNames[index % PlayerFirstNames.Length];
+        string lastName = PlayerLastNames[
+            (index * 7 + index / PlayerFirstNames.Length) % PlayerLastNames.Length];
+
+        return $"{firstName} {lastName}";
+    }
+
+    private static string CreateEmail(int category, int index)
+    {
+        return $"jugador{category}_{index + 1}@arenapadel.test";
+    }
+
+    private static void AddCompletedGroup(
+        Tournament tournament,
+        string groupName,
+        int category,
+        List<Pair> pairs)
+    {
+        Group group = new(groupName, category);
+
+        foreach (Pair pair in pairs)
+        {
+            group.AddPair(pair);
+        }
+
+        group.GenerateMatches();
+        SeedGroupResults(group);
+
+        tournament.AddGroup(group);
+    }
+
+    private static void SeedGroupResults(Group group)
+    {
+        foreach (Match match in group.Matches)
+        {
+            bool pairOneWins = group.Pairs.IndexOf(match.PairOne) < group.Pairs.IndexOf(match.PairTwo);
+
+            match.RegisterResult(pairOneWins
+                ? new MatchResult(new List<MatchSet>
+                {
+                    new(6, 3),
+                    new(6, 4)
+                })
+                : new MatchResult(new List<MatchSet>
+                {
+                    new(3, 6),
+                    new(4, 6)
+                }));
+        }
     }
 
     private static Player CreatePlayer(
@@ -258,5 +271,21 @@ public static class DevelopmentDataSeeder
             DemoPassword));
 
         return player;
+    }
+
+    private static string GetCategoryLabel(int category)
+    {
+        return category switch
+        {
+            1 => "1ra",
+            2 => "2da",
+            3 => "3ra",
+            4 => "4ta",
+            5 => "5ta",
+            6 => "6ta",
+            7 => "7ma",
+            8 => "8va",
+            _ => $"{category}ta"
+        };
     }
 }
