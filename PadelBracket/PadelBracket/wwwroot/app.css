@@ -761,6 +761,13 @@ a {
     letter-spacing: -0.04em;
 }
 
+.metric-value-text {
+    max-width: 220px;
+    font-size: 1.25rem;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+}
+
 .metric-trend {
     margin-top: 0.1rem;
     color: var(--app-text-muted);
@@ -823,6 +830,13 @@ a {
     font-size: 1.05rem;
     font-weight: 900;
     letter-spacing: -0.025em;
+}
+
+.panel-header p {
+    margin: 0.35rem 0 0;
+    color: var(--app-text-muted);
+    font-size: 0.88rem;
+    font-weight: 650;
 }
 
 .panel-link {
@@ -982,6 +996,105 @@ a {
 
 .dashboard-table-wrap {
     border-radius: 14px;
+}
+
+.tournament-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.tournament-workspace {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.35fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.tournament-create-panel {
+    position: sticky;
+    top: calc(var(--topbar-height) + 1rem);
+}
+
+.tournament-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.form-field {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.form-field span {
+    color: var(--app-text);
+    font-size: 0.86rem;
+    font-weight: 850;
+}
+
+.form-field.span-2 {
+    grid-column: span 2;
+}
+
+.panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.tournament-table-wrap {
+    border-radius: 14px;
+}
+
+.tournament-table thead th {
+    white-space: nowrap;
+}
+
+.tournament-table tbody tr {
+    transition: background 150ms ease;
+}
+
+.tournament-name {
+    color: var(--app-text);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.tournament-meta {
+    margin-top: 0.15rem;
+    color: var(--app-text-muted);
+    font-size: 0.82rem;
+    font-weight: 650;
+}
+
+.date-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-weight: 900;
+}
+
+.tournament-actions {
+    min-width: 245px;
+}
+
+.tournament-actions .btn {
+    margin: 0.15rem;
+}
+
+.delete-confirmation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.organizer-empty-state p {
+    margin: 0 0 1rem;
 }
 
 .compact-empty {
@@ -1750,6 +1863,28 @@ a {
 
     .metric-sparkline {
         display: none;
+    }
+
+    .tournament-workspace,
+    .tournament-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tournament-create-panel {
+        position: static;
+    }
+
+    .form-field.span-2 {
+        grid-column: auto;
+    }
+
+    .tournament-actions {
+        min-width: 0;
+    }
+
+    .delete-confirmation {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .dashboard-split-stats,
