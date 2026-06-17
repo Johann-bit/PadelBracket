@@ -1,91 +1,69 @@
-﻿@page "/dashboard"
+@page "/dashboard"
 @using PadelBracket.Domain.Entities
 @using PadelBracket.Services
 @inject TournamentService TournamentService
 @inject KnockoutService KnockoutService
+@inject OrganizerAccountService OrganizerAccountService
 @rendermode InteractiveServer
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Resumen general</div>
-    <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">
-        Una vista general del estado de tus torneos, grupos, parejas, partidos y llaves eliminatorias.
-    </p>
-</div>
-
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-label">Torneos</div>
-        <div class="stat-value">@TotalTournaments</div>
+<section class="dashboard-hero">
+    <div>
+        <div class="page-eyebrow">Panel de organizador</div>
+        <h1 class="page-title">Tournament Dashboard</h1>
+        <p class="page-subtitle">
+            Bienvenido@if (!string.IsNullOrWhiteSpace(OrganizerName)) { <span>, @OrganizerName</span> }. Controlá torneos, grupos, partidos y llaves desde un solo lugar.
+        </p>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-label">Grupos</div>
-        <div class="stat-value">@TotalGroups</div>
-    </div>
+    <a class="btn btn-primary dashboard-hero-action" href="/tournaments">
+        <span>+</span>
+        Crear torneo
+    </a>
+</section>
 
-    <div class="stat-card">
-        <div class="stat-label">Parejas</div>
-        <div class="stat-value">@TotalPairs</div>
-    </div>
-</div>
-
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-label">Partidos generados</div>
-        <div class="stat-value">@TotalMatches</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Partidos jugados</div>
-        <div class="stat-value">@CompletedMatches</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Partidos pendientes</div>
-        <div class="stat-value">@PendingMatches</div>
-    </div>
-</div>
-
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-label">Llaves generadas</div>
-        <div class="stat-value">@GeneratedBrackets</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Categorías activas</div>
-        <div class="stat-value">@ActiveCategories</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Progreso global</div>
-        <div class="stat-value">@GlobalProgress%</div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <h3 class="mb-1">Progreso de partidos</h3>
-                <p class="text-muted mb-0">
-                    Relación entre partidos generados y partidos con resultado cargado.
-                </p>
-            </div>
-
-            <span class="badge bg-primary">
-                @CompletedMatches / @TotalMatches jugados
-            </span>
+<section class="metric-grid">
+    <article class="metric-card">
+        <span class="metric-icon">JG</span>
+        <div>
+            <div class="metric-label">Parejas activas</div>
+            <div class="metric-value">@TotalPairs</div>
+            <div class="metric-trend positive">+ @ActiveCategories categorías</div>
         </div>
+        <div class="metric-sparkline" aria-hidden="true"></div>
+    </article>
 
-        <div class="dashboard-progress">
-            <div class="dashboard-progress-bar" style="width: @GlobalProgress%;"></div>
+    <article class="metric-card">
+        <span class="metric-icon">TR</span>
+        <div>
+            <div class="metric-label">Torneos</div>
+            <div class="metric-value">@TotalTournaments</div>
+            <div class="metric-trend positive">@GeneratedBrackets llaves generadas</div>
         </div>
-    </div>
-</div>
+        <div class="metric-sparkline" aria-hidden="true"></div>
+    </article>
+
+    <article class="metric-card">
+        <span class="metric-icon">PT</span>
+        <div>
+            <div class="metric-label">Partidos jugados</div>
+            <div class="metric-value">@CompletedMatches</div>
+            <div class="metric-trend positive">@GlobalProgress% progreso global</div>
+        </div>
+        <div class="metric-sparkline" aria-hidden="true"></div>
+    </article>
+
+    <article class="metric-card">
+        <span class="metric-icon">PD</span>
+        <div>
+            <div class="metric-label">Pendientes</div>
+            <div class="metric-value">@PendingMatches</div>
+            <div class="metric-trend muted">@TotalMatches partidos totales</div>
+        </div>
+        <div class="metric-sparkline" aria-hidden="true"></div>
+    </article>
+</section>
 
 @if (!tournaments.Any())
 {
@@ -98,29 +76,111 @@
 }
 else
 {
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+    <section class="dashboard-grid">
+        <article class="dashboard-panel dashboard-panel-lg">
+            <div class="panel-header">
                 <div>
-                    <h3 class="mb-1">Torneos recientes</h3>
-                    <p class="text-muted mb-0">
-                        Últimos torneos creados dentro de la app.
-                    </p>
+                    <div class="panel-kicker">Progreso general</div>
+                    <h2>Estado competitivo</h2>
                 </div>
-
-                <a class="btn btn-sm btn-outline-primary" href="/tournaments">
-                    Ver torneos
-                </a>
+                <span class="status-pill">@CompletedMatches / @TotalMatches jugados</span>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-striped align-middle">
+            <div class="dashboard-progress-large">
+                <div class="dashboard-progress-large-bar" style="width: @GlobalProgress%;"></div>
+                <span>@GlobalProgress%</span>
+            </div>
+
+            <div class="dashboard-split-stats">
+                <div>
+                    <strong>@TotalGroups</strong>
+                    <span>Grupos</span>
+                </div>
+                <div>
+                    <strong>@ActiveCategories</strong>
+                    <span>Categorías</span>
+                </div>
+                <div>
+                    <strong>@GeneratedBrackets</strong>
+                    <span>Llaves</span>
+                </div>
+            </div>
+        </article>
+
+        <article class="dashboard-panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-kicker">Torneo activo</div>
+                    <h2>@FeaturedTournament.Name</h2>
+                </div>
+                <span class="status-pill">@FeaturedTournament.StatusLabel</span>
+            </div>
+
+            <div class="featured-tournament-meta">
+                <span>@FeaturedTournament.ClubName</span>
+                <span>@FeaturedTournament.City</span>
+                <span>@FeaturedTournament.StartDate.ToString("dd/MM/yyyy")</span>
+            </div>
+
+            <div class="mini-bracket-card">
+                <div>
+                    <strong>@GetCompletedMatches(FeaturedTournament)</strong>
+                    <span>jugados</span>
+                </div>
+                <div>
+                    <strong>@GetTotalMatches(FeaturedTournament)</strong>
+                    <span>partidos</span>
+                </div>
+                <div>
+                    <strong>@GetBracketCount(FeaturedTournament)</strong>
+                    <span>llaves</span>
+                </div>
+            </div>
+
+            <a class="panel-link" href="@($"/tournaments/{FeaturedTournament.Id}")">
+                Abrir torneo
+            </a>
+        </article>
+
+        <article class="dashboard-panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-kicker">Llaves</div>
+                    <h2>Eliminatorias</h2>
+                </div>
+                <a class="panel-link" href="/tournaments">Ver todas</a>
+            </div>
+
+            <div class="compact-list">
+                @foreach (var bracket in RecentBrackets)
+                {
+                    <a class="compact-row" href="@($"/tournaments/{bracket.TournamentId}/categories/{bracket.Category}/knockout")">
+                        <span class="compact-icon">LL</span>
+                        <span>
+                            <strong>@GetTournamentName(bracket.TournamentId)</strong>
+                            <small>@GetCategoryLabel(bracket.Category) · @bracket.Matches.Count partidos</small>
+                        </span>
+                    </a>
+                }
+            </div>
+        </article>
+
+        <article class="dashboard-panel dashboard-panel-lg">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-kicker">Torneos recientes</div>
+                    <h2>Actividad de organizador</h2>
+                </div>
+                <a class="panel-link" href="/tournaments">Gestionar</a>
+            </div>
+
+            <div class="table-responsive dashboard-table-wrap">
+                <table class="table align-middle">
                     <thead>
                         <tr>
                             <th>Torneo</th>
-                            <th>Creado</th>
+                            <th>Club</th>
                             <th>Grupos</th>
-                            <th>Parejas</th>
                             <th>Partidos</th>
                             <th>Progreso</th>
                             <th></th>
@@ -129,7 +189,6 @@ else
                     <tbody>
                         @foreach (var tournament in RecentTournaments)
                         {
-                            var totalPairs = GetTotalPairs(tournament);
                             var totalMatches = GetTotalMatches(tournament);
                             var completedMatches = GetCompletedMatches(tournament);
                             var progress = GetTournamentProgress(tournament);
@@ -137,10 +196,10 @@ else
                             <tr>
                                 <td>
                                     <strong>@tournament.Name</strong>
+                                    <div class="text-muted">@tournament.StartDate.ToString("dd/MM/yyyy")</div>
                                 </td>
-                                <td>@tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@tournament.ClubName</td>
                                 <td>@tournament.Groups.Count</td>
-                                <td>@totalPairs</td>
                                 <td>@completedMatches / @totalMatches</td>
                                 <td>
                                     <span class="badge @GetProgressBadgeClass(progress)">
@@ -158,131 +217,73 @@ else
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
+        </article>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <article class="dashboard-panel">
+            <div class="panel-header">
                 <div>
-                    <h3 class="mb-1">Estado por torneo</h3>
-                    <p class="text-muted mb-0">
-                        Resumen completo de cada torneo cargado.
-                    </p>
+                    <div class="panel-kicker">Resultados</div>
+                    <h2>Últimos cargados</h2>
                 </div>
-
-                <span class="badge bg-secondary">
-                    @tournaments.Count total
-                </span>
+                <a class="panel-link" href="/matches/history">Historial</a>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Torneo</th>
-                            <th>Grupos</th>
-                            <th>Parejas</th>
-                            <th>Partidos</th>
-                            <th>Pendientes</th>
-                            <th>Llaves</th>
-                            <th>Progreso</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var tournament in tournaments.OrderByDescending(tournament => tournament.CreatedAt))
-                        {
-                            var totalMatches = GetTotalMatches(tournament);
-                            var completedMatches = GetCompletedMatches(tournament);
-                            var pendingMatches = totalMatches - completedMatches;
-                            var progress = GetTournamentProgress(tournament);
-                            var bracketCount = GetBracketCount(tournament);
+            @if (LatestResults.Any())
+            {
+                <div class="result-list">
+                    @foreach (var result in LatestResults)
+                    {
+                        <div class="result-row">
+                            <span class="result-check">OK</span>
+                            <span>
+                                <strong>@result.Winner</strong>
+                                <small>venció a @result.Loser</small>
+                            </span>
+                            <strong>@result.Score</strong>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state compact-empty">
+                    <div class="empty-state-title">Sin resultados cargados.</div>
+                    <div>Cuando cargues partidos, van a aparecer acá.</div>
+                </div>
+            }
+        </article>
 
-                            <tr>
-                                <td>
-                                    <strong>@tournament.Name</strong>
-                                </td>
-                                <td>@tournament.Groups.Count</td>
-                                <td>@GetTotalPairs(tournament)</td>
-                                <td>@completedMatches / @totalMatches</td>
-                                <td>@pendingMatches</td>
-                                <td>@bracketCount</td>
-                                <td>
-                                    <span class="badge @GetProgressBadgeClass(progress)">
-                                        @progress%
-                                    </span>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+        <article class="dashboard-panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-kicker">Ranking</div>
+                    <h2>Top parejas</h2>
+                </div>
+                <a class="panel-link" href="/ranking">Ver ranking</a>
             </div>
-        </div>
-    </div>
 
-    @if (brackets.Any())
-    {
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h3 class="mb-1">Llaves eliminatorias</h3>
-                        <p class="text-muted mb-0">
-                            Categorías con llave generada.
-                        </p>
+            <div class="compact-list">
+                @foreach (var pair in TopPairs)
+                {
+                    <div class="compact-row">
+                        <span class="compact-icon">PR</span>
+                        <span>
+                            <strong>@pair.DisplayName</strong>
+                            <small>@(pair.Category.HasValue ? GetCategoryLabel(pair.Category.Value) : "Sin categoría")</small>
+                        </span>
                     </div>
-
-                    <span class="badge bg-secondary">
-                        @brackets.Count total
-                    </span>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-striped align-middle">
-                        <thead>
-                            <tr>
-                                <th>Torneo</th>
-                                <th>Categoría</th>
-                                <th>Creada</th>
-                                <th>Partidos</th>
-                                <th>Resultados</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var bracket in brackets.OrderByDescending(bracket => bracket.CreatedAt))
-                            {
-                                var tournament = GetTournamentName(bracket.TournamentId);
-                                var totalMatches = bracket.Matches.Count;
-                                var completedMatches = bracket.Matches.Count(match => match.HasResult);
-
-                                <tr>
-                                    <td>
-                                        <strong>@tournament</strong>
-                                    </td>
-                                    <td>@GetCategoryLabel(bracket.Category)</td>
-                                    <td>@bracket.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td>@totalMatches</td>
-                                    <td>@completedMatches / @totalMatches</td>
-                                    <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary"
-                                           href="@($"/tournaments/{bracket.TournamentId}/categories/{bracket.Category}/knockout")">
-                                            Abrir llave
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                }
             </div>
-        </div>
-    }
+        </article>
+    </section>
 }
 
 @code {
     private List<Tournament> tournaments = new();
     private List<KnockoutBracket> brackets = new();
+
+    private string OrganizerName =>
+        OrganizerAccountService.CurrentOrganizer?.RealName ?? string.Empty;
 
     private int TotalTournaments => tournaments.Count;
 
@@ -325,20 +326,45 @@ else
         }
     }
 
+    private Tournament FeaturedTournament => tournaments
+        .OrderByDescending(GetTournamentProgress)
+        .ThenByDescending(tournament => tournament.CreatedAt)
+        .First();
+
     private List<Tournament> RecentTournaments => tournaments
         .OrderByDescending(tournament => tournament.CreatedAt)
         .Take(5)
+        .ToList();
+
+    private List<KnockoutBracket> RecentBrackets => brackets
+        .OrderByDescending(bracket => bracket.CreatedAt)
+        .Take(4)
+        .ToList();
+
+    private List<Pair> TopPairs => tournaments
+        .SelectMany(tournament => tournament.Groups)
+        .SelectMany(group => group.Pairs)
+        .GroupBy(pair => pair.DisplayName)
+        .Select(group => group.First())
+        .Take(5)
+        .ToList();
+
+    private List<DashboardResult> LatestResults => tournaments
+        .SelectMany(tournament => tournament.Groups)
+        .SelectMany(group => group.Matches)
+        .Where(match => match.HasResult && match.Winner != null && match.Loser != null && match.Result != null)
+        .TakeLast(5)
+        .Reverse()
+        .Select(match => new DashboardResult(
+            match.Winner!.DisplayName,
+            match.Loser!.DisplayName,
+            match.Result!.DisplayScore))
         .ToList();
 
     protected override void OnInitialized()
     {
         tournaments = TournamentService.GetAllTournaments();
         brackets = KnockoutService.GetAllBrackets();
-    }
-
-    private int GetTotalPairs(Tournament tournament)
-    {
-        return tournament.Groups.Sum(group => group.Pairs.Count);
     }
 
     private int GetTotalMatches(Tournament tournament)
@@ -404,4 +430,6 @@ else
             _ => $"{category} categoría"
         };
     }
+
+    private sealed record DashboardResult(string Winner, string Loser, string Score);
 }

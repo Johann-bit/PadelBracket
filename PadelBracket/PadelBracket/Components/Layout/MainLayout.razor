@@ -12,15 +12,20 @@
 
     <main class="app-main">
         <header class="app-topbar">
-            <div>
-                <span class="app-topbar-kicker">Panel de torneos</span>
+            <div class="topbar-search">
+                <span aria-hidden="true">SR</span>
+                <input placeholder="Buscar jugadores, parejas, torneos..." />
             </div>
 
             <div class="topbar-account">
                 @if (OrganizerAccountService.IsLoggedIn && OrganizerAccountService.CurrentOrganizer != null)
                 {
-                    <a class="topbar-player-name" href="/organizer/profile">
-                        @OrganizerAccountService.CurrentOrganizer.RealName
+                    <a class="topbar-profile" href="/organizer/profile">
+                        <span class="topbar-avatar">@GetInitials(OrganizerAccountService.CurrentOrganizer.RealName)</span>
+                        <span>
+                            <strong>@OrganizerAccountService.CurrentOrganizer.RealName</strong>
+                            <small>Organizador</small>
+                        </span>
                     </a>
 
                     <button class="btn btn-sm btn-outline-primary" @onclick="LogoutOrganizer">
@@ -29,8 +34,12 @@
                 }
                 else if (PlayerAccountService.IsLoggedIn && PlayerAccountService.CurrentPlayer != null)
                 {
-                    <a class="topbar-player-name" href="/profile">
-                        @PlayerAccountService.CurrentPlayer.Name
+                    <a class="topbar-profile" href="/profile">
+                        <span class="topbar-avatar">@GetInitials(PlayerAccountService.CurrentPlayer.Name)</span>
+                        <span>
+                            <strong>@PlayerAccountService.CurrentPlayer.Name</strong>
+                            <small>Jugador</small>
+                        </span>
                     </a>
 
                     <button class="btn btn-sm btn-outline-primary" @onclick="LogoutPlayer">
@@ -97,6 +106,19 @@
     private void RefreshTopbar()
     {
         InvokeAsync(StateHasChanged);
+    }
+
+    private static string GetInitials(string name)
+    {
+        var parts = name
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Take(2)
+            .ToList();
+
+        if (!parts.Any())
+            return "PB";
+
+        return string.Concat(parts.Select(part => char.ToUpperInvariant(part[0])));
     }
 
     public void Dispose()
