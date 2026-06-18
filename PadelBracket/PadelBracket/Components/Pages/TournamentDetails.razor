@@ -145,245 +145,243 @@ else
         </div>
     </section>
 
-    <div class="card mb-4 shadow-sm tournament-detail-card">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-                <div>
-                    <h4 class="card-title mb-1">Datos del torneo</h4>
-                    <p class="text-muted mb-0">
-                        Club, ubicación y fecha de inicio del torneo.
-                    </p>
-                </div>
-
-                @if (!isEditingDetails)
-                {
-                    <button class="btn btn-sm btn-outline-primary"
-                            @onclick="StartDetailsEdit">
-                        Editar datos
-                    </button>
-                }
+    <section class="tournament-detail-panel">
+        <div class="section-toolbar tournament-panel-toolbar">
+            <div>
+                <div class="panel-kicker">Configuración</div>
+                <h3>Datos del torneo</h3>
+                <p>
+                    Club, ubicación y fecha de inicio del torneo.
+                </p>
             </div>
 
-            @if (isEditingDetails)
+            @if (!isEditingDetails)
             {
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Club</label>
-                        <input class="form-control"
-                               @bind="editClubName"
-                               @bind:event="oninput" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Ciudad</label>
-                        <input class="form-control"
-                               @bind="editCity"
-                               @bind:event="oninput" />
-                    </div>
-
-                    <div class="col-md-8">
-                        <label class="form-label">Dirección</label>
-                        <input class="form-control"
-                               @bind="editAddress"
-                               @bind:event="oninput" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Fecha de inicio</label>
-                        <input class="form-control"
-                               type="date"
-                               @bind="editStartDate" />
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2 flex-wrap">
-                    <button class="btn btn-primary"
-                            @onclick="SaveDetailsEdit">
-                        Guardar datos
-                    </button>
-
-                    <button class="btn btn-outline-secondary"
-                            @onclick="CancelDetailsEdit">
-                        Cancelar
-                    </button>
-                </div>
-            }
-            else
-            {
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-label">Club</div>
-                            <div class="stat-value">@tournament.ClubName</div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-label">Ciudad</div>
-                            <div class="stat-value">@tournament.City</div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-label">Fecha</div>
-                            <div class="stat-value">@tournament.StartDate.ToString("dd/MM")</div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-label">Estado</div>
-                            <div class="stat-value">@tournament.StatusLabel</div>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="empty-state">
-                            <div class="empty-state-title">Dirección</div>
-                            <div>@tournament.Address</div>
-                        </div>
-                    </div>
-                </div>
+                <button class="btn btn-outline-primary"
+                        @onclick="StartDetailsEdit">
+                    Editar datos
+                </button>
             }
         </div>
-    </div>
 
-    <div class="card mb-4 shadow-sm tournament-detail-card">
-        <div class="card-body">
-            <h4 class="card-title mb-2">Categorías del torneo</h4>
-
-            <p class="text-muted mb-4">
-                Definí qué categorías pueden inscribirse, cupos disponibles y costo de inscripción.
-            </p>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <label class="form-label">Categoría</label>
-                    <select class="form-select" @bind="newCategory">
-                        <option value="8">8va categoría</option>
-                        <option value="7">7ma categoría</option>
-                        <option value="6">6ta categoría</option>
-                        <option value="5">5ta categoría</option>
-                        <option value="4">4ta categoría</option>
-                        <option value="3">3ra categoría</option>
-                        <option value="2">2da categoría</option>
-                        <option value="1">1ra categoría</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Cupos</label>
+        @if (isEditingDetails)
+        {
+            <div class="tournament-detail-form-grid">
+                <div class="form-field">
+                    <label>Club</label>
                     <input class="form-control"
-                           type="number"
-                           min="1"
-                           @bind="newCategoryMaxPairs" />
+                           @bind="editClubName"
+                           @bind:event="oninput" />
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Inscripción</label>
+                <div class="form-field">
+                    <label>Ciudad</label>
                     <input class="form-control"
-                           type="number"
-                           min="0"
-                           step="100"
-                           @bind="newCategoryRegistrationFee" />
+                           @bind="editCity"
+                           @bind:event="oninput" />
                 </div>
 
-                <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-primary w-100"
-                            @onclick="CreateCategory">
-                        Agregar categoría
-                    </button>
+                <div class="form-field span-2">
+                    <label>Dirección</label>
+                    <input class="form-control"
+                           @bind="editAddress"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="form-field">
+                    <label>Fecha de inicio</label>
+                    <input class="form-control"
+                           type="date"
+                           @bind="editStartDate" />
                 </div>
             </div>
 
-            @if (!tournament.TournamentCategories.Any())
-            {
-                <div class="empty-state">
-                    <div class="empty-state-title">Todavía no hay categorías.</div>
-                    <div>
-                        Agregá al menos una categoría para que el torneo aparezca en disponibles.
-                    </div>
+            <div class="form-actions">
+                <button class="btn btn-primary"
+                        @onclick="SaveDetailsEdit">
+                    Guardar datos
+                </button>
+
+                <button class="btn btn-outline-secondary"
+                        @onclick="CancelDetailsEdit">
+                    Cancelar
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="tournament-info-grid">
+                <div class="tournament-info-card">
+                    <span>Club</span>
+                    <strong>@tournament.ClubName</strong>
                 </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-striped align-middle">
-                        <thead>
+
+                <div class="tournament-info-card">
+                    <span>Ciudad</span>
+                    <strong>@tournament.City</strong>
+                </div>
+
+                <div class="tournament-info-card">
+                    <span>Fecha</span>
+                    <strong>@tournament.StartDate.ToString("dd/MM")</strong>
+                </div>
+
+                <div class="tournament-info-card">
+                    <span>Estado</span>
+                    <strong>@tournament.StatusLabel</strong>
+                </div>
+
+                <div class="tournament-info-card tournament-info-card-wide">
+                    <span>Dirección</span>
+                    <strong>@tournament.Address</strong>
+                </div>
+            </div>
+        }
+    </section>
+
+    <section class="tournament-detail-panel">
+        <div class="section-toolbar tournament-panel-toolbar">
+            <div>
+                <div class="panel-kicker">Inscripción</div>
+                <h3>Categorías del torneo</h3>
+                <p>
+                    Definí qué categorías pueden inscribirse, cupos disponibles y costo de inscripción.
+                </p>
+            </div>
+
+            <span class="status-pill">
+                @tournament.TournamentCategories.Count total
+            </span>
+        </div>
+
+        <div class="category-create-grid">
+            <div class="form-field">
+                <label>Categoría</label>
+                <select class="form-select" @bind="newCategory">
+                    <option value="8">8va categoría</option>
+                    <option value="7">7ma categoría</option>
+                    <option value="6">6ta categoría</option>
+                    <option value="5">5ta categoría</option>
+                    <option value="4">4ta categoría</option>
+                    <option value="3">3ra categoría</option>
+                    <option value="2">2da categoría</option>
+                    <option value="1">1ra categoría</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label>Cupos</label>
+                <input class="form-control"
+                       type="number"
+                       min="1"
+                       @bind="newCategoryMaxPairs" />
+            </div>
+
+            <div class="form-field">
+                <label>Inscripción</label>
+                <input class="form-control"
+                       type="number"
+                       min="0"
+                       step="100"
+                       @bind="newCategoryRegistrationFee" />
+            </div>
+
+            <div class="category-create-action">
+                <button class="btn btn-primary"
+                        @onclick="CreateCategory">
+                    Agregar categoría
+                </button>
+            </div>
+        </div>
+
+        @if (!tournament.TournamentCategories.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-title">Todavía no hay categorías.</div>
+                <div>
+                    Agregá al menos una categoría para que el torneo aparezca en disponibles.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="category-table-wrap">
+                <table class="table align-middle category-table">
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Cupos</th>
+                            <th>Inscripción</th>
+                            <th>Inscriptos activos</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var category in tournament.TournamentCategories.OrderByDescending(category => category.Category))
+                        {
+                            var activeRegistrations = tournament.GetActiveRegistrationsByCategory(category.Category).Count;
+
                             <tr>
-                                <th>Categoría</th>
-                                <th>Cupos</th>
-                                <th>Inscripción</th>
-                                <th>Inscriptos activos</th>
-                                <th></th>
+                                <td>
+                                    <span class="category-badge">
+                                        @GetCategoryLabel(category.Category)
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong>@activeRegistrations</strong>
+                                    <span class="text-muted">/ @category.MaxPairs</span>
+                                </td>
+
+                                <td>
+                                    <strong>$@category.RegistrationFee</strong>
+                                </td>
+
+                                <td>@activeRegistrations</td>
+
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            disabled="@HasActiveRegistrations(category.Category)"
+                                            @onclick="() => AskDeleteCategory(category.Category)">
+                                        Eliminar
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
 
-                        <tbody>
-                            @foreach (var category in tournament.TournamentCategories.OrderByDescending(category => category.Category))
+                            @if (categoryToDelete == category.Category)
                             {
-                                var activeRegistrations = tournament.GetActiveRegistrationsByCategory(category.Category).Count;
-
                                 <tr>
-                                    <td>
-                                        <span class="badge bg-primary">
-                                            @GetCategoryLabel(category.Category)
-                                        </span>
-                                    </td>
+                                    <td colspan="5">
+                                        <div class="delete-confirmation-panel">
+                                            <div>
+                                                <strong>¿Eliminar esta categoría?</strong>
+                                                <span>
+                                                    Solo se puede eliminar si no tiene inscripciones activas.
+                                                </span>
+                                            </div>
 
-                                    <td>@activeRegistrations / @category.MaxPairs</td>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button class="btn btn-sm btn-danger"
+                                                        @onclick="() => DeleteCategory(category.Category)">
+                                                    Confirmar
+                                                </button>
 
-                                    <td>$@category.RegistrationFee</td>
-
-                                    <td>@activeRegistrations</td>
-
-                                    <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-danger"
-                                                disabled="@HasActiveRegistrations(category.Category)"
-                                                @onclick="() => AskDeleteCategory(category.Category)">
-                                            Eliminar
-                                        </button>
+                                                <button class="btn btn-sm btn-secondary"
+                                                        @onclick="CancelDeleteCategory">
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
-
-                                @if (categoryToDelete == category.Category)
-                                {
-                                    <tr>
-                                        <td colspan="5">
-                                            <div class="alert alert-danger mb-0">
-                                                <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                                                    <div>
-                                                        <strong>¿Eliminar esta categoría?</strong>
-                                                        <div>
-                                                            Solo se puede eliminar si no tiene inscripciones activas.
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="d-flex gap-2 flex-wrap">
-                                                        <button class="btn btn-sm btn-danger"
-                                                                @onclick="() => DeleteCategory(category.Category)">
-                                                            Confirmar
-                                                        </button>
-
-                                                        <button class="btn btn-sm btn-secondary"
-                                                                @onclick="CancelDeleteCategory">
-                                                            Cancelar
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
                             }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-    </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
 
     <div class="card mb-4 shadow-sm tournament-detail-card tournament-registration-card">
         <div class="card-body">
@@ -701,38 +699,46 @@ else
         </div>
     </div>
 
-    <div class="card mb-4 shadow-sm tournament-detail-card tournament-group-create-card">
-        <div class="card-body">
-            <h4 class="card-title">Crear grupo</h4>
+    <section class="tournament-detail-panel tournament-group-create-panel">
+        <div class="section-toolbar tournament-panel-toolbar">
+            <div>
+                <div class="panel-kicker">Fase de grupos</div>
+                <h3>Crear grupo</h3>
+                <p>
+                    Armá grupos por categoría para cargar parejas confirmadas y generar partidos.
+                </p>
+            </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-8 mb-3">
-                    <label class="form-label">Nombre del grupo</label>
-                    <input class="form-control"
-                           placeholder="Ejemplo: Grupo A"
-                           @bind="newGroupName" />
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Categoría</label>
-                    <select class="form-select" @bind="selectedCategory">
-                        <option value="8">8va categoría</option>
-                        <option value="7">7ma categoría</option>
-                        <option value="6">6ta categoría</option>
-                        <option value="5">5ta categoría</option>
-                        <option value="4">4ta categoría</option>
-                        <option value="3">3ra categoría</option>
-                        <option value="2">2da categoría</option>
-                        <option value="1">1ra categoría</option>
-                    </select>
-                </div>
+        <div class="group-create-grid">
+            <div class="form-field">
+                <label>Nombre del grupo</label>
+                <input class="form-control"
+                       placeholder="Ejemplo: Grupo A"
+                       @bind="newGroupName" />
             </div>
 
-            <button class="btn btn-primary" @onclick="CreateGroup">
-                Crear grupo
-            </button>
+            <div class="form-field">
+                <label>Categoría</label>
+                <select class="form-select" @bind="selectedCategory">
+                    <option value="8">8va categoría</option>
+                    <option value="7">7ma categoría</option>
+                    <option value="6">6ta categoría</option>
+                    <option value="5">5ta categoría</option>
+                    <option value="4">4ta categoría</option>
+                    <option value="3">3ra categoría</option>
+                    <option value="2">2da categoría</option>
+                    <option value="1">1ra categoría</option>
+                </select>
+            </div>
+
+            <div class="group-create-action">
+                <button class="btn btn-primary" @onclick="CreateGroup">
+                    Crear grupo
+                </button>
+            </div>
         </div>
-    </div>
+    </section>
 
     <div class="section-toolbar">
         <div>

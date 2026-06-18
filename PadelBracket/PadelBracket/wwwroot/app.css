@@ -1377,7 +1377,8 @@ a {
     gap: 0.45rem;
 }
 
-.form-field span {
+.form-field span,
+.form-field label {
     color: var(--app-text);
     font-size: 0.86rem;
     font-weight: 850;
@@ -1467,6 +1468,157 @@ a {
 .tournament-detail-card .card-title,
 .group-detail-card .card-title {
     font-size: 1.12rem;
+}
+
+.tournament-detail-panel {
+    margin-bottom: 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-lg);
+    background:
+        radial-gradient(circle at top right, rgba(22, 163, 74, 0.08), transparent 34%),
+        rgba(255, 255, 255, 0.96);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.tournament-panel-toolbar {
+    margin: 0 0 1rem;
+}
+
+.tournament-panel-toolbar p {
+    max-width: 680px;
+    margin: 0.35rem 0 0;
+    color: var(--app-text-muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    font-weight: 650;
+}
+
+.tournament-detail-form-grid,
+.category-create-grid,
+.group-create-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+    align-items: end;
+}
+
+.tournament-detail-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+}
+
+.tournament-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.tournament-info-card {
+    min-height: 112px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--app-shadow-sm);
+}
+
+.tournament-info-card-wide {
+    grid-column: span 4;
+    min-height: 92px;
+}
+
+.tournament-info-card span {
+    color: var(--app-text-muted);
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.tournament-info-card strong {
+    color: var(--app-text);
+    font-size: 1.35rem;
+    line-height: 1.1;
+    font-weight: 950;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+}
+
+.category-create-action,
+.group-create-action {
+    display: flex;
+}
+
+.category-create-action .btn,
+.group-create-action .btn {
+    width: 100%;
+}
+
+.group-create-grid {
+    grid-template-columns: minmax(260px, 1fr) minmax(220px, 0.45fr) auto;
+}
+
+.category-table-wrap {
+    margin-top: 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: var(--app-shadow-sm);
+}
+
+.category-table {
+    margin-bottom: 0;
+}
+
+.category-table tbody tr {
+    transition: background 150ms ease;
+}
+
+.category-table tbody tr:hover > * {
+    background: var(--app-primary-soft);
+}
+
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-size: 0.82rem;
+    font-weight: 950;
+}
+
+.delete-confirmation-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    border-radius: 14px;
+    background: var(--app-danger-soft);
+}
+
+.delete-confirmation-panel strong,
+.delete-confirmation-panel span {
+    display: block;
+}
+
+.delete-confirmation-panel strong {
+    color: var(--app-text);
+    font-weight: 900;
+}
+
+.delete-confirmation-panel span {
+    margin-top: 0.2rem;
+    color: var(--app-text-muted);
+    font-weight: 650;
 }
 
 .registration-filter-panel {
@@ -3880,7 +4032,11 @@ a {
     }
 
     .tournament-workspace,
-    .tournament-form-grid {
+    .tournament-form-grid,
+    .tournament-detail-form-grid,
+    .category-create-grid,
+    .group-create-grid,
+    .tournament-info-grid {
         grid-template-columns: 1fr;
     }
 
@@ -3896,11 +4052,20 @@ a {
         grid-column: auto;
     }
 
+    .tournament-info-card-wide {
+        grid-column: auto;
+    }
+
     .tournament-actions {
         min-width: 0;
     }
 
     .delete-confirmation {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .delete-confirmation-panel {
         align-items: flex-start;
         flex-direction: column;
     }
