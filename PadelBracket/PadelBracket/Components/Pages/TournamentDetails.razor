@@ -445,13 +445,15 @@ else
             else
             {
                 var filteredRegistrations = FilteredRegistrations;
+                var currentRegistrationPage = GetCurrentRegistrationPage(filteredRegistrations.Count);
+                var pagedRegistrations = GetPagedRegistrations(filteredRegistrations);
 
                 <div class="registration-filter-panel mb-4">
                     <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
                         <div>
                             <h5 class="mb-1">Filtros</h5>
                             <div class="text-muted">
-                                Mostrando @filteredRegistrations.Count de @tournament.Registrations.Count inscripciones.
+                                Mostrando @GetFirstVisibleRegistrationNumber(filteredRegistrations.Count)-@GetLastVisibleRegistrationNumber(filteredRegistrations.Count) de @filteredRegistrations.Count inscripciones filtradas.
                             </div>
                         </div>
 
@@ -470,12 +472,15 @@ else
                             <input class="form-control"
                                    placeholder="Nombre de jugador o pareja"
                                    @bind="registrationSearchTerm"
-                                   @bind:event="oninput" />
+                                   @bind:event="oninput"
+                                   @bind:after="ResetRegistrationPage" />
                         </div>
 
                         <div class="col-md-2">
                             <label class="form-label">Categoría</label>
-                            <select class="form-select" @bind="registrationCategoryFilter">
+                            <select class="form-select"
+                                    @bind="registrationCategoryFilter"
+                                    @bind:after="ResetRegistrationPage">
                                 <option value="all">Todas</option>
                                 @foreach (var category in tournament.TournamentCategories.OrderByDescending(category => category.Category))
                                 {
@@ -486,7 +491,9 @@ else
 
                         <div class="col-md-2">
                             <label class="form-label">Estado</label>
-                            <select class="form-select" @bind="registrationStatusFilter">
+                            <select class="form-select"
+                                    @bind="registrationStatusFilter"
+                                    @bind:after="ResetRegistrationPage">
                                 <option value="all">Todos</option>
                                 @foreach (RegistrationStatus status in Enum.GetValues<RegistrationStatus>())
                                 {
@@ -497,7 +504,9 @@ else
 
                         <div class="col-md-2">
                             <label class="form-label">Pago</label>
-                            <select class="form-select" @bind="registrationPaymentFilter">
+                            <select class="form-select"
+                                    @bind="registrationPaymentFilter"
+                                    @bind:after="ResetRegistrationPage">
                                 <option value="all">Todos</option>
                                 @foreach (PaymentStatus status in Enum.GetValues<PaymentStatus>())
                                 {
@@ -508,7 +517,9 @@ else
 
                         <div class="col-md-2">
                             <label class="form-label">Grupo</label>
-                            <select class="form-select" @bind="registrationGroupFilter">
+                            <select class="form-select"
+                                    @bind="registrationGroupFilter"
+                                    @bind:after="ResetRegistrationPage">
                                 <option value="all">Todos</option>
                                 <option value="assigned">Con grupo</option>
                                 <option value="unassigned">Sin grupo</option>
@@ -554,7 +565,7 @@ else
                             </thead>
 
                             <tbody>
-                                @foreach (var registration in filteredRegistrations)
+                                @foreach (var registration in pagedRegistrations)
                                 {
                                     var assignedGroup = GetAssignedGroup(registration);
 
@@ -662,6 +673,29 @@ else
                             </tbody>
                         </table>
                     </div>
+
+                    @if (filteredRegistrations.Count > RegistrationPageSize)
+                    {
+                        <div class="registration-pagination">
+                            <div>
+                                Página @currentRegistrationPage de @GetRegistrationPageCount(filteredRegistrations.Count)
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-secondary"
+                                        disabled="@(currentRegistrationPage <= 1)"
+                                        @onclick="PreviousRegistrationPage">
+                                    Anterior
+                                </button>
+
+                                <button class="btn btn-outline-primary"
+                                        disabled="@(currentRegistrationPage >= GetRegistrationPageCount(filteredRegistrations.Count))"
+                                        @onclick="() => NextRegistrationPage(filteredRegistrations.Count)">
+                                    Siguiente
+                                </button>
+                            </div>
+                        </div>
+                    }
                 }
             }
         </div>
@@ -901,6 +935,8 @@ else
     private string editGroupName = string.Empty;
 
     private Guid? groupIdToDelete;
+    private const int RegistrationPageSize = 12;
+    private int registrationPage = 1;
     private string registrationSearchTerm = string.Empty;
     private string registrationCategoryFilter = "all";
     private string registrationStatusFilter = "all";
@@ -1009,6 +1045,58 @@ else
         registrationStatusFilter = "all";
         registrationPaymentFilter = "all";
         registrationGroupFilter = "all";
+        ResetRegistrationPage();
+    }
+
+    private void ResetRegistrationPage()
+    {
+        registrationPage = 1;
+    }
+
+    private static int GetRegistrationPageCount(int filteredCount)
+    {
+        return Math.Max(1, (int)Math.Ceiling(filteredCount / (double)RegistrationPageSize));
+    }
+
+    private int GetCurrentRegistrationPage(int filteredCount)
+    {
+        return Math.Clamp(registrationPage, 1, GetRegistrationPageCount(filteredCount));
+    }
+
+    private List<TournamentRegistration> GetPagedRegistrations(List<TournamentRegistration> filteredRegistrations)
+    {
+        int currentPage = GetCurrentRegistrationPage(filteredRegistrations.Count);
+
+        return filteredRegistrations
+            .Skip((currentPage - 1) * RegistrationPageSize)
+            .Take(RegistrationPageSize)
+            .ToList();
+    }
+
+    private int GetFirstVisibleRegistrationNumber(int filteredCount)
+    {
+        if (filteredCount == 0)
+            return 0;
+
+        return ((GetCurrentRegistrationPage(filteredCount) - 1) * RegistrationPageSize) + 1;
+    }
+
+    private int GetLastVisibleRegistrationNumber(int filteredCount)
+    {
+        if (filteredCount == 0)
+            return 0;
+
+        return Math.Min(GetCurrentRegistrationPage(filteredCount) * RegistrationPageSize, filteredCount);
+    }
+
+    private void PreviousRegistrationPage()
+    {
+        registrationPage = Math.Max(1, registrationPage - 1);
+    }
+
+    private void NextRegistrationPage(int filteredCount)
+    {
+        registrationPage = Math.Min(GetRegistrationPageCount(filteredCount), registrationPage + 1);
     }
 
     private bool EnsureCanManageTournament()
