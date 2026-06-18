@@ -3486,6 +3486,17 @@ a {
     text-transform: uppercase;
 }
 
+.result-round-note {
+    width: fit-content;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid rgba(15, 138, 59, 0.18);
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
 .result-score-panel {
     display: grid;
     gap: 0.85rem;
