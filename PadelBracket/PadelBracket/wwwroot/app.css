@@ -1097,6 +1097,130 @@ a {
     margin: 0 0 1rem;
 }
 
+.tournament-back-link {
+    display: inline-flex;
+    margin-bottom: 1rem;
+}
+
+.tournament-detail-hero,
+.group-detail-hero {
+    align-items: center;
+}
+
+.tournament-detail-metrics,
+.group-detail-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.tournament-detail-card .card-title,
+.group-detail-card .card-title {
+    font-size: 1.12rem;
+}
+
+.registration-filter-panel {
+    padding: 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fff, #fbfdfb);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.registration-table-wrap {
+    border-radius: 16px;
+}
+
+.registration-table td:first-child strong {
+    display: block;
+    max-width: 260px;
+    line-height: 1.25;
+}
+
+.registration-table td:last-child {
+    min-width: 250px;
+}
+
+.tournament-group-create-card .row {
+    align-items: end;
+}
+
+.section-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin: 1.5rem 0 1rem;
+}
+
+.section-toolbar h3 {
+    margin: 0.2rem 0 0;
+    color: var(--app-text);
+    font-size: 1.45rem;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+}
+
+.category-group-section {
+    margin-bottom: 1.4rem;
+}
+
+.category-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.category-group-header h4 {
+    margin: 0;
+    color: var(--app-text);
+    font-size: 1.05rem;
+    font-weight: 900;
+}
+
+.category-group-header small {
+    color: var(--app-text-muted);
+    font-weight: 650;
+}
+
+.group-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.group-summary-card {
+    overflow: hidden;
+}
+
+.group-summary-card .card-title {
+    font-size: 1.05rem;
+}
+
+.group-summary-card ul {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.group-operations-grid {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.group-generate-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--app-shadow-sm);
+}
+
 .compact-empty {
     padding: 1rem;
 }
@@ -1885,6 +2009,18 @@ a {
     .delete-confirmation {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .tournament-detail-metrics,
+    .group-detail-metrics,
+    .group-card-grid,
+    .group-operations-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .category-group-header,
+    .section-toolbar {
+        display: grid;
     }
 
     .dashboard-split-stats,

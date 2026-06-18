@@ -70,29 +70,23 @@ else if (!CanManageTournament)
 }
 else
 {
-    <div class="mb-3">
-        <a class="btn btn-link px-0" href="@($"/tournaments/{tournament.Id}")">
-            ← Volver al torneo
-        </a>
-    </div>
+    <a class="panel-link tournament-back-link" href="@($"/tournaments/{tournament.Id}")">
+        ← Volver al torneo
+    </a>
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
+    <section class="dashboard-hero group-detail-hero">
         <div>
-            <h1 class="mb-1">@group.Name</h1>
-            <p class="text-muted mb-0">
-                Torneo: <strong>@tournament.Name</strong>
-            </p>
-            <p class="text-muted mb-0">
-                Categoría: <strong>@group.CategoryLabel</strong>
+            <div class="page-eyebrow">Gestión de grupo</div>
+            <h1 class="page-title">@group.Name</h1>
+            <p class="page-subtitle">
+                Torneo: <strong>@tournament.Name</strong> · Categoría: <strong>@group.CategoryLabel</strong>
             </p>
         </div>
 
-        <div class="text-end">
-            <span class="badge bg-dark fs-6">
-                Clasifican @QualifiedPairsCount
-            </span>
-        </div>
-    </div>
+        <span class="status-pill">
+            Clasifican @QualifiedPairsCount
+        </span>
+    </section>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
@@ -108,7 +102,49 @@ else
         </div>
     }
 
-    <div class="card mb-4 shadow-sm">
+    <section class="metric-grid group-detail-metrics">
+        <div class="metric-card">
+            <div class="metric-icon">PR</div>
+            <div>
+                <div class="metric-label">Parejas</div>
+                <div class="metric-value">@group.Pairs.Count</div>
+                <div class="metric-trend">Mínimo 3 para generar partidos</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">MT</div>
+            <div>
+                <div class="metric-label">Partidos</div>
+                <div class="metric-value">@group.Matches.Count</div>
+                <div class="metric-trend">@group.Matches.Count(match => match.HasResult) con resultado</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">CL</div>
+            <div>
+                <div class="metric-label">Clasifican</div>
+                <div class="metric-value">@QualifiedPairsCount</div>
+                <div class="metric-trend">Según tabla del grupo</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">ES</div>
+            <div>
+                <div class="metric-label">Estado</div>
+                <div class="metric-value metric-value-text">@(group.Matches.Any() ? "En juego" : "Preparación")</div>
+                <div class="metric-trend">Carga operativa del grupo</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="group-operations-grid">
+        <div class="card mb-4 shadow-sm group-detail-card">
         <div class="card-body">
             <h4 class="card-title mb-3">Agregar pareja confirmada</h4>
 
@@ -161,7 +197,7 @@ else
         </div>
     </div>
 
-    <div class="card mb-4 shadow-sm">
+        <div class="card mb-4 shadow-sm group-detail-card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
@@ -211,8 +247,9 @@ else
             }
         </div>
     </div>
+    </div>
 
-    <div class="mb-4">
+    <div class="group-generate-panel mb-4">
         <button class="btn btn-success"
                 disabled="@(group.Pairs.Count < 3 || group.Matches.Any())"
                 @onclick="GenerateMatches">
@@ -234,7 +271,12 @@ else
         }
     </div>
 
-    <h3 class="mb-3">Partidos</h3>
+    <div class="section-toolbar">
+        <div>
+            <div class="panel-kicker">Fixture</div>
+            <h3>Partidos</h3>
+        </div>
+    </div>
 
     @if (!group.Matches.Any())
     {
@@ -389,7 +431,12 @@ else
         </div>
     }
 
-    <h3 class="mb-3">Tabla de posiciones</h3>
+    <div class="section-toolbar">
+        <div>
+            <div class="panel-kicker">Rendimiento</div>
+            <h3>Tabla de posiciones</h3>
+        </div>
+    </div>
 
     @if (!standings.Any())
     {

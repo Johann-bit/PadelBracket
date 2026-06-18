@@ -68,35 +68,26 @@ else if (!CanManageTournament)
 }
 else
 {
-    <div class="mb-3">
-        <a class="btn btn-link px-0" href="/tournaments">
-            ← Volver a torneos
-        </a>
-    </div>
+    <a class="panel-link tournament-back-link" href="/tournaments">
+        ← Volver a torneos
+    </a>
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
+    <section class="dashboard-hero tournament-detail-hero">
         <div>
-            <h1 class="mb-1">@tournament.Name</h1>
+            <div class="page-eyebrow">Panel de organizador</div>
+            <h1 class="page-title">@tournament.Name</h1>
 
-            <p class="text-muted mb-0">
+            <p class="page-subtitle">
                 @tournament.ClubName · @tournament.City · Inicio @tournament.StartDate.ToString("dd/MM/yyyy")
-            </p>
-
-            <p class="text-muted mb-0">
-                @tournament.Address
-            </p>
-
-            <p class="text-muted mb-0">
-                Creado el @tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                <br />
+                @tournament.Address · Creado el @tournament.CreatedAt.ToString("dd/MM/yyyy HH:mm")
             </p>
         </div>
 
-        <div class="text-end">
-            <span class="badge bg-dark fs-6">
-                @tournament.Groups.Count grupos
-            </span>
-        </div>
-    </div>
+        <span class="status-pill">
+            @tournament.Groups.Count grupos
+        </span>
+    </section>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
@@ -112,7 +103,49 @@ else
         </div>
     }
 
-    <div class="card mb-4 shadow-sm">
+    <section class="metric-grid tournament-detail-metrics">
+        <div class="metric-card">
+            <div class="metric-icon">CT</div>
+            <div>
+                <div class="metric-label">Categorías</div>
+                <div class="metric-value">@tournament.TournamentCategories.Count</div>
+                <div class="metric-trend">Disponibles para inscripción</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">IN</div>
+            <div>
+                <div class="metric-label">Inscripciones</div>
+                <div class="metric-value">@tournament.Registrations.Count</div>
+                <div class="metric-trend">@PendingRegistrationsCount pendientes</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">GR</div>
+            <div>
+                <div class="metric-label">Grupos</div>
+                <div class="metric-value">@tournament.Groups.Count</div>
+                <div class="metric-trend">@AssignedRegistrationsCount parejas asignadas</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">PG</div>
+            <div>
+                <div class="metric-label">Pagas</div>
+                <div class="metric-value">@PaidRegistrationsCount</div>
+                <div class="metric-trend">Pagos marcados por organización</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+    </section>
+
+    <div class="card mb-4 shadow-sm tournament-detail-card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                 <div>
@@ -217,7 +250,7 @@ else
         </div>
     </div>
 
-    <div class="card mb-4 shadow-sm">
+    <div class="card mb-4 shadow-sm tournament-detail-card">
         <div class="card-body">
             <h4 class="card-title mb-2">Categorías del torneo</h4>
 
@@ -352,7 +385,7 @@ else
         </div>
     </div>
 
-    <div class="card mb-4 shadow-sm">
+    <div class="card mb-4 shadow-sm tournament-detail-card tournament-registration-card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                 <div>
@@ -413,7 +446,7 @@ else
             {
                 var filteredRegistrations = FilteredRegistrations;
 
-                <div class="border rounded p-3 mb-4">
+                <div class="registration-filter-panel mb-4">
                     <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
                         <div>
                             <h5 class="mb-1">Filtros</h5>
@@ -506,8 +539,8 @@ else
                 }
                 else
                 {
-                    <div class="table-responsive">
-                        <table class="table table-striped align-middle">
+                    <div class="table-responsive registration-table-wrap">
+                        <table class="table table-striped align-middle registration-table">
                             <thead>
                                 <tr>
                                     <th>Pareja</th>
@@ -634,7 +667,7 @@ else
         </div>
     </div>
 
-    <div class="card mb-4 shadow-sm">
+    <div class="card mb-4 shadow-sm tournament-detail-card tournament-group-create-card">
         <div class="card-body">
             <h4 class="card-title">Crear grupo</h4>
 
@@ -667,10 +700,13 @@ else
         </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">Grupos por categoría</h3>
+    <div class="section-toolbar">
+        <div>
+            <div class="panel-kicker">Fase de grupos</div>
+            <h3>Grupos por categoría</h3>
+        </div>
 
-        <span class="badge bg-secondary">
+        <span class="status-pill">
             @tournament.Groups.Count total
         </span>
     </div>
@@ -687,14 +723,14 @@ else
                                             .GroupBy(g => g.Category)
                                             .OrderByDescending(g => g.Key))
         {
-            <section class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+            <section class="category-group-section">
+                <div class="category-group-header">
                     <div>
-                        <h4 class="mb-0">
+                        <h4>
                             @GetCategoryLabel(categoryGroup.Key)
                         </h4>
 
-                        <small class="text-muted">
+                        <small>
                             Grupos y participantes de esta categoría
                         </small>
                     </div>
@@ -711,14 +747,14 @@ else
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="group-card-grid">
                     @foreach (var group in categoryGroup.OrderBy(g => g.Name))
                     {
                         var isEditingGroup = editingGroupId == group.Id;
                         var isDeletingGroup = groupIdToDelete == group.Id;
 
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card h-100 shadow-sm">
+                        <div>
+                            <div class="card h-100 shadow-sm group-summary-card">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
                                         @if (isEditingGroup)
