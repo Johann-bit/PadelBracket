@@ -1,44 +1,116 @@
-﻿@page "/"
+@page "/"
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Dashboard</div>
-    <h1 class="page-title">PadelBracket</h1>
-    <p class="page-subtitle">
-        Una herramienta simple para gestionar torneos de pádel, organizar grupos,
-        cargar resultados, calcular tablas y generar llaves eliminatorias.
-    </p>
-</div>
+<section class="home-hero">
+    <div class="home-hero-copy">
+        <div class="home-eyebrow">
+            <span>PB</span>
+            Gestión de torneos de pádel
+        </div>
 
-<div class="hero-card mb-4">
-    <h2 class="mb-2">Organizá el torneo sin planillas eternas.</h2>
+        <h1>Organizá torneos claros, competitivos y sin planillas eternas.</h1>
 
-    <p class="text-muted mb-0">
-        Creá torneos, agregá grupos por categoría, cargá parejas, generá partidos
-        y seguí el camino hasta la llave final.
-    </p>
+        <p>
+            PadelBracket conecta jugadores, parejas y organizadores en un solo lugar:
+            inscripciones, categorías, grupos, resultados, rankings y llaves finales.
+        </p>
 
-    <div class="hero-actions">
-        <a class="btn btn-primary" href="/tournaments">
-            Ir a torneos
-        </a>
-    </div>
-</div>
+        <div class="home-actions">
+            <a class="btn btn-primary" href="/tournaments/available">
+                Ver torneos disponibles
+            </a>
 
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-label">Gestión</div>
-        <div class="stat-value">Grupos</div>
-    </div>
+            <a class="btn btn-outline-primary" href="/register">
+                Registrarme como jugador
+            </a>
 
-    <div class="stat-card">
-        <div class="stat-label">Seguimiento</div>
-        <div class="stat-value">Tablas</div>
+            <a class="btn btn-outline-success" href="/organizer/register">
+                Crear torneo
+            </a>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-label">Finales</div>
-        <div class="stat-value">Knockout</div>
+    <div class="home-showcase" aria-label="Vista previa de torneo">
+        <div class="home-showcase-top">
+            <div>
+                <span class="panel-kicker">Demo</span>
+                <strong>Copa Montevideo</strong>
+            </div>
+            <span class="home-status-pill">Abierto</span>
+        </div>
+
+        <div class="home-mini-stats">
+            <div>
+                <span>64</span>
+                <small>Parejas</small>
+            </div>
+            <div>
+                <span>4</span>
+                <small>Categorias</small>
+            </div>
+            <div>
+                <span>16</span>
+                <small>Grupos</small>
+            </div>
+        </div>
+
+        <div class="home-mini-bracket">
+            <div class="home-mini-round">
+                <span>Grupo A</span>
+                <strong>Suarez / Lima</strong>
+                <strong>Rosas / Perez</strong>
+            </div>
+
+            <div class="home-mini-connector"></div>
+
+            <div class="home-mini-round">
+                <span>Semifinal</span>
+                <strong>Clasificado 1</strong>
+                <strong>Clasificado 2</strong>
+            </div>
+
+            <div class="home-mini-connector"></div>
+
+            <div class="home-mini-trophy">
+                <span>Copa</span>
+                <strong>Final</strong>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+
+<section class="home-value-grid">
+    <article class="home-value-card">
+        <span class="home-value-icon">JG</span>
+        <div>
+            <h2>Para jugadores</h2>
+            <p>
+                Registrate con tu nombre real, armá tu pareja, elegí categoría y anotate
+                a torneos disponibles sin perder el hilo.
+            </p>
+        </div>
+    </article>
+
+    <article class="home-value-card">
+        <span class="home-value-icon">TR</span>
+        <div>
+            <h2>Para organizadores</h2>
+            <p>
+                Creá torneos, confirmá pagos, ordená grupos, cargá resultados y generá
+                llaves eliminatorias desde un panel pensado para el día a día.
+            </p>
+        </div>
+    </article>
+
+    <article class="home-value-card">
+        <span class="home-value-icon">RK</span>
+        <div>
+            <h2>Competencia real</h2>
+            <p>
+                Rankings, historial y posiciones ayudan a que cada partido tenga contexto
+                y que el circuito crezca con datos claros.
+            </p>
+        </div>
+    </article>
+</section>
