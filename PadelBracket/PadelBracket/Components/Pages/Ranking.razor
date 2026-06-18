@@ -1,275 +1,291 @@
-﻿@page "/ranking"
+@page "/ranking"
 @using PadelBracket.Services
 @inject RankingService RankingService
 @rendermode InteractiveServer
 
 <PageTitle>Ranking</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Tabla competitiva</div>
-    <h1 class="page-title">Ranking</h1>
-    <p class="page-subtitle">
-        Clasificación por categoría según resultados cargados en partidos de fase de grupos.
-    </p>
-</div>
-
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-label">@RankedCountLabel</div>
-        <div class="stat-value">@RankedCount</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Líder actual</div>
-        <div class="stat-value">@LeaderName</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Categoría</div>
-        <div class="stat-value">@SelectedCategoryLabel</div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
-            <div>
-                <h4 class="card-title mb-2">Criterios del ranking</h4>
-
-                <p class="text-muted mb-0">
-                    Cada victoria suma 3 puntos. En caso de empate, se ordena por victorias, diferencia de games y games ganados.
-                </p>
-            </div>
-
-            <div class="d-flex gap-3 flex-wrap">
-                <div style="min-width: 220px;">
-                    <label class="form-label">Vista</label>
-                    <select class="form-select"
-                            @bind="selectedRankingView"
-                            @bind:after="LoadRanking">
-                        <option value="@PlayerRankingView">Jugadores</option>
-                        <option value="@PairRankingView">Parejas</option>
-                    </select>
-                </div>
-
-                <div style="min-width: 220px;">
-                    <label class="form-label">Filtrar categoría</label>
-                    <select class="form-select"
-                            @bind="selectedCategory"
-                            @bind:after="LoadRanking">
-                        <option value="0">Todas</option>
-                        <option value="8">8va categoría</option>
-                        <option value="7">7ma categoría</option>
-                        <option value="6">6ta categoría</option>
-                        <option value="5">5ta categoría</option>
-                        <option value="4">4ta categoría</option>
-                        <option value="3">3ra categoría</option>
-                        <option value="2">2da categoría</option>
-                        <option value="1">1ra categoría</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="dashboard-hero player-page-hero">
     <div>
-        <h3 class="mb-1">@RankingTitle</h3>
-        <p class="text-muted mb-0">
-            La tabla se calcula automáticamente usando los partidos con resultado cargado.
+        <div class="page-eyebrow">Tabla competitiva</div>
+        <h1 class="page-title">Ranking</h1>
+        <p class="page-subtitle">
+            Clasificación por categoría según resultados cargados en partidos de fase de grupos.
         </p>
     </div>
 
-    <span class="badge bg-secondary">
-        @RankedCount total
-    </span>
+    <span class="badge bg-dark">@RankedCount total</span>
 </div>
 
-@if (IsPlayerRanking)
+<div class="metric-grid ranking-metric-grid">
+    <div class="metric-card">
+        <div class="metric-icon">RK</div>
+        <div>
+            <div class="metric-label">@RankedCountLabel</div>
+            <div class="metric-value">@RankedCount</div>
+            <div class="metric-trend">Con resultados cargados</div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon">#1</div>
+        <div>
+            <div class="metric-label">Líder actual</div>
+            <div class="metric-value metric-value-text">@LeaderName</div>
+            <div class="metric-trend positive">@LeaderPointsLabel</div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon">CT</div>
+        <div>
+            <div class="metric-label">Categoría</div>
+            <div class="metric-value metric-value-text">@SelectedCategoryLabel</div>
+            <div class="metric-trend">Filtro activo</div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon">VR</div>
+        <div>
+            <div class="metric-label">Vista</div>
+            <div class="metric-value metric-value-text">@RankingViewLabel</div>
+            <div class="metric-trend">Jugadores o parejas</div>
+        </div>
+    </div>
+</div>
+
+<div class="ranking-control-panel">
+    <div>
+        <div class="panel-kicker">Criterios</div>
+        <h2>Ranking competitivo</h2>
+        <p>
+            Cada victoria suma 3 puntos. En empate se ordena por victorias, diferencia de games y games ganados.
+        </p>
+    </div>
+
+    <div class="ranking-filter-grid">
+        <div class="form-field">
+            <span>Vista</span>
+            <select class="form-select"
+                    @bind="selectedRankingView"
+                    @bind:after="LoadRanking">
+                <option value="@PlayerRankingView">Jugadores</option>
+                <option value="@PairRankingView">Parejas</option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <span>Categoría</span>
+            <select class="form-select"
+                    @bind="selectedCategory"
+                    @bind:after="LoadRanking">
+                <option value="0">Todas</option>
+                <option value="8">8va categoría</option>
+                <option value="7">7ma categoría</option>
+                <option value="6">6ta categoría</option>
+                <option value="5">5ta categoría</option>
+                <option value="4">4ta categoría</option>
+                <option value="3">3ra categoría</option>
+                <option value="2">2da categoría</option>
+                <option value="1">1ra categoría</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+@if (RankedCount == 0)
 {
-    @if (!playerRanking.Any())
-    {
-        <div class="empty-state">
-            <div class="empty-state-title">Todavía no hay jugadores rankeados.</div>
-            <div>
-                Cargá resultados en partidos de grupo para generar el ranking.
-            </div>
+    <div class="empty-state ranking-empty">
+        <div class="empty-state-title">Todavía no hay datos para este ranking.</div>
+        <div>
+            Cargá resultados en partidos de grupo para generar posiciones, puntos y desempates.
         </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>Posición</th>
-                        <th>Jugador</th>
-                        <th>Categoría</th>
-                        <th>Puntos</th>
-                        <th>Jugados</th>
-                        <th>Victorias</th>
-                        <th>Derrotas</th>
-                        <th>Games</th>
-                        <th>Diferencia</th>
-                        <th>Win rate</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @for (int i = 0; i < playerRanking.Count; i++)
-                    {
-                        PlayerRankingItem item = playerRanking[i];
-
-                        <tr>
-                            <td>
-                                <span class="@GetPositionBadgeClass(i)">
-                                    #@(i + 1)
-                                </span>
-                            </td>
-
-                            <td>
-                                <strong>@item.PlayerName</strong>
-                            </td>
-
-                            <td>
-                                <span class="badge bg-dark">
-                                    @GetCategoryLabel(item.Category)
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="badge bg-primary">
-                                    @item.Points pts
-                                </span>
-                            </td>
-
-                            <td>@item.MatchesPlayed</td>
-
-                            <td>@item.Wins</td>
-
-                            <td>@item.Losses</td>
-
-                            <td>
-                                @item.GamesWon / @item.GamesLost
-                            </td>
-
-                            <td>
-                                <span class="@GetDifferenceBadgeClass(item.GameDifference)">
-                                    @FormatDifference(item.GameDifference)
-                                </span>
-                            </td>
-
-                            <td>
-                                @item.WinRate.ToString("0.0")%
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+    </div>
 }
 else
 {
-    @if (!pairRanking.Any())
-    {
-        <div class="empty-state">
-            <div class="empty-state-title">Todavía no hay parejas rankeadas.</div>
-            <div>
-                Cargá resultados en partidos de grupo para generar el ranking.
+    <div class="ranking-podium">
+        @for (int i = 0; i < TopRankingCount; i++)
+        {
+            <div class="@GetPodiumCardClass(i)">
+                <span class="ranking-podium-place">#@(i + 1)</span>
+                <strong>@GetRankingName(i)</strong>
+                <small>@GetRankingCategory(i)</small>
+                <div class="ranking-podium-score">
+                    <span>@GetRankingPoints(i)</span>
+                    <small>puntos</small>
+                </div>
             </div>
-        </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>Posición</th>
-                        <th>Pareja</th>
-                        <th>Categoría</th>
-                        <th>Puntos</th>
-                        <th>Jugados</th>
-                        <th>Victorias</th>
-                        <th>Derrotas</th>
-                        <th>Games</th>
-                        <th>Diferencia</th>
-                        <th>Win rate</th>
-                    </tr>
-                </thead>
+        }
+    </div>
 
-                <tbody>
-                    @for (int i = 0; i < pairRanking.Count; i++)
+    <div class="ranking-table-header">
+        <div>
+            <h2>@RankingTitle</h2>
+            <p>Mostrando @FirstVisiblePosition-@LastVisiblePosition de @RankedCount posiciones.</p>
+        </div>
+
+        @if (TotalPages > 1)
+        {
+            <div class="pair-pagination ranking-pagination">
+                <button type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        disabled="@(rankingPage == 1)"
+                        @onclick="PreviousRankingPage">
+                    Anterior
+                </button>
+
+                <span>Página @rankingPage de @TotalPages</span>
+
+                <button type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        disabled="@(rankingPage == TotalPages)"
+                        @onclick="NextRankingPage">
+                    Siguiente
+                </button>
+            </div>
+        }
+    </div>
+
+    <div class="table-responsive ranking-table-wrap">
+        <table class="table ranking-table align-middle">
+            <thead>
+                <tr>
+                    <th>Posición</th>
+                    <th>@RankingNameColumn</th>
+                    <th>Categoría</th>
+                    <th>Puntos</th>
+                    <th>Jugados</th>
+                    <th>Victorias</th>
+                    <th>Derrotas</th>
+                    <th>Games</th>
+                    <th>Diferencia</th>
+                    <th>Win rate</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (IsPlayerRanking)
+                {
+                    @for (int i = 0; i < PagedPlayerRanking.Count; i++)
                     {
-                        RankingItem item = pairRanking[i];
+                        PlayerRankingItem item = PagedPlayerRanking[i];
+                        int position = GetVisiblePosition(i);
 
                         <tr>
                             <td>
-                                <span class="@GetPositionBadgeClass(i)">
-                                    #@(i + 1)
+                                <span class="@GetPositionBadgeClass(position)">
+                                    #@position
                                 </span>
                             </td>
 
                             <td>
-                                <strong>@item.PairName</strong>
+                                <strong class="ranking-name">@item.PlayerName</strong>
                             </td>
 
                             <td>
-                                <span class="badge bg-dark">
-                                    @GetCategoryLabel(item.Category)
-                                </span>
+                                <span class="badge bg-dark">@GetCategoryLabel(item.Category)</span>
                             </td>
 
                             <td>
-                                <span class="badge bg-primary">
-                                    @item.Points pts
-                                </span>
+                                <span class="ranking-points">@item.Points pts</span>
                             </td>
 
                             <td>@item.MatchesPlayed</td>
-
                             <td>@item.Wins</td>
-
                             <td>@item.Losses</td>
-
-                            <td>
-                                @item.GamesWon / @item.GamesLost
-                            </td>
-
+                            <td>@item.GamesWon / @item.GamesLost</td>
                             <td>
                                 <span class="@GetDifferenceBadgeClass(item.GameDifference)">
                                     @FormatDifference(item.GameDifference)
                                 </span>
                             </td>
-
-                            <td>
-                                @item.WinRate.ToString("0.0")%
-                            </td>
+                            <td>@item.WinRate.ToString("0.0")%</td>
                         </tr>
                     }
-                </tbody>
-            </table>
-        </div>
-    }
+                }
+                else
+                {
+                    @for (int i = 0; i < PagedPairRanking.Count; i++)
+                    {
+                        RankingItem item = PagedPairRanking[i];
+                        int position = GetVisiblePosition(i);
+
+                        <tr>
+                            <td>
+                                <span class="@GetPositionBadgeClass(position)">
+                                    #@position
+                                </span>
+                            </td>
+
+                            <td>
+                                <strong class="ranking-name">@item.PairName</strong>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-dark">@GetCategoryLabel(item.Category)</span>
+                            </td>
+
+                            <td>
+                                <span class="ranking-points">@item.Points pts</span>
+                            </td>
+
+                            <td>@item.MatchesPlayed</td>
+                            <td>@item.Wins</td>
+                            <td>@item.Losses</td>
+                            <td>@item.GamesWon / @item.GamesLost</td>
+                            <td>
+                                <span class="@GetDifferenceBadgeClass(item.GameDifference)">
+                                    @FormatDifference(item.GameDifference)
+                                </span>
+                            </td>
+                            <td>@item.WinRate.ToString("0.0")%</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
     private const string PlayerRankingView = "players";
     private const string PairRankingView = "pairs";
+    private const int RankingPageSize = 12;
 
     private List<PlayerRankingItem> playerRanking = new();
     private List<RankingItem> pairRanking = new();
 
     private string selectedRankingView = PlayerRankingView;
     private int selectedCategory;
+    private int rankingPage = 1;
 
     private bool IsPlayerRanking => selectedRankingView == PlayerRankingView;
 
     private int RankedCount => IsPlayerRanking
         ? playerRanking.Count
         : pairRanking.Count;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(RankedCount / (double)RankingPageSize));
+
+    private int TopRankingCount => Math.Min(3, RankedCount);
+
+    private int FirstVisiblePosition => RankedCount == 0
+        ? 0
+        : ((rankingPage - 1) * RankingPageSize) + 1;
+
+    private int LastVisiblePosition => Math.Min(rankingPage * RankingPageSize, RankedCount);
+
+    private List<PlayerRankingItem> PagedPlayerRanking => playerRanking
+        .Skip((rankingPage - 1) * RankingPageSize)
+        .Take(RankingPageSize)
+        .ToList();
+
+    private List<RankingItem> PagedPairRanking => pairRanking
+        .Skip((rankingPage - 1) * RankingPageSize)
+        .Take(RankingPageSize)
+        .ToList();
 
     private string RankedCountLabel => IsPlayerRanking
         ? "Jugadores rankeados"
@@ -279,6 +295,10 @@ else
         ? "Ranking de jugadores"
         : "Ranking de parejas";
 
+    private string RankingNameColumn => IsPlayerRanking ? "Jugador" : "Pareja";
+
+    private string RankingViewLabel => IsPlayerRanking ? "Jugadores" : "Parejas";
+
     private string LeaderName
     {
         get
@@ -287,6 +307,17 @@ else
                 return playerRanking.Any() ? playerRanking.First().PlayerName : "Sin datos";
 
             return pairRanking.Any() ? pairRanking.First().PairName : "Sin datos";
+        }
+    }
+
+    private string LeaderPointsLabel
+    {
+        get
+        {
+            if (RankedCount == 0)
+                return "Sin puntos";
+
+            return $"{GetRankingPoints(0)} pts";
         }
     }
 
@@ -300,6 +331,8 @@ else
 
     private void LoadRanking()
     {
+        rankingPage = 1;
+
         if (IsPlayerRanking)
         {
             playerRanking = selectedCategory == 0
@@ -317,20 +350,77 @@ else
         playerRanking = new List<PlayerRankingItem>();
     }
 
-    private string GetPositionBadgeClass(int index)
+    private void PreviousRankingPage()
     {
-        return index == 0 ? "badge bg-success" : "badge bg-secondary";
+        if (rankingPage > 1)
+            rankingPage--;
+    }
+
+    private void NextRankingPage()
+    {
+        if (rankingPage < TotalPages)
+            rankingPage++;
+    }
+
+    private int GetVisiblePosition(int pageIndex)
+    {
+        return ((rankingPage - 1) * RankingPageSize) + pageIndex + 1;
+    }
+
+    private string GetRankingName(int index)
+    {
+        if (IsPlayerRanking)
+            return playerRanking[index].PlayerName;
+
+        return pairRanking[index].PairName;
+    }
+
+    private string GetRankingCategory(int index)
+    {
+        if (IsPlayerRanking)
+            return GetCategoryLabel(playerRanking[index].Category);
+
+        return GetCategoryLabel(pairRanking[index].Category);
+    }
+
+    private int GetRankingPoints(int index)
+    {
+        if (IsPlayerRanking)
+            return playerRanking[index].Points;
+
+        return pairRanking[index].Points;
+    }
+
+    private string GetPodiumCardClass(int index)
+    {
+        return index switch
+        {
+            0 => "ranking-podium-card is-first",
+            1 => "ranking-podium-card is-second",
+            _ => "ranking-podium-card is-third"
+        };
+    }
+
+    private string GetPositionBadgeClass(int position)
+    {
+        return position switch
+        {
+            1 => "ranking-position-badge is-first",
+            2 => "ranking-position-badge is-second",
+            3 => "ranking-position-badge is-third",
+            _ => "ranking-position-badge"
+        };
     }
 
     private string GetDifferenceBadgeClass(int difference)
     {
         if (difference > 0)
-            return "badge bg-success";
+            return "ranking-difference is-positive";
 
         if (difference < 0)
-            return "badge bg-danger";
+            return "ranking-difference is-negative";
 
-        return "badge bg-secondary";
+        return "ranking-difference";
     }
 
     private string FormatDifference(int difference)

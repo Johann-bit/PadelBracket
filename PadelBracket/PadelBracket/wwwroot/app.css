@@ -1460,6 +1460,238 @@ a {
     padding: 1rem;
 }
 
+.ranking-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ranking-control-panel {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+    padding: 1.15rem;
+    border: 1px solid var(--app-border);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.ranking-control-panel h2 {
+    margin: 0.18rem 0 0;
+    color: var(--app-text);
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+}
+
+.ranking-control-panel p {
+    max-width: 680px;
+    margin: 0.35rem 0 0;
+    color: var(--app-text-muted);
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+.ranking-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(190px, 1fr));
+    gap: 0.9rem;
+    min-width: min(460px, 100%);
+}
+
+.ranking-empty {
+    margin-top: 1rem;
+}
+
+.ranking-podium {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.ranking-podium-card {
+    position: relative;
+    min-height: 156px;
+    display: grid;
+    align-content: space-between;
+    gap: 0.85rem;
+    padding: 1.15rem;
+    border: 1px solid var(--app-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: var(--app-shadow-sm);
+    overflow: hidden;
+}
+
+.ranking-podium-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(15, 138, 59, 0.13), transparent 46%);
+    pointer-events: none;
+}
+
+.ranking-podium-card > * {
+    position: relative;
+}
+
+.ranking-podium-card.is-first {
+    border-color: rgba(15, 138, 59, 0.28);
+    box-shadow: var(--app-shadow-md);
+}
+
+.ranking-podium-card.is-second::before {
+    background: linear-gradient(135deg, rgba(100, 116, 139, 0.14), transparent 46%);
+}
+
+.ranking-podium-card.is-third::before {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), transparent 46%);
+}
+
+.ranking-podium-place {
+    width: fit-content;
+    padding: 0.34rem 0.68rem;
+    border-radius: 999px;
+    background: var(--app-sidebar);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.ranking-podium-card strong {
+    color: var(--app-text);
+    font-size: 1.28rem;
+    font-weight: 950;
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+}
+
+.ranking-podium-card small {
+    color: var(--app-text-muted);
+    font-weight: 800;
+}
+
+.ranking-podium-score {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+
+.ranking-podium-score span {
+    color: var(--app-primary);
+    font-size: 1.7rem;
+    font-weight: 950;
+    letter-spacing: -0.05em;
+}
+
+.ranking-podium-score small {
+    color: var(--app-text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.ranking-table-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1.4rem 0 0.85rem;
+}
+
+.ranking-table-header h2 {
+    margin: 0;
+    color: var(--app-text);
+    font-size: 1.45rem;
+    font-weight: 950;
+    letter-spacing: -0.035em;
+}
+
+.ranking-table-header p {
+    margin: 0.25rem 0 0;
+    color: var(--app-text-muted);
+    font-weight: 650;
+}
+
+.ranking-pagination {
+    margin-top: 0;
+}
+
+.ranking-table-wrap {
+    border-radius: 18px;
+}
+
+.ranking-table {
+    min-width: 980px;
+}
+
+.ranking-table tbody tr:hover > * {
+    background: var(--app-primary-soft) !important;
+}
+
+.ranking-name {
+    display: block;
+    color: var(--app-text);
+    font-weight: 900;
+    line-height: 1.22;
+}
+
+.ranking-position-badge,
+.ranking-difference,
+.ranking-points {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    padding: 0.42rem 0.68rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.ranking-position-badge {
+    background: var(--app-surface-soft);
+    color: var(--app-text-muted);
+}
+
+.ranking-position-badge.is-first {
+    background: var(--app-primary);
+    color: #fff;
+}
+
+.ranking-position-badge.is-second {
+    background: #64748b;
+    color: #fff;
+}
+
+.ranking-position-badge.is-third {
+    background: var(--app-warning);
+    color: #111827;
+}
+
+.ranking-points {
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+}
+
+.ranking-difference {
+    background: var(--app-surface-soft);
+    color: var(--app-text-muted);
+}
+
+.ranking-difference.is-positive {
+    background: var(--app-success-soft);
+    color: var(--app-success);
+}
+
+.ranking-difference.is-negative {
+    background: var(--app-danger-soft);
+    color: var(--app-danger);
+}
+
 /* Tabla de partidos de fase de grupos */
 .match-table {
     width: 100%;
@@ -2343,6 +2575,9 @@ a {
     .group-card-grid,
     .group-operations-grid,
     .player-metric-grid,
+    .ranking-metric-grid,
+    .ranking-podium,
+    .ranking-filter-grid,
     .available-tournament-grid,
     .my-registration-grid,
     .available-category-grid,
@@ -2356,6 +2591,17 @@ a {
 
     .profile-status-card {
         grid-column: auto;
+    }
+
+    .ranking-control-panel,
+    .ranking-table-header {
+        display: grid;
+        align-items: start;
+    }
+
+    .ranking-pagination {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .category-group-header,
