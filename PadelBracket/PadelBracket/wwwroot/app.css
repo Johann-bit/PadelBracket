@@ -2548,6 +2548,95 @@ a {
     min-height: 680px;
 }
 
+.organizer-profile-hero {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.4rem;
+    padding: 1.2rem;
+    border: 1px solid var(--app-border);
+    border-radius: 22px;
+    background:
+        linear-gradient(135deg, rgba(15, 138, 59, 0.13), transparent 42%),
+        rgba(255, 255, 255, 0.96);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.organizer-profile-avatar {
+    width: 86px;
+    height: 86px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #10251a, var(--app-primary));
+    color: #fff;
+    font-size: 1.35rem;
+    font-weight: 950;
+    box-shadow: 0 18px 34px rgba(15, 138, 59, 0.24);
+}
+
+.organizer-profile-identity {
+    min-width: 0;
+}
+
+.organizer-profile-hero .page-title {
+    margin-top: 0.15rem;
+}
+
+.organizer-profile-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.95rem;
+}
+
+.organizer-profile-tags span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.68rem;
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-size: 0.82rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.organizer-profile-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.organizer-profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.organizer-profile-form-card,
+.organizer-profile-summary-card {
+    margin-bottom: 0 !important;
+    border-color: rgba(15, 138, 59, 0.18) !important;
+}
+
+.organizer-profile-summary-card {
+    position: sticky;
+    top: calc(var(--topbar-height) + 1rem);
+}
+
+.organizer-profile-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.organizer-profile-form-grid .span-2 {
+    grid-column: span 2;
+}
+
 /* Tabla de partidos de fase de grupos */
 .match-table {
     width: 100%;
@@ -3452,6 +3541,9 @@ a {
     .auth-feature-list,
     .register-form,
     .forgot-reset-grid,
+    .organizer-profile-metric-grid,
+    .organizer-profile-grid,
+    .organizer-profile-form-grid,
     .available-tournament-grid,
     .my-registration-grid,
     .available-category-grid,
@@ -3478,6 +3570,19 @@ a {
 
     .auth-side-card {
         min-height: auto;
+    }
+
+    .organizer-profile-hero {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .organizer-profile-summary-card {
+        position: static;
+    }
+
+    .organizer-profile-form-grid .span-2 {
+        grid-column: auto;
     }
 
     .ranking-control-panel,
