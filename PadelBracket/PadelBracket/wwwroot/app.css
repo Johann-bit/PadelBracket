@@ -954,6 +954,89 @@ a {
     font-weight: 650;
 }
 
+.error-page {
+    min-height: calc(100vh - 180px);
+    display: grid;
+    place-items: center;
+}
+
+.error-card {
+    width: min(860px, 100%);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(220, 38, 38, 0.22);
+    border-radius: var(--app-radius-lg);
+    background:
+        radial-gradient(circle at top left, rgba(220, 38, 38, 0.08), transparent 36%),
+        #fff;
+    box-shadow: var(--app-shadow-md);
+}
+
+.error-icon {
+    width: 58px;
+    height: 58px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: var(--app-danger-soft);
+    color: var(--app-danger);
+    font-size: 1.55rem;
+    font-weight: 950;
+}
+
+.error-content h1 {
+    margin: 0;
+    color: var(--app-text);
+    font-size: 2.3rem;
+    line-height: 1;
+    font-weight: 950;
+    letter-spacing: 0;
+}
+
+.error-content p {
+    max-width: 650px;
+    margin: 0.85rem 0 0;
+    color: var(--app-text-muted);
+    font-size: 1rem;
+    line-height: 1.65;
+    font-weight: 650;
+}
+
+.error-request {
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 1rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 14px;
+    background: var(--app-surface-soft);
+}
+
+.error-request span {
+    color: var(--app-text-muted);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.error-request code {
+    color: var(--app-text);
+    font-weight: 850;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
 .text-muted {
     color: var(--app-text-muted) !important;
 }
@@ -3691,6 +3774,14 @@ a {
         width: 2px;
         height: 24px;
         justify-self: center;
+    }
+
+    .error-card {
+        grid-template-columns: 1fr;
+    }
+
+    .error-content h1 {
+        font-size: 2rem;
     }
 
     .app-shell {
