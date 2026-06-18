@@ -289,10 +289,6 @@ else
         <div class="match-list mb-5">
             @foreach (var match in group.Matches)
             {
-                var input = GetMatchInput(match.Id);
-                var isEditing = IsEditingMatch(match.Id);
-                var showInputs = !match.HasResult || isEditing;
-
                 <div class="match-card">
                     <div class="match-card-header">
                         <div class="match-pair-stack">
@@ -315,56 +311,136 @@ else
                         }
                     </div>
 
-                    @if (showInputs)
+                    @if (match.HasResult)
                     {
-                        <div class="match-score-grid">
-                            <div class="match-score-field">
-                                <label>Set 1</label>
-                                <div class="score-pair-inputs">
-                                    <input type="number"
-                                           min="0"
-                                           max="7"
-                                           class="form-control score-input"
-                                           @bind="input.SetOnePairOne" />
-                                    <span>-</span>
-                                    <input type="number"
-                                           min="0"
-                                           max="7"
-                                           class="form-control score-input"
-                                           @bind="input.SetOnePairTwo" />
-                                </div>
+                        <div class="match-result-note">
+                            Resultado cargado. Podés editarlo o limpiarlo.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="match-result-note">
+                            Resultado pendiente. Cargalo cuando termine el partido.
+                        </div>
+                    }
+
+                    <div class="match-card-actions">
+                        @if (match.HasResult)
+                        {
+                            <button class="btn btn-sm btn-outline-primary"
+                                    @onclick="() => StartEditResult(match.Id)">
+                                Editar resultado
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => ClearResult(match.Id)">
+                                Limpiar
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-sm btn-outline-primary"
+                                    @onclick="() => StartCreateResult(match.Id)">
+                                Cargar resultado
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (SelectedMatch != null)
+        {
+            var selectedMatch = SelectedMatch;
+            var input = GetMatchInput(selectedMatch.Id);
+            var isEditing = IsEditingMatch(selectedMatch.Id);
+
+            <div class="result-modal-backdrop" role="presentation" @onclick="CloseResultModal">
+                <div class="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-modal-title" @onclick:stopPropagation="true">
+                    <div class="result-modal-header">
+                        <div>
+                            <div class="panel-kicker">Resultado del partido</div>
+                            <h3 id="result-modal-title">@(isEditing ? "Editar resultado" : "Cargar resultado")</h3>
+                        </div>
+
+                        <button class="result-modal-close"
+                                type="button"
+                                aria-label="Cerrar"
+                                @onclick="CloseResultModal">
+                            ×
+                        </button>
+                    </div>
+
+                    <div class="result-match-summary">
+                        <strong>@selectedMatch.PairOne.DisplayName</strong>
+                        <span>vs</span>
+                        <strong>@selectedMatch.PairTwo.DisplayName</strong>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(errorMessage))
+                    {
+                        <div class="alert alert-danger mb-0">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <div class="result-score-panel">
+                        <div class="result-score-row">
+                            <div>
+                                <span>Set 1</span>
+                                <small>Primer set del partido</small>
                             </div>
 
-                            <div class="match-score-field">
-                                <label>Set 2</label>
-                                <div class="score-pair-inputs">
-                                    <input type="number"
-                                           min="0"
-                                           max="7"
-                                           class="form-control score-input"
-                                           @bind="input.SetTwoPairOne" />
-                                    <span>-</span>
-                                    <input type="number"
-                                           min="0"
-                                           max="7"
-                                           class="form-control score-input"
-                                           @bind="input.SetTwoPairTwo" />
-                                </div>
+                            <div class="score-pair-inputs">
+                                <input type="number"
+                                       min="0"
+                                       max="7"
+                                       class="form-control score-input"
+                                       @bind="input.SetOnePairOne" />
+                                <span>-</span>
+                                <input type="number"
+                                       min="0"
+                                       max="7"
+                                       class="form-control score-input"
+                                       @bind="input.SetOnePairTwo" />
+                            </div>
+                        </div>
+
+                        <div class="result-score-row">
+                            <div>
+                                <span>Set 2</span>
+                                <small>Segundo set del partido</small>
                             </div>
 
-                            <div class="match-score-field">
-                                <label>Super tie-break</label>
+                            <div class="score-pair-inputs">
+                                <input type="number"
+                                       min="0"
+                                       max="7"
+                                       class="form-control score-input"
+                                       @bind="input.SetTwoPairOne" />
+                                <span>-</span>
+                                <input type="number"
+                                       min="0"
+                                       max="7"
+                                       class="form-control score-input"
+                                       @bind="input.SetTwoPairTwo" />
+                            </div>
+                        </div>
 
-                                @if (FirstTwoSetsAreSplit(input))
-                                {
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input"
-                                               type="checkbox"
+                        <div class="result-score-row result-score-row-stb">
+                            <div>
+                                <span>Super tie-break</span>
+                                <small>Se habilita cuando cada pareja gana un set.</small>
+                            </div>
+
+                            @if (FirstTwoSetsAreSplit(input))
+                            {
+                                <div class="result-stb-controls">
+                                    <label class="result-toggle">
+                                        <input type="checkbox"
                                                @bind="input.UseSuperTieBreak" />
-                                        <label class="form-check-label">
-                                            Usar STB
-                                        </label>
-                                    </div>
+                                        <span>Usar STB</span>
+                                    </label>
 
                                     @if (input.UseSuperTieBreak)
                                     {
@@ -380,55 +456,33 @@ else
                                                    @bind="input.SuperTieBreakPairTwo" />
                                         </div>
                                     }
-                                }
-                                else
-                                {
-                                    <span class="text-muted">
-                                        No aplica
-                                    </span>
-                                }
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="match-result-note">
-                            Resultado cargado. Podés editarlo o limpiarlo.
-                        </div>
-                    }
-
-                    <div class="match-card-actions">
-                        @if (showInputs)
-                        {
-                            <button class="btn btn-sm btn-outline-primary"
-                                    @onclick="() => RegisterResult(match.Id)">
-                                @(isEditing ? "Guardar cambios" : "Guardar")
-                            </button>
-
-                            @if (isEditing)
-                            {
-                                <button class="btn btn-sm btn-outline-secondary"
-                                        @onclick="() => CancelEditResult(match.Id)">
-                                    Cancelar
-                                </button>
+                                </div>
                             }
-                        }
-                        else
-                        {
-                            <button class="btn btn-sm btn-outline-primary"
-                                    @onclick="() => StartEditResult(match.Id)">
-                                Editar
-                            </button>
+                            else
+                            {
+                                <span class="result-not-applicable">
+                                    No aplica por ahora
+                                </span>
+                            }
+                        </div>
+                    </div>
 
-                            <button class="btn btn-sm btn-outline-danger"
-                                    @onclick="() => ClearResult(match.Id)">
-                                Limpiar
-                            </button>
-                        }
+                    <div class="result-modal-actions">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                @onclick="CloseResultModal">
+                            Cancelar
+                        </button>
+
+                        <button class="btn btn-primary"
+                                type="button"
+                                @onclick="() => RegisterResult(selectedMatch.Id)">
+                            @(isEditing ? "Guardar cambios" : "Guardar resultado")
+                        </button>
                     </div>
                 </div>
-            }
-        </div>
+            </div>
+        }
     }
 
     <div class="section-toolbar">
@@ -556,6 +610,7 @@ else
 
     private Dictionary<Guid, MatchInput> matchInputs = new();
     private HashSet<Guid> editingMatchIds = new();
+    private Guid? selectedMatchId;
 
     private Organizer? CurrentOrganizer => OrganizerAccountService.CurrentOrganizer;
 
@@ -584,6 +639,11 @@ else
                 .ToList();
         }
     }
+
+    private Match? SelectedMatch =>
+        selectedMatchId == null
+            ? null
+            : group?.Matches.FirstOrDefault(match => match.Id == selectedMatchId.Value);
 
     protected override void OnInitialized()
     {
@@ -763,6 +823,28 @@ else
         return editingMatchIds.Contains(matchId);
     }
 
+    private void StartCreateResult(Guid matchId)
+    {
+        if (!EnsureCanManageTournament() || group == null)
+            return;
+
+        var match = group.Matches.FirstOrDefault(match => match.Id == matchId);
+
+        if (match == null)
+            return;
+
+        if (!match.HasResult)
+        {
+            matchInputs[matchId] = new MatchInput();
+        }
+
+        editingMatchIds.Remove(matchId);
+        selectedMatchId = matchId;
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
     private void StartEditResult(Guid matchId)
     {
         if (!EnsureCanManageTournament() || group == null)
@@ -775,25 +857,20 @@ else
 
         FillInputFromResult(match);
         editingMatchIds.Add(matchId);
+        selectedMatchId = matchId;
 
         errorMessage = null;
         successMessage = null;
     }
 
-    private void CancelEditResult(Guid matchId)
+    private void CloseResultModal()
     {
-        editingMatchIds.Remove(matchId);
-
-        if (group == null)
-            return;
-
-        var match = group.Matches.FirstOrDefault(match => match.Id == matchId);
-
-        if (match?.Result != null)
+        if (selectedMatchId != null)
         {
-            FillInputFromResult(match);
+            editingMatchIds.Remove(selectedMatchId.Value);
         }
 
+        selectedMatchId = null;
         errorMessage = null;
         successMessage = null;
     }
@@ -816,6 +893,10 @@ else
 
             matchInputs[matchId] = new MatchInput();
             editingMatchIds.Remove(matchId);
+            if (selectedMatchId == matchId)
+            {
+                selectedMatchId = null;
+            }
 
             LoadData();
 
@@ -862,6 +943,7 @@ else
             );
 
             editingMatchIds.Remove(matchId);
+            selectedMatchId = null;
 
             LoadData();
 

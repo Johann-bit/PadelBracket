@@ -3403,6 +3403,177 @@ a {
     margin-top: 1rem;
 }
 
+.result-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+    background: rgba(7, 18, 13, 0.54);
+    backdrop-filter: blur(8px);
+}
+
+.result-modal {
+    width: min(680px, 100%);
+    max-height: min(760px, calc(100vh - 2.5rem));
+    display: grid;
+    gap: 1rem;
+    overflow: auto;
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.46);
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at top right, rgba(22, 163, 74, 0.12), transparent 36%),
+        #fff;
+    box-shadow: 0 28px 80px rgba(7, 18, 13, 0.32);
+}
+
+.result-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.result-modal-header h3 {
+    margin: 0.25rem 0 0;
+    color: var(--app-text);
+    font-size: 1.55rem;
+    font-weight: 950;
+    letter-spacing: 0;
+}
+
+.result-modal-close {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--app-border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--app-text-muted);
+    font-size: 1.45rem;
+    line-height: 1;
+    font-weight: 850;
+}
+
+.result-modal-close:hover {
+    color: var(--app-danger);
+    border-color: rgba(220, 38, 38, 0.26);
+    background: var(--app-danger-soft);
+}
+
+.result-match-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: var(--app-surface-soft);
+}
+
+.result-match-summary strong {
+    color: var(--app-text);
+    font-weight: 950;
+    line-height: 1.25;
+}
+
+.result-match-summary span {
+    color: var(--app-text-muted);
+    font-size: 0.8rem;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.result-score-panel {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.result-score-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.95rem 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: #fff;
+}
+
+.result-score-row span,
+.result-score-row small {
+    display: block;
+}
+
+.result-score-row > div:first-child span {
+    color: var(--app-text);
+    font-size: 0.95rem;
+    font-weight: 950;
+}
+
+.result-score-row small {
+    margin-top: 0.15rem;
+    color: var(--app-text-muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+
+.result-stb-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.result-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 42px;
+    padding: 0 0.8rem;
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-weight: 900;
+}
+
+.result-toggle input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--app-primary);
+}
+
+.result-toggle span {
+    color: inherit;
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.result-not-applicable {
+    justify-self: end;
+    display: inline-flex !important;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    background: var(--app-surface-soft);
+    color: var(--app-text-muted);
+    font-size: 0.8rem;
+    font-weight: 850;
+}
+
+.result-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding-top: 0.25rem;
+}
+
 .knockout-hero {
     align-items: center;
 }
@@ -3825,6 +3996,22 @@ a {
 @media (max-width: 900px) {
     .match-score-grid {
         grid-template-columns: 1fr;
+    }
+
+    .result-match-summary,
+    .result-score-row {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .result-match-summary span {
+        justify-self: start;
+    }
+
+    .result-score-row .score-pair-inputs,
+    .result-stb-controls,
+    .result-not-applicable {
+        justify-self: start;
     }
 
     .match-card-header,
