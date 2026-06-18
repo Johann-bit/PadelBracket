@@ -2452,6 +2452,14 @@ a {
     line-height: 1.45;
 }
 
+.organizer-side-card {
+    background:
+        linear-gradient(180deg, rgba(7, 18, 13, 0.1), rgba(7, 18, 13, 0.94)),
+        radial-gradient(circle at 72% 16%, rgba(15, 138, 59, 0.46), transparent 22%),
+        radial-gradient(circle at 18% 72%, rgba(245, 158, 11, 0.22), transparent 24%),
+        linear-gradient(135deg, #07120d, #0a2418);
+}
+
 /* Tabla de partidos de fase de grupos */
 .match-table {
     width: 100%;

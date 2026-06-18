@@ -1,4 +1,4 @@
-﻿@page "/organizer/register"
+@page "/organizer/register"
 @using PadelBracket.Services
 @inject OrganizerAccountService OrganizerAccountService
 @inject NavigationManager NavigationManager
@@ -6,98 +6,143 @@
 
 <PageTitle>Registro organizador</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Cuenta de organizador</div>
-    <h1 class="page-title">Registrarme como organizador</h1>
-    <p class="page-subtitle">
-        Creá tu cuenta para cargar torneos, administrar categorías e inscripciones.
-    </p>
-</div>
+<div class="auth-shell register-auth-shell">
+    <section class="auth-panel">
+        <div class="auth-card register-auth-card">
+            <div class="auth-card-header">
+                <span class="auth-badge">Cuenta de organizador</span>
+                <h1>Organizar torneos</h1>
+                <p>
+                    Creá tu cuenta para cargar torneos, administrar categorías, controlar inscripciones y generar llaves.
+                </p>
+            </div>
 
-@if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="alert alert-danger">
-        @errorMessage
-    </div>
-}
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @errorMessage
+                </div>
+            }
 
-<div class="card mb-4">
-    <div class="card-body">
-        <h4 class="card-title mb-2">Datos del organizador</h4>
+            <div class="auth-form register-form">
+                <div class="form-field">
+                    <span>Nombre real</span>
+                    <input class="form-control"
+                           placeholder="Ejemplo: Juan Pérez"
+                           autocomplete="name"
+                           @bind="realName"
+                           @bind:event="oninput" />
+                </div>
 
-        <p class="text-muted mb-4">
-            Usá datos reales del responsable y del club donde se organizan los torneos.
-        </p>
+                <div class="form-field">
+                    <span>Email</span>
+                    <input class="form-control"
+                           type="email"
+                           placeholder="Ejemplo: organizador@mail.com"
+                           autocomplete="email"
+                           @bind="email"
+                           @bind:event="oninput" />
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label">Nombre real</label>
-            <input class="form-control"
-                   placeholder="Ejemplo: Juan Pérez"
-                   @bind="realName"
-                   @bind:event="oninput" />
+                <div class="form-field">
+                    <span>Club</span>
+                    <input class="form-control"
+                           placeholder="Ejemplo: Club Carrasco"
+                           @bind="clubName"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="form-field">
+                    <span>Ciudad</span>
+                    <input class="form-control"
+                           placeholder="Ejemplo: Montevideo"
+                           @bind="city"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="form-field span-2">
+                    <span>Teléfono</span>
+                    <input class="form-control"
+                           placeholder="Ejemplo: 099123456"
+                           autocomplete="tel"
+                           @bind="phone"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="form-field">
+                    <span>Contraseña</span>
+                    <input class="form-control"
+                           type="password"
+                           placeholder="Mínimo 8 caracteres"
+                           autocomplete="new-password"
+                           @bind="password"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="form-field">
+                    <span>Confirmar contraseña</span>
+                    <input class="form-control"
+                           type="password"
+                           placeholder="Repetí tu contraseña"
+                           autocomplete="new-password"
+                           @bind="confirmPassword"
+                           @bind:event="oninput" />
+                </div>
+
+                <button class="btn btn-primary auth-submit span-2"
+                        @onclick="RegisterOrganizer">
+                    Crear cuenta de organizador
+                </button>
+            </div>
+
+            <div class="auth-footer">
+                <span>¿Ya tenés cuenta?</span>
+                <a href="/organizer/login">Ingresar como organizador</a>
+            </div>
         </div>
+    </section>
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input class="form-control"
-                   type="email"
-                   placeholder="Ejemplo: organizador@mail.com"
-                   @bind="email"
-                   @bind:event="oninput" />
+    <aside class="auth-side-panel">
+        <div class="auth-side-card register-side-card organizer-side-card">
+            <div class="auth-side-icon">PB</div>
+            <h2>Un panel pensado para correr torneos de verdad.</h2>
+            <p>
+                Tus datos identifican al responsable y al club detrás de cada torneo publicado.
+            </p>
+
+            <div class="register-requirement-list">
+                <div>
+                    <span>@GetRequirementStatus(HasRealName)</span>
+                    <strong>Responsable real</strong>
+                    <small>Nombre y apellido del organizador, sin números.</small>
+                </div>
+
+                <div>
+                    <span>@GetRequirementStatus(HasValidEmail)</span>
+                    <strong>Email válido</strong>
+                    <small>Será la cuenta principal del panel de torneos.</small>
+                </div>
+
+                <div>
+                    <span>@GetRequirementStatus(HasClubData)</span>
+                    <strong>Club y ciudad</strong>
+                    <small>Base para publicar ubicación y contexto del torneo.</small>
+                </div>
+
+                <div>
+                    <span>@GetRequirementStatus(HasStrongPassword)</span>
+                    <strong>Contraseña fuerte</strong>
+                    <small>8 caracteres, mayúscula, minúscula, número y especial.</small>
+                </div>
+
+                <div>
+                    <span>@GetRequirementStatus(PasswordsMatch)</span>
+                    <strong>Confirmación</strong>
+                    <small>Las dos contraseñas tienen que coincidir.</small>
+                </div>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label class="form-label">Club</label>
-            <input class="form-control"
-                   placeholder="Ejemplo: Club Carrasco"
-                   @bind="clubName"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Ciudad</label>
-            <input class="form-control"
-                   placeholder="Ejemplo: Montevideo"
-                   @bind="city"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Teléfono</label>
-            <input class="form-control"
-                   placeholder="Ejemplo: 099123456"
-                   @bind="phone"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Contraseña</label>
-            <input class="form-control"
-                   type="password"
-                   placeholder="Mínimo 8 caracteres"
-                   @bind="password"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="mb-4">
-            <label class="form-label">Confirmar contraseña</label>
-            <input class="form-control"
-                   type="password"
-                   placeholder="Repetí tu contraseña"
-                   @bind="confirmPassword"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-primary" @onclick="RegisterOrganizer">
-                Crear cuenta
-            </button>
-
-            <a class="btn btn-outline-primary" href="/organizer/login">
-                Ya tengo cuenta
-            </a>
-        </div>
-    </div>
+    </aside>
 </div>
 
 @code {
@@ -109,6 +154,27 @@
     private string password = string.Empty;
     private string confirmPassword = string.Empty;
     private string errorMessage = string.Empty;
+
+    private bool HasRealName => realName
+        .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Length >= 2;
+
+    private bool HasValidEmail => email.Contains('@') && email.Contains('.');
+
+    private bool HasClubData =>
+        !string.IsNullOrWhiteSpace(clubName) &&
+        !string.IsNullOrWhiteSpace(city);
+
+    private bool HasStrongPassword =>
+        password.Length >= 8 &&
+        password.Any(char.IsUpper) &&
+        password.Any(char.IsLower) &&
+        password.Any(char.IsDigit) &&
+        password.Any(character => !char.IsLetterOrDigit(character));
+
+    private bool PasswordsMatch =>
+        !string.IsNullOrWhiteSpace(password) &&
+        password == confirmPassword;
 
     private void RegisterOrganizer()
     {
@@ -131,5 +197,10 @@
         {
             errorMessage = exception.Message;
         }
+    }
+
+    private static string GetRequirementStatus(bool isComplete)
+    {
+        return isComplete ? "OK" : "--";
     }
 }
