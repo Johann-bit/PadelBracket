@@ -2460,6 +2460,94 @@ a {
         linear-gradient(135deg, #07120d, #0a2418);
 }
 
+.forgot-auth-shell {
+    grid-template-columns: minmax(460px, 1.05fr) minmax(340px, 0.95fr);
+}
+
+.forgot-auth-card {
+    align-content: start;
+}
+
+.forgot-step-card,
+.forgot-code-card {
+    padding: 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: var(--app-shadow-sm);
+}
+
+.forgot-step-card {
+    display: grid;
+    gap: 1rem;
+}
+
+.forgot-step-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+    align-items: start;
+}
+
+.forgot-step-header > span {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-size: 0.78rem;
+    font-weight: 950;
+}
+
+.forgot-step-header h2 {
+    margin: 0;
+    color: var(--app-text);
+    font-size: 1.1rem;
+    font-weight: 950;
+    letter-spacing: -0.03em;
+}
+
+.forgot-step-header p {
+    margin: 0.25rem 0 0;
+    color: var(--app-text-muted);
+    font-weight: 650;
+}
+
+.forgot-code-card {
+    display: grid;
+    gap: 0.25rem;
+    border-color: rgba(245, 158, 11, 0.32);
+    background: var(--app-warning-soft);
+}
+
+.forgot-code-card span,
+.forgot-code-card small {
+    color: #92400e;
+    font-weight: 800;
+}
+
+.forgot-code-card strong {
+    color: var(--app-text);
+    font-size: 1.65rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+}
+
+.forgot-reset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.forgot-reset-grid .span-2 {
+    grid-column: span 2;
+}
+
+.forgot-side-card {
+    min-height: 680px;
+}
+
 /* Tabla de partidos de fase de grupos */
 .match-table {
     width: 100%;
@@ -3363,6 +3451,7 @@ a {
     .auth-shell,
     .auth-feature-list,
     .register-form,
+    .forgot-reset-grid,
     .available-tournament-grid,
     .my-registration-grid,
     .available-category-grid,
