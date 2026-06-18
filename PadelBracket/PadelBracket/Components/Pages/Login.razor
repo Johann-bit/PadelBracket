@@ -1,4 +1,4 @@
-﻿@page "/login"
+@page "/login"
 @using PadelBracket.Services
 @inject PlayerAccountService PlayerAccountService
 @inject NavigationManager NavigationManager
@@ -6,63 +6,93 @@
 
 <PageTitle>Ingresar</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Cuenta de jugador</div>
-    <h1 class="page-title">Ingresar</h1>
-    <p class="page-subtitle">
-        Entrá con tu email para acceder a tu perfil de jugador y anotarte a torneos.
-    </p>
-</div>
+<div class="auth-shell">
+    <section class="auth-panel">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <span class="auth-badge">Jugador</span>
+                <h1>Ingresar</h1>
+                <p>
+                    Entrá a tu cuenta para ver tu perfil, tu pareja, tus inscripciones y los torneos disponibles.
+                </p>
+            </div>
 
-@if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="alert alert-danger">
-        @errorMessage
-    </div>
-}
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @errorMessage
+                </div>
+            }
 
-<div class="card mb-4">
-    <div class="card-body">
-        <h4 class="card-title mb-2">Iniciar sesión</h4>
+            <div class="auth-form">
+                <div class="form-field">
+                    <span>Email</span>
+                    <input class="form-control"
+                           type="email"
+                           placeholder="Ejemplo: juan@mail.com"
+                           autocomplete="email"
+                           @bind="email"
+                           @bind:event="oninput" />
+                </div>
 
-        <p class="text-muted mb-4">
-            Usá el email con el que registraste tu perfil.
-        </p>
+                <div class="form-field">
+                    <span>Contraseña</span>
+                    <input class="form-control"
+                           type="password"
+                           placeholder="Tu contraseña"
+                           autocomplete="current-password"
+                           @bind="password"
+                           @bind:event="oninput" />
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input class="form-control"
-                   type="email"
-                   placeholder="Ejemplo: juan@mail.com"
-                   @bind="email"
-                   @bind:event="oninput" />
+                <div class="auth-inline-actions">
+                    <a href="/forgot-password">
+                        Olvidé mi contraseña
+                    </a>
+                </div>
+
+                <button class="btn btn-primary auth-submit"
+                        @onclick="LoginPlayer">
+                    Ingresar
+                </button>
+            </div>
+
+            <div class="auth-footer">
+                <span>¿Todavía no tenés cuenta?</span>
+                <a href="/register">Crear cuenta de jugador</a>
+            </div>
         </div>
+    </section>
 
-        <div class="mb-2">
-            <label class="form-label">Contraseña</label>
-            <input class="form-control"
-                   type="password"
-                   placeholder="Tu contraseña"
-                   @bind="password"
-                   @bind:event="oninput" />
+    <aside class="auth-side-panel">
+        <div class="auth-side-card">
+            <div class="auth-side-icon">PB</div>
+            <h2>Tu circuito de pádel en un solo lugar.</h2>
+            <p>
+                Registrá tu perfil real, formá pareja y anotate a torneos por categoría.
+            </p>
+
+            <div class="auth-feature-list">
+                <div>
+                    <span>01</span>
+                    <strong>Perfil competitivo</strong>
+                    <small>Categoría, mano hábil y lado de juego siempre listos.</small>
+                </div>
+
+                <div>
+                    <span>02</span>
+                    <strong>Inscripciones claras</strong>
+                    <small>Seguimiento de torneos, pagos y estados de tu pareja.</small>
+                </div>
+
+                <div>
+                    <span>03</span>
+                    <strong>Ranking vivo</strong>
+                    <small>Los resultados cargados alimentan la tabla competitiva.</small>
+                </div>
+            </div>
         </div>
-
-        <div class="mb-4">
-            <a href="/forgot-password">
-                Olvidé mi contraseña
-            </a>
-        </div>
-
-        <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-primary" @onclick="LoginPlayer">
-                Ingresar
-            </button>
-
-            <a class="btn btn-outline-primary" href="/register">
-                Crear cuenta
-            </a>
-        </div>
-    </div>
+    </aside>
 </div>
 
 @code {

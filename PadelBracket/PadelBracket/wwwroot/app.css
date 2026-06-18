@@ -2175,6 +2175,219 @@ a {
     line-height: 1.25;
 }
 
+.auth-shell {
+    min-height: calc(100vh - var(--topbar-height) - 4rem);
+    display: grid;
+    grid-template-columns: minmax(320px, 0.86fr) minmax(360px, 1.14fr);
+    gap: 1.2rem;
+    align-items: stretch;
+}
+
+.auth-panel,
+.auth-side-panel {
+    min-width: 0;
+}
+
+.auth-card,
+.auth-side-card {
+    height: 100%;
+    border: 1px solid var(--app-border);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: var(--app-shadow-md);
+}
+
+.auth-card {
+    display: grid;
+    align-content: center;
+    gap: 1.2rem;
+    padding: clamp(1.25rem, 3vw, 2.1rem);
+}
+
+.auth-card-header {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.auth-badge {
+    width: fit-content;
+    padding: 0.38rem 0.72rem;
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-size: 0.78rem;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.auth-card h1,
+.auth-side-card h2 {
+    margin: 0;
+    color: var(--app-text);
+    font-weight: 950;
+    letter-spacing: -0.045em;
+}
+
+.auth-card h1 {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+}
+
+.auth-card p,
+.auth-side-card p {
+    margin: 0;
+    color: var(--app-text-muted);
+    font-weight: 650;
+    line-height: 1.6;
+}
+
+.auth-form {
+    display: grid;
+    gap: 0.95rem;
+}
+
+.auth-inline-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -0.2rem;
+}
+
+.auth-inline-actions a,
+.auth-footer a {
+    color: var(--app-primary);
+    font-weight: 900;
+}
+
+.auth-submit {
+    width: 100%;
+    min-height: 48px;
+}
+
+.auth-footer {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    border-top: 1px solid var(--app-border);
+    color: var(--app-text-muted);
+    font-weight: 750;
+}
+
+.auth-side-card {
+    position: relative;
+    display: grid;
+    align-content: end;
+    gap: 1.1rem;
+    min-height: 560px;
+    padding: clamp(1.25rem, 3vw, 2.4rem);
+    overflow: hidden;
+    background:
+        linear-gradient(180deg, rgba(7, 18, 13, 0.15), rgba(7, 18, 13, 0.92)),
+        radial-gradient(circle at 72% 16%, rgba(34, 197, 94, 0.4), transparent 22%),
+        linear-gradient(135deg, #07120d, #0e2b1c);
+    color: #fff;
+}
+
+.auth-side-card::before {
+    content: "";
+    position: absolute;
+    inset: 1.25rem 1.25rem auto auto;
+    width: 190px;
+    height: 190px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 42% 38%, rgba(255, 255, 255, 0.28), transparent 14%),
+        radial-gradient(circle at 50% 50%, rgba(22, 163, 74, 0.38), rgba(15, 138, 59, 0.04) 68%),
+        #0f8a3b;
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.28);
+    opacity: 0.82;
+}
+
+.auth-side-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 54px 54px;
+    mask-image: linear-gradient(180deg, transparent, #000 22%, #000 72%, transparent);
+    opacity: 0.28;
+}
+
+.auth-side-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.auth-side-icon {
+    width: 58px;
+    height: 58px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--app-primary), #22c55e);
+    color: #fff;
+    font-weight: 950;
+    box-shadow: 0 18px 32px rgba(15, 138, 59, 0.34);
+}
+
+.auth-side-card h2 {
+    max-width: 620px;
+    color: #fff;
+    font-size: clamp(2rem, 4vw, 3.7rem);
+    line-height: 1.02;
+}
+
+.auth-side-card p {
+    max-width: 520px;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.auth-feature-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+}
+
+.auth-feature-list div {
+    padding: 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+.auth-feature-list span,
+.auth-feature-list strong,
+.auth-feature-list small {
+    display: block;
+}
+
+.auth-feature-list span {
+    color: #86efac;
+    font-size: 0.78rem;
+    font-weight: 950;
+}
+
+.auth-feature-list strong {
+    margin-top: 0.45rem;
+    color: #fff;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.auth-feature-list small {
+    margin-top: 0.35rem;
+    color: rgba(255, 255, 255, 0.68);
+    font-weight: 650;
+    line-height: 1.45;
+}
+
 /* Tabla de partidos de fase de grupos */
 .match-table {
     width: 100%;
@@ -3075,6 +3288,8 @@ a {
     .player-detail-metric-grid,
     .player-detail-grid,
     .player-detail-status-grid,
+    .auth-shell,
+    .auth-feature-list,
     .available-tournament-grid,
     .my-registration-grid,
     .available-category-grid,
@@ -3097,6 +3312,10 @@ a {
 
     .player-detail-status-card {
         grid-column: auto;
+    }
+
+    .auth-side-card {
+        min-height: auto;
     }
 
     .ranking-control-panel,
