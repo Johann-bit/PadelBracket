@@ -1,4 +1,4 @@
-﻿@page "/players"
+@page "/players"
 @using PadelBracket.Domain.DTOs
 @using PadelBracket.Domain.Enums
 @using PadelBracket.Services
@@ -7,12 +7,16 @@
 
 <PageTitle>Jugadores</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Gestión de jugadores</div>
-    <h1 class="page-title">Jugadores</h1>
-    <p class="page-subtitle">
-        Registrá jugadores, editá sus nombres y dejá preparada la base para crear parejas y rankings.
-    </p>
+<div class="dashboard-hero player-page-hero">
+    <div>
+        <div class="page-eyebrow">Gestión de jugadores</div>
+        <h1 class="page-title">Jugadores</h1>
+        <p class="page-subtitle">
+            Registrá jugadores, controlá perfiles completos y dejá preparada la base para parejas y rankings.
+        </p>
+    </div>
+
+    <span class="badge bg-dark">@FilteredCount de @players.Count</span>
 </div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -29,194 +33,357 @@
     </div>
 }
 
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-label">Jugadores registrados</div>
-        <div class="stat-value">@players.Count</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Perfiles completos</div>
-        <div class="stat-value">@CompleteProfilesCount</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Verificados</div>
-        <div class="stat-value">@VerifiedPlayersCount</div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-body">
-        <h4 class="card-title mb-2">Crear jugador</h4>
-
-        <p class="text-muted mb-4">
-            Agregá jugadores para luego formar parejas, torneos y rankings.
-        </p>
-
-        <div class="mb-3">
-            <label class="form-label">Nombre real</label>
-            <input class="form-control"
-                   placeholder="Ejemplo: Juan Pérez"
-                   @bind="newPlayerName"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input class="form-control"
-                   type="email"
-                   placeholder="Ejemplo: juan@mail.com"
-                   @bind="newPlayerEmail"
-                   @bind:event="oninput" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Mano hábil</label>
-            <select class="form-select" @bind="newDominantHand">
-                <option value="@DominantHand.Right">Derecha</option>
-                <option value="@DominantHand.Left">Zurda</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Lado de juego</label>
-            <select class="form-select" @bind="newPreferredSide">
-                <option value="@PreferredSide.Drive">Drive</option>
-                <option value="@PreferredSide.Backhand">Revés</option>
-                <option value="@PreferredSide.Both">Ambos</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Categoría</label>
-            <select class="form-select" @bind="newCategory">
-                @for (int category = 1; category <= 8; category++)
-                {
-                    <option value="@category">@category</option>
-                }
-            </select>
-        </div>
-
-        <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-primary" @onclick="CreatePlayer">
-                Crear jugador
-            </button>
-
-            <button class="btn btn-outline-primary" @onclick="SeedPlayers">
-                Cargar ejemplos
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h3 class="mb-1">Jugadores registrados</h3>
-        <p class="text-muted mb-0">
-            Revisá fichas, editá nombres o eliminá jugadores cargados en el sistema.
-        </p>
-    </div>
-
-    <span class="badge bg-secondary">
-        @players.Count total
-    </span>
-</div>
-
-@if (!players.Any())
-{
-    <div class="empty-state">
-        <div class="empty-state-title">Todavía no hay jugadores registrados.</div>
+<div class="metric-grid players-metric-grid">
+    <div class="metric-card">
+        <div class="metric-icon">JG</div>
         <div>
-            Creá el primero para después formar parejas.
+            <div class="metric-label">Jugadores registrados</div>
+            <div class="metric-value">@players.Count</div>
+            <div class="metric-trend">Base de jugadores</div>
         </div>
     </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Jugador</th>
-                    <th>Categoría</th>
-                    <th>Perfil</th>
-                    <th>Referencia</th>
-                    <th>Editar nombre</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (PlayerDto player in players)
-                {
-                    <tr>
-                        <td>
-                            <strong>@player.Name</strong>
-                        </td>
 
-                        <td>
-                            @GetCategoryLabel(player.Category)
-                        </td>
-
-                        <td>
-                            @if (player.HasCompleteProfile)
-                            {
-                                <span class="badge bg-success">Completo</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark">Incompleto</span>
-                            }
-                        </td>
-
-                        <td>
-                            <span class="badge bg-secondary">
-                                @player.ShortId
-                            </span>
-                        </td>
-
-                        <td>
-                            <input class="form-control"
-                                   value="@GetEditName(player.Id)"
-                                   @oninput="eventArgs => SetEditName(player.Id, eventArgs.Value?.ToString() ?? string.Empty)" />
-                        </td>
-
-                        <td class="text-end">
-                            <a class="btn btn-sm btn-outline-primary me-2"
-                               href="@($"/players/{player.Id}")">
-                                Ver ficha
-                            </a>
-
-                            <button class="btn btn-sm btn-outline-primary me-2"
-                                    @onclick="() => RenamePlayer(player.Id)">
-                                Guardar
-                            </button>
-
-                            <button class="btn btn-sm btn-outline-danger"
-                                    @onclick="() => DeletePlayer(player.Id)">
-                                Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="metric-card">
+        <div class="metric-icon">OK</div>
+        <div>
+            <div class="metric-label">Perfiles completos</div>
+            <div class="metric-value">@CompleteProfilesCount</div>
+            <div class="metric-trend positive">@CompleteProfileRate</div>
+        </div>
     </div>
-}
+
+    <div class="metric-card">
+        <div class="metric-icon">VF</div>
+        <div>
+            <div class="metric-label">Verificados</div>
+            <div class="metric-value">@VerifiedPlayersCount</div>
+            <div class="metric-trend">Listos para competir</div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon">CT</div>
+        <div>
+            <div class="metric-label">Categorías activas</div>
+            <div class="metric-value">@ActiveCategoryCount</div>
+            <div class="metric-trend">Con jugadores cargados</div>
+        </div>
+    </div>
+</div>
+
+<div class="players-workspace">
+    <div class="players-create-panel card">
+        <div class="card-body">
+            <div class="panel-kicker">Alta rápida</div>
+            <h4 class="card-title mb-2">Crear jugador</h4>
+            <p class="text-muted mb-4">
+                Agregá jugadores para luego formar parejas, torneos y rankings.
+            </p>
+
+            <div class="players-create-grid">
+                <div class="form-field span-2">
+                    <span>Nombre real</span>
+                    <input class="form-control"
+                           placeholder="Ejemplo: Juan Pérez"
+                           @bind="newPlayerName"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="form-field span-2">
+                    <span>Email</span>
+                    <input class="form-control"
+                           type="email"
+                           placeholder="Ejemplo: juan@mail.com"
+                           @bind="newPlayerEmail"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="form-field">
+                    <span>Mano hábil</span>
+                    <select class="form-select" @bind="newDominantHand">
+                        <option value="@DominantHand.Right">Derecha</option>
+                        <option value="@DominantHand.Left">Zurda</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <span>Lado</span>
+                    <select class="form-select" @bind="newPreferredSide">
+                        <option value="@PreferredSide.Drive">Drive</option>
+                        <option value="@PreferredSide.Backhand">Revés</option>
+                        <option value="@PreferredSide.Both">Ambos</option>
+                    </select>
+                </div>
+
+                <div class="form-field span-2">
+                    <span>Categoría</span>
+                    <select class="form-select" @bind="newCategory">
+                        @for (int category = 1; category <= 8; category++)
+                        {
+                            <option value="@category">@GetCategoryLabel(category)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="players-create-actions">
+                <button class="btn btn-primary" @onclick="CreatePlayer">
+                    Crear jugador
+                </button>
+
+                <button class="btn btn-outline-primary" @onclick="SeedPlayers">
+                    Cargar ejemplos
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="players-list-panel">
+        <div class="players-filter-panel">
+            <div>
+                <div class="panel-kicker">Filtros</div>
+                <h2>Jugadores registrados</h2>
+                <p>
+                    Revisá fichas, filtrá perfiles y actualizá nombres sin perderte en una tabla larga.
+                </p>
+            </div>
+
+            <div class="players-filter-grid">
+                <div class="form-field players-search-field">
+                    <span>Buscar jugador</span>
+                    <input class="form-control"
+                           placeholder="Nombre, email o referencia"
+                           @bind="searchTerm"
+                           @bind:event="oninput"
+                           @bind:after="ResetPlayersPage" />
+                </div>
+
+                <div class="form-field">
+                    <span>Categoría</span>
+                    <select class="form-select"
+                            @bind="selectedCategory"
+                            @bind:after="ResetPlayersPage">
+                        <option value="@AllFilterValue">Todas</option>
+                        @for (int category = 1; category <= 8; category++)
+                        {
+                            <option value="@category.ToString()">@GetCategoryLabel(category)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <span>Perfil</span>
+                    <select class="form-select"
+                            @bind="selectedProfileStatus"
+                            @bind:after="ResetPlayersPage">
+                        <option value="@AllFilterValue">Todos</option>
+                        <option value="@CompleteFilterValue">Completo</option>
+                        <option value="@IncompleteFilterValue">Incompleto</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <span>Verificación</span>
+                    <select class="form-select"
+                            @bind="selectedVerificationStatus"
+                            @bind:after="ResetPlayersPage">
+                        <option value="@AllFilterValue">Todas</option>
+                        <option value="@PlayerVerificationStatus.Pending.ToString()">Pendiente</option>
+                        <option value="@PlayerVerificationStatus.Verified.ToString()">Verificado</option>
+                        <option value="@PlayerVerificationStatus.Rejected.ToString()">Rechazado</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        @if (!players.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-title">Todavía no hay jugadores registrados.</div>
+                <div>
+                    Creá el primero para después formar parejas.
+                </div>
+            </div>
+        }
+        else if (FilteredCount == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-state-title">No encontramos jugadores con esos filtros.</div>
+                <div>
+                    Probá cambiando búsqueda, categoría, perfil o verificación.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="players-result-strip">
+                <div>
+                    <span>Mostrando</span>
+                    <strong>@FirstVisiblePosition-@LastVisiblePosition</strong>
+                    <small>de @FilteredCount jugadores</small>
+                </div>
+
+                @if (TotalPages > 1)
+                {
+                    <div class="pair-pagination players-pagination">
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                disabled="@(playersPage == 1)"
+                                @onclick="PreviousPlayersPage">
+                            Anterior
+                        </button>
+
+                        <span>Página @playersPage de @TotalPages</span>
+
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                disabled="@(playersPage == TotalPages)"
+                                @onclick="NextPlayersPage">
+                            Siguiente
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div class="table-responsive players-table-wrap">
+                <table class="table players-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Jugador</th>
+                            <th>Categoría</th>
+                            <th>Perfil</th>
+                            <th>Datos deportivos</th>
+                            <th>Referencia</th>
+                            <th>Editar nombre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (PlayerDto player in PagedPlayers)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="players-name-cell">
+                                        <span>@GetInitials(player.Name)</span>
+                                        <div>
+                                            <strong>@player.Name</strong>
+                                            <small>@player.Email</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-dark">@GetCategoryLabel(player.Category)</span>
+                                </td>
+
+                                <td>
+                                    <div class="players-status-stack">
+                                        <span class="@GetProfileBadgeClass(player)">
+                                            @GetProfileLabel(player)
+                                        </span>
+                                        <small>@GetVerificationLabel(player.VerificationStatus)</small>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="players-sport-data">
+                                        <span>@GetDominantHandLabel(player.DominantHand)</span>
+                                        <span>@GetPreferredSideLabel(player.PreferredSide)</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="players-reference">@player.ShortId</span>
+                                </td>
+
+                                <td>
+                                    <input class="form-control players-edit-input"
+                                           value="@GetEditName(player.Id)"
+                                           @oninput="eventArgs => SetEditName(player.Id, eventArgs.Value?.ToString() ?? string.Empty)" />
+                                </td>
+
+                                <td>
+                                    <div class="players-actions">
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           href="@($"/players/{player.Id}")">
+                                            Ver ficha
+                                        </a>
+
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                @onclick="() => RenamePlayer(player.Id)">
+                                            Guardar
+                                        </button>
+
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                @onclick="() => DeletePlayer(player.Id)">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
 
 @code {
+    private const string AllFilterValue = "all";
+    private const string CompleteFilterValue = "complete";
+    private const string IncompleteFilterValue = "incomplete";
+    private const int PlayersPageSize = 12;
+
     private List<PlayerDto> players = new();
     private string newPlayerName = string.Empty;
     private string newPlayerEmail = string.Empty;
     private DominantHand newDominantHand = DominantHand.Right;
     private PreferredSide newPreferredSide = PreferredSide.Drive;
     private int newCategory = 6;
+    private string searchTerm = string.Empty;
+    private string selectedCategory = AllFilterValue;
+    private string selectedProfileStatus = AllFilterValue;
+    private string selectedVerificationStatus = AllFilterValue;
+    private int playersPage = 1;
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
     private readonly Dictionary<Guid, string> editNames = new();
 
+    private List<PlayerDto> FilteredPlayers => players
+        .Where(MatchesFilters)
+        .ToList();
+
+    private List<PlayerDto> PagedPlayers => FilteredPlayers
+        .Skip((playersPage - 1) * PlayersPageSize)
+        .Take(PlayersPageSize)
+        .ToList();
+
+    private int FilteredCount => FilteredPlayers.Count;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredCount / (double)PlayersPageSize));
+
+    private int FirstVisiblePosition => FilteredCount == 0
+        ? 0
+        : ((playersPage - 1) * PlayersPageSize) + 1;
+
+    private int LastVisiblePosition => Math.Min(playersPage * PlayersPageSize, FilteredCount);
+
     private int CompleteProfilesCount => players.Count(player => player.HasCompleteProfile);
     private int VerifiedPlayersCount => players.Count(player => player.IsVerified);
+    private int ActiveCategoryCount => players.Where(player => player.Category.HasValue).Select(player => player.Category).Distinct().Count();
+
+    private string CompleteProfileRate
+    {
+        get
+        {
+            if (players.Count == 0)
+                return "Sin perfiles";
+
+            decimal rate = CompleteProfilesCount * 100m / players.Count;
+            return $"{rate:0}% completos";
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -232,6 +399,8 @@ else
             if (!editNames.ContainsKey(player.Id))
                 editNames[player.Id] = player.Name;
         }
+
+        ClampPlayersPage();
     }
 
     private void CreatePlayer()
@@ -312,6 +481,65 @@ else
         }
     }
 
+    private void ResetPlayersPage()
+    {
+        playersPage = 1;
+    }
+
+    private void PreviousPlayersPage()
+    {
+        if (playersPage > 1)
+            playersPage--;
+    }
+
+    private void NextPlayersPage()
+    {
+        if (playersPage < TotalPages)
+            playersPage++;
+    }
+
+    private void ClampPlayersPage()
+    {
+        if (playersPage > TotalPages)
+            playersPage = TotalPages;
+    }
+
+    private bool MatchesFilters(PlayerDto player)
+    {
+        if (selectedCategory != AllFilterValue &&
+            player.Category?.ToString() != selectedCategory)
+        {
+            return false;
+        }
+
+        if (selectedProfileStatus == CompleteFilterValue && !player.HasCompleteProfile)
+            return false;
+
+        if (selectedProfileStatus == IncompleteFilterValue && player.HasCompleteProfile)
+            return false;
+
+        if (selectedVerificationStatus != AllFilterValue &&
+            player.VerificationStatus.ToString() != selectedVerificationStatus)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return true;
+
+        return ContainsSearch(player.Name)
+            || ContainsSearch(player.Email)
+            || ContainsSearch(player.ShortId)
+            || ContainsSearch(GetCategoryLabel(player.Category))
+            || ContainsSearch(GetDominantHandLabel(player.DominantHand))
+            || ContainsSearch(GetPreferredSideLabel(player.PreferredSide));
+    }
+
+    private bool ContainsSearch(string value)
+    {
+        return value.Contains(searchTerm.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
     private string GetEditName(Guid id)
     {
         return editNames.TryGetValue(id, out string? name) ? name : string.Empty;
@@ -322,12 +550,84 @@ else
         editNames[id] = name;
     }
 
+    private static string GetInitials(string name)
+    {
+        string[] parts = name
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (parts.Length == 0)
+            return "JG";
+
+        if (parts.Length == 1)
+            return parts[0][0].ToString().ToUpperInvariant();
+
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+    }
+
     private static string GetCategoryLabel(int? category)
     {
         if (!category.HasValue)
-            return "-";
+            return "Sin categoría";
 
-        return category.Value.ToString();
+        return GetCategoryLabel(category.Value);
+    }
+
+    private static string GetCategoryLabel(int category)
+    {
+        return category switch
+        {
+            1 => "1ra categoría",
+            2 => "2da categoría",
+            3 => "3ra categoría",
+            4 => "4ta categoría",
+            5 => "5ta categoría",
+            6 => "6ta categoría",
+            7 => "7ma categoría",
+            8 => "8va categoría",
+            _ => "Sin categoría"
+        };
+    }
+
+    private static string GetDominantHandLabel(DominantHand? dominantHand)
+    {
+        return dominantHand switch
+        {
+            DominantHand.Right => "Derecha",
+            DominantHand.Left => "Zurda",
+            _ => "Sin mano"
+        };
+    }
+
+    private static string GetPreferredSideLabel(PreferredSide? preferredSide)
+    {
+        return preferredSide switch
+        {
+            PreferredSide.Drive => "Drive",
+            PreferredSide.Backhand => "Revés",
+            PreferredSide.Both => "Ambos lados",
+            _ => "Sin lado"
+        };
+    }
+
+    private static string GetProfileLabel(PlayerDto player)
+    {
+        return player.HasCompleteProfile ? "Completo" : "Incompleto";
+    }
+
+    private static string GetProfileBadgeClass(PlayerDto player)
+    {
+        return player.HasCompleteProfile ? "players-profile-badge is-complete" : "players-profile-badge is-incomplete";
+    }
+
+    private static string GetVerificationLabel(PlayerVerificationStatus status)
+    {
+        return status switch
+        {
+            PlayerVerificationStatus.Pending => "Pendiente",
+            PlayerVerificationStatus.Verified => "Verificado",
+            PlayerVerificationStatus.Rejected => "Rechazado",
+            _ => "Sin estado"
+        };
     }
 
     private void ClearMessages()
