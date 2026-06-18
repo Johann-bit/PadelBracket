@@ -8,13 +8,23 @@
 
 <PageTitle>Mis inscripciones</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Competencia</div>
-    <h1 class="page-title">Mis inscripciones</h1>
-    <p class="page-subtitle">
-        Revisá tus torneos, el estado de la inscripción y la confirmación manual de pago.
-    </p>
-</div>
+<section class="dashboard-hero player-page-hero">
+    <div>
+        <div class="page-eyebrow">Competencia</div>
+        <h1 class="page-title">Mis inscripciones</h1>
+        <p class="page-subtitle">
+            Revisá tus torneos, el estado de la inscripción y la confirmación manual de pago.
+        </p>
+    </div>
+
+    @if (CurrentPlayerId != null)
+    {
+        <a class="btn btn-primary dashboard-hero-action" href="/tournaments/available">
+            <span>+</span>
+            Ver disponibles
+        </a>
+    }
+</section>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
@@ -51,27 +61,46 @@
 }
 else
 {
-    <div class="stat-grid">
-        <div class="stat-card">
-            <div class="stat-label">Inscripciones</div>
-            <div class="stat-value">@myRegistrations.Count</div>
+    <section class="metric-grid player-metric-grid">
+        <div class="metric-card">
+            <div class="metric-icon">IN</div>
+            <div>
+                <div class="metric-label">Inscripciones</div>
+                <div class="metric-value">@myRegistrations.Count</div>
+                <div class="metric-trend">Historial de tu cuenta</div>
+            </div>
+            <div class="metric-sparkline"></div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Pendientes</div>
-            <div class="stat-value">@myRegistrations.Count(item => item.Registration.Status == RegistrationStatus.Pending)</div>
+        <div class="metric-card">
+            <div class="metric-icon">PD</div>
+            <div>
+                <div class="metric-label">Pendientes</div>
+                <div class="metric-value">@myRegistrations.Count(item => item.Registration.Status == RegistrationStatus.Pending)</div>
+                <div class="metric-trend">Esperando confirmación</div>
+            </div>
+            <div class="metric-sparkline"></div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Confirmadas</div>
-            <div class="stat-value">@myRegistrations.Count(item => item.Registration.Status == RegistrationStatus.Confirmed)</div>
+        <div class="metric-card">
+            <div class="metric-icon">OK</div>
+            <div>
+                <div class="metric-label">Confirmadas</div>
+                <div class="metric-value">@myRegistrations.Count(item => item.Registration.Status == RegistrationStatus.Confirmed)</div>
+                <div class="metric-trend">Listas para jugar</div>
+            </div>
+            <div class="metric-sparkline"></div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Pagas</div>
-            <div class="stat-value">@myRegistrations.Count(item => item.Registration.PaymentStatus == PaymentStatus.Paid)</div>
+        <div class="metric-card">
+            <div class="metric-icon">PG</div>
+            <div>
+                <div class="metric-label">Pagas</div>
+                <div class="metric-value">@myRegistrations.Count(item => item.Registration.PaymentStatus == PaymentStatus.Paid)</div>
+                <div class="metric-trend">Validado por organización</div>
+            </div>
         </div>
-    </div>
+    </section>
 
     @if (!myRegistrations.Any())
     {
@@ -88,106 +117,98 @@ else
     }
     else
     {
-        <div class="alert alert-info">
+        <div class="alert alert-info player-payment-note">
             <strong>Pago manual por ahora.</strong>
             <div>
                 Coordiná el pago con el organizador. Cuando lo valide, esta inscripción va a aparecer como paga.
             </div>
         </div>
 
-        <div class="row g-3">
+        <div class="my-registration-grid">
             @foreach (MyRegistrationItem item in myRegistrations)
             {
-                <div class="col-xl-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-                                <div>
-                                    <h4 class="card-title mb-1">@item.Tournament.Name</h4>
-                                    <div class="text-muted">
-                                        @item.Tournament.ClubName · @item.Tournament.City · @item.Tournament.StartDateLabel
-                                    </div>
+                <div class="card h-100 my-registration-card">
+                    <div class="card-body">
+                        <div class="my-registration-header">
+                            <div>
+                                <h4 class="card-title mb-1">@item.Tournament.Name</h4>
+                                <div class="text-muted">
+                                    @item.Tournament.ClubName · @item.Tournament.City · @item.Tournament.StartDateLabel
                                 </div>
-
-                                <span class="badge bg-primary">
-                                    @item.Registration.CategoryLabel
-                                </span>
                             </div>
 
-                            <div class="table-responsive mb-3">
-                                <table class="table table-sm align-middle mb-0">
-                                    <tbody>
-                                        <tr>
-                                            <th>Pareja</th>
-                                            <td>@item.Registration.PairDisplayName</td>
-                                        </tr>
+                            <span class="badge bg-primary">
+                                @item.Registration.CategoryLabel
+                            </span>
+                        </div>
 
-                                        <tr>
-                                            <th>Inscripción</th>
-                                            <td>
-                                                <span class="badge @GetRegistrationStatusBadgeClass(item.Registration.Status)">
-                                                    @item.Registration.StatusLabel
-                                                </span>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <th>Pago</th>
-                                            <td>
-                                                <span class="badge @GetPaymentStatusBadgeClass(item.Registration.PaymentStatus)">
-                                                    @item.Registration.PaymentStatusLabel
-                                                </span>
-                                                <div class="text-muted mt-1">
-                                                    @item.Registration.PaymentHelpText
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <td>@item.Registration.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        <div class="my-registration-details">
+                            <div>
+                                <span>Pareja</span>
+                                <strong>@item.Registration.PairDisplayName</strong>
                             </div>
 
-                            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                                <a class="btn btn-sm btn-outline-primary"
-                                   href="@($"/tournaments/{item.Tournament.Id}")">
-                                    Ver torneo
-                                </a>
-
-                                @if (CanCancelRegistration(item.Registration))
-                                {
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            @onclick="() => AskCancelRegistration(item.Registration.Id)">
-                                        Cancelar inscripción
-                                    </button>
-                                }
+                            <div>
+                                <span>Inscripción</span>
+                                <strong>
+                                    <span class="badge @GetRegistrationStatusBadgeClass(item.Registration.Status)">
+                                        @item.Registration.StatusLabel
+                                    </span>
+                                </strong>
                             </div>
 
-                            @if (registrationIdToCancel == item.Registration.Id)
+                            <div>
+                                <span>Pago</span>
+                                <strong>
+                                    <span class="badge @GetPaymentStatusBadgeClass(item.Registration.PaymentStatus)">
+                                        @item.Registration.PaymentStatusLabel
+                                    </span>
+                                </strong>
+                                <small>@item.Registration.PaymentHelpText</small>
+                            </div>
+
+                            <div>
+                                <span>Fecha</span>
+                                <strong>@item.Registration.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</strong>
+                            </div>
+                        </div>
+
+                        <div class="my-registration-actions">
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@($"/tournaments/{item.Tournament.Id}")">
+                                Ver torneo
+                            </a>
+
+                            @if (CanCancelRegistration(item.Registration))
                             {
-                                <div class="alert alert-danger mt-3 mb-0">
-                                    <strong>¿Cancelar esta inscripción?</strong>
-                                    <div class="mb-3">
-                                        La inscripción quedará cancelada y el cupo volverá a estar disponible.
-                                    </div>
-
-                                    <div class="d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-sm btn-danger"
-                                                @onclick="() => CancelRegistration(item.Tournament.Id, item.Registration.Id)">
-                                            Confirmar
-                                        </button>
-
-                                        <button class="btn btn-sm btn-secondary"
-                                                @onclick="CancelCancelRegistration">
-                                            Volver
-                                        </button>
-                                    </div>
-                                </div>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => AskCancelRegistration(item.Registration.Id)">
+                                    Cancelar inscripción
+                                </button>
                             }
                         </div>
+
+                        @if (registrationIdToCancel == item.Registration.Id)
+                        {
+                            <div class="alert alert-danger mt-3 mb-0">
+                                <strong>¿Cancelar esta inscripción?</strong>
+                                <div class="mb-3">
+                                    La inscripción quedará cancelada y el cupo volverá a estar disponible.
+                                </div>
+
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button class="btn btn-sm btn-danger"
+                                            @onclick="() => CancelRegistration(item.Tournament.Id, item.Registration.Id)">
+                                        Confirmar
+                                    </button>
+
+                                    <button class="btn btn-sm btn-secondary"
+                                            @onclick="CancelCancelRegistration">
+                                        Volver
+                                    </button>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             }

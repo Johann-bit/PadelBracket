@@ -1236,6 +1236,151 @@ a {
     box-shadow: var(--app-shadow-sm);
 }
 
+.player-page-hero {
+    align-items: center;
+}
+
+.player-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.available-tournament-grid,
+.my-registration-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.available-tournament-card,
+.my-registration-card {
+    overflow: hidden;
+}
+
+.available-tournament-header,
+.my-registration-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.available-category-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.available-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.available-category-card {
+    padding: 0.85rem;
+    border: 1px solid var(--app-border);
+    border-radius: 14px;
+    background: #fbfdfb;
+}
+
+.available-category-card strong,
+.available-category-card span,
+.available-category-card small {
+    display: block;
+}
+
+.available-category-card strong {
+    color: var(--app-text);
+    font-weight: 900;
+}
+
+.available-category-card span {
+    margin-top: 0.15rem;
+    color: var(--app-primary);
+    font-weight: 850;
+}
+
+.available-category-card small {
+    margin-top: 0.15rem;
+    color: var(--app-text-muted);
+    font-weight: 750;
+}
+
+.player-signup-panel {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--app-border);
+}
+
+.player-signup-panel h5 {
+    margin: 0.15rem 0 0.9rem;
+    color: var(--app-text);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.player-signup-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.available-card-footer,
+.my-registration-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.player-payment-note {
+    margin-bottom: 1rem;
+}
+
+.my-registration-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.my-registration-details div {
+    padding: 0.85rem;
+    border: 1px solid var(--app-border);
+    border-radius: 14px;
+    background: #fbfdfb;
+}
+
+.my-registration-details span,
+.my-registration-details strong,
+.my-registration-details small {
+    display: block;
+}
+
+.my-registration-details span {
+    color: var(--app-text-muted);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.my-registration-details strong {
+    margin-top: 0.25rem;
+    color: var(--app-text);
+    line-height: 1.25;
+}
+
+.my-registration-details small {
+    margin-top: 0.25rem;
+    color: var(--app-text-muted);
+    font-weight: 650;
+}
+
 .compact-empty {
     padding: 1rem;
 }
@@ -2121,7 +2266,13 @@ a {
     .tournament-detail-metrics,
     .group-detail-metrics,
     .group-card-grid,
-    .group-operations-grid {
+    .group-operations-grid,
+    .player-metric-grid,
+    .available-tournament-grid,
+    .my-registration-grid,
+    .available-category-grid,
+    .player-signup-grid,
+    .my-registration-details {
         grid-template-columns: 1fr;
     }
 
