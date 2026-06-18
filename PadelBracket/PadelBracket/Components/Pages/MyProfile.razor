@@ -12,13 +12,15 @@
 
 @if (CurrentPlayer == null)
 {
-    <div class="page-header">
-        <div class="page-eyebrow">Cuenta de jugador</div>
-        <h1 class="page-title">Mi perfil</h1>
-        <p class="page-subtitle">
-            Iniciá sesión para ver y editar tu perfil de jugador.
-        </p>
-    </div>
+    <section class="dashboard-hero player-page-hero">
+        <div>
+            <div class="page-eyebrow">Cuenta de jugador</div>
+            <h1 class="page-title">Mi perfil</h1>
+            <p class="page-subtitle">
+                Iniciá sesión para ver y editar tu perfil de jugador.
+            </p>
+        </div>
+    </section>
 
     <div class="empty-state">
         <div class="empty-state-title">No hay una sesión activa.</div>
@@ -33,13 +35,19 @@
 }
 else
 {
-    <div class="page-header">
-        <div class="page-eyebrow">Cuenta de jugador</div>
-        <h1 class="page-title">Mi perfil</h1>
-        <p class="page-subtitle">
-            Revisá tus datos personales, deportivos y tu posición competitiva.
-        </p>
-    </div>
+    <section class="dashboard-hero player-page-hero">
+        <div>
+            <div class="page-eyebrow">Cuenta de jugador</div>
+            <h1 class="page-title">Mi perfil</h1>
+            <p class="page-subtitle">
+                Revisá tus datos personales, deportivos y tu posición competitiva.
+            </p>
+        </div>
+
+        <a class="btn btn-primary dashboard-hero-action" href="/ranking">
+            Ver ranking
+        </a>
+    </section>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
@@ -55,24 +63,47 @@ else
         </div>
     }
 
-    <div class="stat-grid">
-        <div class="stat-card">
-            <div class="stat-label">Jugador</div>
-            <div class="stat-value">@CurrentPlayer.Name</div>
+    <section class="metric-grid player-metric-grid">
+        <div class="metric-card">
+            <div class="metric-icon">JG</div>
+            <div>
+                <div class="metric-label">Jugador</div>
+                <div class="metric-value metric-value-text">@CurrentPlayer.Name</div>
+                <div class="metric-trend">@CurrentPlayer.Email</div>
+            </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Categoría</div>
-            <div class="stat-value">@GetCategoryLabel(CurrentPlayer.Category)</div>
+        <div class="metric-card">
+            <div class="metric-icon">CT</div>
+            <div>
+                <div class="metric-label">Categoría</div>
+                <div class="metric-value">@GetCategoryLabel(CurrentPlayer.Category)</div>
+                <div class="metric-trend">Nivel declarado</div>
+            </div>
+            <div class="metric-sparkline"></div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Puntos base</div>
-            <div class="stat-value">@CurrentPlayer.RankingPoints</div>
+        <div class="metric-card">
+            <div class="metric-icon">RK</div>
+            <div>
+                <div class="metric-label">Puntos base</div>
+                <div class="metric-value">@CurrentPlayer.RankingPoints</div>
+                <div class="metric-trend">Perfil competitivo</div>
+            </div>
+            <div class="metric-sparkline"></div>
         </div>
-    </div>
 
-    <div class="card mb-4">
+        <div class="metric-card">
+            <div class="metric-icon">PF</div>
+            <div>
+                <div class="metric-label">Estado</div>
+                <div class="metric-value metric-value-text">@(CurrentPlayer.HasCompleteProfile ? "Completo" : "Incompleto")</div>
+                <div class="metric-trend">@GetVerificationLabel(CurrentPlayer.VerificationStatus)</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="card mb-4 profile-ranking-card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
                 <div>
@@ -162,7 +193,8 @@ else
         </div>
     </div>
 
-    <div class="card mb-4">
+    <section class="profile-form-grid">
+    <div class="card mb-4 profile-form-card">
         <div class="card-body">
             <h4 class="card-title mb-2">Datos personales</h4>
 
@@ -191,7 +223,7 @@ else
         </div>
     </div>
 
-    <div class="card mb-4">
+    <div class="card mb-4 profile-form-card">
         <div class="card-body">
             <h4 class="card-title mb-2">Datos deportivos</h4>
 
@@ -232,7 +264,7 @@ else
         </div>
     </div>
 
-    <div class="card mb-4">
+    <div class="card mb-4 profile-form-card">
         <div class="card-body">
             <h4 class="card-title mb-2">Seguridad</h4>
 
@@ -270,7 +302,7 @@ else
         </div>
     </div>
 
-    <div class="card">
+    <div class="card profile-status-card">
         <div class="card-body">
             <h4 class="card-title mb-2">Estado del perfil</h4>
 
@@ -290,6 +322,7 @@ else
             </div>
         </div>
     </div>
+    </section>
 }
 
 @code {
