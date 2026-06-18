@@ -68,31 +68,23 @@ else if (!CanManageTournament)
 }
 else
 {
-    <div class="mb-3">
-        <a class="btn btn-link px-0" href="@($"/tournaments/{tournament.Id}")">
-            ← Volver al torneo
-        </a>
-    </div>
+    <a class="panel-link tournament-back-link" href="@($"/tournaments/{tournament.Id}")">
+        ← Volver al torneo
+    </a>
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
+    <section class="dashboard-hero knockout-hero">
         <div>
-            <h1 class="mb-1">Llave eliminatoria</h1>
-
-            <p class="text-muted mb-0">
-                Torneo: <strong>@tournament.Name</strong>
-            </p>
-
-            <p class="text-muted mb-0">
-                Categoría: <strong>@GetCategoryLabel(Category)</strong>
+            <div class="page-eyebrow">Eliminatoria</div>
+            <h1 class="page-title">Llave eliminatoria</h1>
+            <p class="page-subtitle">
+                @tournament.Name · @GetCategoryLabel(Category)
             </p>
         </div>
 
-        <div class="text-end">
-            <span class="badge bg-dark fs-6">
-                @GetCategoryGroupCount() grupos
-            </span>
-        </div>
-    </div>
+        <span class="status-pill">
+            @GetCategoryGroupCount() grupos
+        </span>
+    </section>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
@@ -108,34 +100,90 @@ else
         </div>
     }
 
+    <section class="metric-grid knockout-metric-grid">
+        <div class="metric-card">
+            <div class="metric-icon">LL</div>
+            <div>
+                <div class="metric-label">Estado de llave</div>
+                <div class="metric-value metric-value-text">@(bracket == null ? "Sin generar" : "Generada")</div>
+                <div class="metric-trend">Categoría @GetCategoryLabel(Category)</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">MT</div>
+            <div>
+                <div class="metric-label">Partidos</div>
+                <div class="metric-value">@GetKnockoutMatchCount()</div>
+                <div class="metric-trend">@GetCompletedKnockoutMatchCount() con resultado</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">PD</div>
+            <div>
+                <div class="metric-label">Listos para jugar</div>
+                <div class="metric-value">@GetReadyKnockoutMatchCount()</div>
+                <div class="metric-trend">Pendientes de resultado</div>
+            </div>
+            <div class="metric-sparkline"></div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">CP</div>
+            <div>
+                <div class="metric-label">Campeones</div>
+                <div class="metric-value metric-value-text">@GetPairName(GetChampion())</div>
+                <div class="metric-trend">Se define al cargar la final</div>
+            </div>
+        </div>
+    </section>
+
     @if (bracket == null)
     {
-        <div class="card shadow-sm">
+        <div class="card shadow-sm knockout-command-card">
             <div class="card-body">
-                <h4 class="card-title">Generar llave</h4>
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-kicker">Preparación</div>
+                        <h2>Generar llave</h2>
+                        <p>
+                            La llave se genera con los clasificados de los grupos de esta categoría.
+                            Por ahora clasifican 2 parejas por grupo.
+                        </p>
+                    </div>
+                </div>
 
-                <p class="text-muted">
-                    La llave se genera con los clasificados de los grupos de esta categoría.
-                    Por ahora clasifican 2 parejas por grupo.
-                </p>
+                <div class="knockout-rules-grid">
+                    <div>
+                        <strong>2 grupos</strong>
+                        <span>Semifinales</span>
+                    </div>
+                    <div>
+                        <strong>4 grupos</strong>
+                        <span>Cuartos de final</span>
+                    </div>
+                    <div>
+                        <strong>8 grupos</strong>
+                        <span>Octavos de final</span>
+                    </div>
+                </div>
 
-                <ul class="text-muted">
-                    <li>2 grupos generan semifinales.</li>
-                    <li>4 grupos generan cuartos de final.</li>
-                    <li>8 grupos generan octavos de final.</li>
-                </ul>
-
-                <button class="btn btn-success" @onclick="GenerateBracket">
-                    Generar llave
-                </button>
+                <div class="panel-actions">
+                    <button class="btn btn-success" @onclick="GenerateBracket">
+                        Generar llave
+                    </button>
+                </div>
             </div>
         </div>
     }
     else
     {
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="alert alert-success mb-0 flex-grow-1 me-3">
-                Llave generada el @bracket.CreatedAt.ToString("dd/MM/yyyy HH:mm").
+        <div class="knockout-status-bar">
+            <div>
+                <strong>Llave generada</strong>
+                <span>@bracket.CreatedAt.ToString("dd/MM/yyyy HH:mm") · @GetCompletedKnockoutMatchCount()/@GetKnockoutMatchCount() resultados cargados</span>
             </div>
 
             <button class="btn btn-outline-danger"
@@ -146,7 +194,7 @@ else
 
         @if (showDeleteConfirmation)
         {
-            <div class="alert alert-danger">
+            <div class="alert alert-danger knockout-delete-panel">
                 <h5>¿Eliminar esta llave?</h5>
 
                 @if (BracketHasResults())
@@ -289,7 +337,7 @@ else
             var selectedMatch = SelectedMatch;
             var selectedInput = GetMatchInput(selectedMatch.Id);
 
-            <div class="card shadow-sm mt-4">
+            <div class="card shadow-sm mt-4 knockout-editor-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
                         <div>
@@ -724,6 +772,21 @@ else
             return 0;
 
         return tournament.Groups.Count(group => group.Category == Category);
+    }
+
+    private int GetKnockoutMatchCount()
+    {
+        return bracket?.Matches.Count ?? 0;
+    }
+
+    private int GetCompletedKnockoutMatchCount()
+    {
+        return bracket?.Matches.Count(match => match.HasResult) ?? 0;
+    }
+
+    private int GetReadyKnockoutMatchCount()
+    {
+        return bracket?.Matches.Count(match => match.IsReadyToPlay && !match.HasResult) ?? 0;
     }
 
     private List<RoundViewModel> GetRounds()

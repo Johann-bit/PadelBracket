@@ -1502,6 +1502,84 @@ a {
     margin-top: 1rem;
 }
 
+.knockout-hero {
+    align-items: center;
+}
+
+.knockout-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.knockout-command-card {
+    max-width: 860px;
+}
+
+.knockout-rules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.knockout-rules-grid div {
+    padding: 1rem;
+    border: 1px solid var(--app-border);
+    border-radius: 14px;
+    background: #fbfdfb;
+}
+
+.knockout-rules-grid strong,
+.knockout-rules-grid span {
+    display: block;
+}
+
+.knockout-rules-grid strong {
+    color: var(--app-text);
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+}
+
+.knockout-rules-grid span {
+    margin-top: 0.25rem;
+    color: var(--app-text-muted);
+    font-weight: 800;
+}
+
+.knockout-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f0fdf4, #fff);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.knockout-status-bar strong,
+.knockout-status-bar span {
+    display: block;
+}
+
+.knockout-status-bar strong {
+    color: #14532d;
+    font-weight: 900;
+}
+
+.knockout-status-bar span {
+    margin-top: 0.15rem;
+    color: var(--app-text-muted);
+    font-size: 0.86rem;
+    font-weight: 750;
+}
+
+.knockout-delete-panel h5 {
+    color: #7f1d1d;
+    font-weight: 900;
+}
+
 .knockout-board-wrapper {
     width: 100%;
     overflow-x: auto;
@@ -1839,6 +1917,10 @@ a {
     flex-wrap: wrap;
 }
 
+.knockout-editor-card {
+    border-color: rgba(15, 138, 59, 0.25) !important;
+}
+
 @media (max-width: 900px) {
     .match-score-grid {
         grid-template-columns: 1fr;
@@ -1857,6 +1939,16 @@ a {
 
     .knockout-round-header {
         position: relative;
+    }
+
+    .knockout-metric-grid,
+    .knockout-rules-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .knockout-status-bar {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
 
