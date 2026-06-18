@@ -2388,6 +2388,70 @@ a {
     line-height: 1.45;
 }
 
+.register-auth-shell {
+    grid-template-columns: minmax(440px, 1.05fr) minmax(340px, 0.95fr);
+}
+
+.register-auth-card {
+    align-content: start;
+}
+
+.register-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.register-form .span-2 {
+    grid-column: span 2;
+}
+
+.register-side-card {
+    min-height: 680px;
+}
+
+.register-requirement-list {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+}
+
+.register-requirement-list div {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.15rem 0.85rem;
+    align-items: center;
+    padding: 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+.register-requirement-list span {
+    width: 34px;
+    height: 34px;
+    grid-row: span 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(134, 239, 172, 0.14);
+    color: #86efac;
+    font-size: 0.72rem;
+    font-weight: 950;
+}
+
+.register-requirement-list strong {
+    color: #fff;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.register-requirement-list small {
+    color: rgba(255, 255, 255, 0.68);
+    font-weight: 650;
+    line-height: 1.45;
+}
+
 /* Tabla de partidos de fase de grupos */
 .match-table {
     width: 100%;
@@ -3290,6 +3354,7 @@ a {
     .player-detail-status-grid,
     .auth-shell,
     .auth-feature-list,
+    .register-form,
     .available-tournament-grid,
     .my-registration-grid,
     .available-category-grid,
