@@ -1,4 +1,4 @@
-﻿@page "/players/{PlayerId:guid}"
+@page "/players/{PlayerId:guid}"
 @using PadelBracket.Domain.DTOs
 @using PadelBracket.Domain.Enums
 @using PadelBracket.Services
@@ -8,120 +8,172 @@
 
 @if (player == null)
 {
-    <div class="page-header">
-        <div class="page-eyebrow">Jugador</div>
-        <h1 class="page-title">Jugador no encontrado</h1>
-        <p class="page-subtitle">
-            No existe un jugador registrado con esa referencia.
-        </p>
-    </div>
-
-    <div class="empty-state">
-        <div class="empty-state-title">No encontramos este jugador.</div>
-        <div class="mb-3">
-            Volvé al listado para revisar los jugadores registrados.
+    <div class="dashboard-hero player-page-hero">
+        <div>
+            <div class="page-eyebrow">Jugador</div>
+            <h1 class="page-title">Jugador no encontrado</h1>
+            <p class="page-subtitle">
+                No existe un jugador registrado con esa referencia.
+            </p>
         </div>
 
         <a class="btn btn-primary" href="/players">
             Ver jugadores
         </a>
     </div>
+
+    <div class="empty-state">
+        <div class="empty-state-title">No encontramos este jugador.</div>
+        <div>
+            Volvé al listado para revisar los jugadores registrados.
+        </div>
+    </div>
 }
 else
 {
-    <div class="page-header">
-        <div class="page-eyebrow">Ficha de jugador</div>
-        <h1 class="page-title">@player.Name</h1>
-        <p class="page-subtitle">
-            Datos deportivos, categoría, ranking y estado del perfil.
-        </p>
-    </div>
-
-    <div class="stat-grid">
-        <div class="stat-card">
-            <div class="stat-label">Categoría</div>
-            <div class="stat-value">@GetCategoryLabel(player.Category)</div>
+    <div class="player-detail-hero">
+        <div class="player-detail-avatar">
+            @GetInitials(player.Name)
         </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Puntos</div>
-            <div class="stat-value">@player.RankingPoints</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-label">Estado</div>
-            <div class="stat-value">@GetProfileStatus(player)</div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h4 class="card-title mb-2">Datos deportivos</h4>
-
-            <p class="text-muted mb-4">
-                Información principal para formar pareja y competir en torneos.
+        <div class="player-detail-identity">
+            <div class="page-eyebrow">Ficha de jugador</div>
+            <h1 class="page-title">@player.Name</h1>
+            <p class="page-subtitle">
+                Datos deportivos, categoría, ranking y estado del perfil.
             </p>
 
-            <div class="table-responsive">
-                <table class="table table-striped align-middle mb-0">
-                    <tbody>
-                        <tr>
-                            <th>Nombre real</th>
-                            <td>@player.Name</td>
-                        </tr>
+            <div class="player-detail-tags">
+                <span class="players-reference">@player.ShortId</span>
+                <span class="@GetProfileBadgeClass(player)">@GetProfileStatus(player)</span>
+                <span class="@GetVerificationPillClass(player.VerificationStatus)">
+                    @GetVerificationLabel(player.VerificationStatus)
+                </span>
+            </div>
+        </div>
 
-                        <tr>
-                            <th>Mano hábil</th>
-                            <td>@GetDominantHandLabel(player.DominantHand)</td>
-                        </tr>
+        <a class="btn btn-outline-primary" href="/players">
+            Volver a jugadores
+        </a>
+    </div>
 
-                        <tr>
-                            <th>Lado de juego</th>
-                            <td>@GetPreferredSideLabel(player.PreferredSide)</td>
-                        </tr>
+    <div class="metric-grid player-detail-metric-grid">
+        <div class="metric-card">
+            <div class="metric-icon">CT</div>
+            <div>
+                <div class="metric-label">Categoría</div>
+                <div class="metric-value metric-value-text">@GetCategoryLabel(player.Category)</div>
+                <div class="metric-trend">Nivel competitivo</div>
+            </div>
+        </div>
 
-                        <tr>
-                            <th>Categoría</th>
-                            <td>@GetCategoryLabel(player.Category)</td>
-                        </tr>
+        <div class="metric-card">
+            <div class="metric-icon">PTS</div>
+            <div>
+                <div class="metric-label">Puntos</div>
+                <div class="metric-value">@player.RankingPoints</div>
+                <div class="metric-trend positive">Ranking acumulado</div>
+            </div>
+        </div>
 
-                        <tr>
-                            <th>Referencia</th>
-                            <td>
-                                <span class="badge bg-secondary">
-                                    @player.ShortId
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="metric-card">
+            <div class="metric-icon">MN</div>
+            <div>
+                <div class="metric-label">Mano hábil</div>
+                <div class="metric-value metric-value-text">@GetDominantHandLabel(player.DominantHand)</div>
+                <div class="metric-trend">Perfil deportivo</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">LD</div>
+            <div>
+                <div class="metric-label">Lado de juego</div>
+                <div class="metric-value metric-value-text">@GetPreferredSideLabel(player.PreferredSide)</div>
+                <div class="metric-trend">Preferencia de cancha</div>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title mb-2">Estado del jugador</h4>
+    <div class="player-detail-grid">
+        <div class="card player-detail-card">
+            <div class="card-body">
+                <div class="panel-kicker">Datos personales</div>
+                <h4 class="card-title mb-2">Identidad</h4>
+                <p class="text-muted mb-4">
+                    Información principal usada para registro, parejas e inscripciones.
+                </p>
 
-            <div class="d-flex gap-2 flex-wrap">
-                <span class="badge @GetVerificationBadgeClass(player.VerificationStatus)">
-                    @GetVerificationLabel(player.VerificationStatus)
-                </span>
+                <div class="player-detail-list">
+                    <div>
+                        <span>Nombre real</span>
+                        <strong>@player.Name</strong>
+                    </div>
 
-                @if (player.HasCompleteProfile)
-                {
-                    <span class="badge bg-success">Perfil completo</span>
-                }
-                else
-                {
-                    <span class="badge bg-warning text-dark">Perfil incompleto</span>
-                }
+                    <div>
+                        <span>Email</span>
+                        <strong>@(string.IsNullOrWhiteSpace(player.Email) ? "Sin email" : player.Email)</strong>
+                    </div>
+
+                    <div>
+                        <span>Referencia</span>
+                        <strong>@player.ShortId</strong>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="mt-4">
-                <a class="btn btn-outline-primary" href="/players">
-                    Volver a jugadores
-                </a>
+        <div class="card player-detail-card">
+            <div class="card-body">
+                <div class="panel-kicker">Competencia</div>
+                <h4 class="card-title mb-2">Datos deportivos</h4>
+                <p class="text-muted mb-4">
+                    Base para validar parejas, categorías y participación en torneos.
+                </p>
+
+                <div class="player-detail-list">
+                    <div>
+                        <span>Mano hábil</span>
+                        <strong>@GetDominantHandLabel(player.DominantHand)</strong>
+                    </div>
+
+                    <div>
+                        <span>Lado de juego</span>
+                        <strong>@GetPreferredSideLabel(player.PreferredSide)</strong>
+                    </div>
+
+                    <div>
+                        <span>Categoría</span>
+                        <strong>@GetCategoryLabel(player.Category)</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card player-detail-card player-detail-status-card">
+            <div class="card-body">
+                <div class="panel-kicker">Estado</div>
+                <h4 class="card-title mb-2">Situación del perfil</h4>
+                <p class="text-muted mb-4">
+                    Un jugador con perfil completo ya tiene los datos mínimos para formar pareja.
+                </p>
+
+                <div class="player-detail-status-grid">
+                    <div>
+                        <span>Perfil</span>
+                        <strong>@GetProfileStatus(player)</strong>
+                    </div>
+
+                    <div>
+                        <span>Verificación</span>
+                        <strong>@GetVerificationLabel(player.VerificationStatus)</strong>
+                    </div>
+
+                    <div>
+                        <span>Ranking</span>
+                        <strong>@player.RankingPoints puntos</strong>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -138,12 +190,37 @@ else
         player = PlayerService.GetDtoById(PlayerId);
     }
 
+    private static string GetInitials(string name)
+    {
+        string[] parts = name
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (parts.Length == 0)
+            return "JG";
+
+        if (parts.Length == 1)
+            return parts[0][0].ToString().ToUpperInvariant();
+
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+    }
+
     private static string GetCategoryLabel(int? category)
     {
         if (!category.HasValue)
-            return "-";
+            return "Sin categoría";
 
-        return category.Value.ToString();
+        return category.Value switch
+        {
+            1 => "1ra categoría",
+            2 => "2da categoría",
+            3 => "3ra categoría",
+            4 => "4ta categoría",
+            5 => "5ta categoría",
+            6 => "6ta categoría",
+            7 => "7ma categoría",
+            8 => "8va categoría",
+            _ => "Sin categoría"
+        };
     }
 
     private static string GetDominantHandLabel(DominantHand? dominantHand)
@@ -152,7 +229,7 @@ else
         {
             DominantHand.Right => "Derecha",
             DominantHand.Left => "Zurda",
-            _ => "-"
+            _ => "Sin mano"
         };
     }
 
@@ -162,34 +239,39 @@ else
         {
             PreferredSide.Drive => "Drive",
             PreferredSide.Backhand => "Revés",
-            PreferredSide.Both => "Ambos",
-            _ => "-"
+            PreferredSide.Both => "Ambos lados",
+            _ => "Sin lado"
         };
     }
 
     private static string GetProfileStatus(PlayerDto player)
     {
-        return player.HasCompleteProfile ? "Completo" : "Incompleto";
+        return player.HasCompleteProfile ? "Perfil completo" : "Perfil incompleto";
+    }
+
+    private static string GetProfileBadgeClass(PlayerDto player)
+    {
+        return player.HasCompleteProfile ? "players-profile-badge is-complete" : "players-profile-badge is-incomplete";
     }
 
     private static string GetVerificationLabel(PlayerVerificationStatus status)
     {
         return status switch
         {
-            PlayerVerificationStatus.Pending => "Verificación pendiente",
+            PlayerVerificationStatus.Pending => "Pendiente",
             PlayerVerificationStatus.Verified => "Verificado",
-            PlayerVerificationStatus.Rejected => "Verificación rechazada",
+            PlayerVerificationStatus.Rejected => "Rechazado",
             _ => status.ToString()
         };
     }
 
-    private static string GetVerificationBadgeClass(PlayerVerificationStatus status)
+    private static string GetVerificationPillClass(PlayerVerificationStatus status)
     {
         return status switch
         {
-            PlayerVerificationStatus.Verified => "bg-success",
-            PlayerVerificationStatus.Rejected => "bg-danger",
-            _ => "bg-secondary"
+            PlayerVerificationStatus.Verified => "player-detail-pill is-verified",
+            PlayerVerificationStatus.Rejected => "player-detail-pill is-rejected",
+            _ => "player-detail-pill"
         };
     }
 }
