@@ -1692,6 +1692,152 @@ a {
     color: var(--app-danger);
 }
 
+.history-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.history-control-panel {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.25fr);
+    gap: 1.25rem;
+    align-items: end;
+    margin-bottom: 1.25rem;
+    padding: 1.15rem;
+    border: 1px solid var(--app-border);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.history-control-panel h2 {
+    margin: 0.18rem 0 0;
+    color: var(--app-text);
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+}
+
+.history-control-panel p {
+    margin: 0.35rem 0 0;
+    color: var(--app-text-muted);
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+.history-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.25fr) repeat(2, minmax(180px, 0.75fr));
+    gap: 0.9rem;
+}
+
+.history-search-field {
+    min-width: 0;
+}
+
+.history-empty {
+    margin-top: 1rem;
+}
+
+.history-result-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1.1rem 0 0.85rem;
+}
+
+.history-result-strip > div:first-child {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    color: var(--app-text-muted);
+    font-weight: 700;
+}
+
+.history-result-strip strong {
+    color: var(--app-text);
+    font-size: 1.25rem;
+    font-weight: 950;
+    letter-spacing: -0.035em;
+}
+
+.history-result-strip small {
+    color: var(--app-text-muted);
+    font-weight: 700;
+}
+
+.history-pagination {
+    margin-top: 0;
+}
+
+.history-table-wrap {
+    border-radius: 18px;
+}
+
+.history-table {
+    min-width: 980px;
+}
+
+.history-table tbody tr:hover > * {
+    background: var(--app-primary-soft) !important;
+}
+
+.history-tournament,
+.history-winner {
+    display: block;
+    color: var(--app-text);
+    font-weight: 900;
+    line-height: 1.22;
+}
+
+.history-winner small,
+.history-table td small {
+    display: block;
+    margin-top: 0.18rem;
+    color: var(--app-text-muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+
+.history-group,
+.history-score {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.68rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.history-group {
+    background: var(--app-surface-soft);
+    color: var(--app-text-muted);
+}
+
+.history-score {
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+}
+
+.history-matchup {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    color: var(--app-text);
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.history-matchup strong {
+    color: var(--app-text-muted);
+    font-size: 0.8rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
 /* Tabla de partidos de fase de grupos */
 .match-table {
     width: 100%;
@@ -2578,6 +2724,9 @@ a {
     .ranking-metric-grid,
     .ranking-podium,
     .ranking-filter-grid,
+    .history-metric-grid,
+    .history-control-panel,
+    .history-filter-grid,
     .available-tournament-grid,
     .my-registration-grid,
     .available-category-grid,
@@ -2594,12 +2743,14 @@ a {
     }
 
     .ranking-control-panel,
-    .ranking-table-header {
+    .ranking-table-header,
+    .history-result-strip {
         display: grid;
         align-items: start;
     }
 
-    .ranking-pagination {
+    .ranking-pagination,
+    .history-pagination {
         width: 100%;
         justify-content: space-between;
     }

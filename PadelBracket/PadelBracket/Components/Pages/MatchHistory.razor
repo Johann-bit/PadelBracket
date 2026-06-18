@@ -1,61 +1,158 @@
-﻿@page "/matches/history"
+@page "/matches/history"
 @using PadelBracket.Services
 @inject MatchHistoryService MatchHistoryService
 @rendermode InteractiveServer
 
 <PageTitle>Historial de partidos</PageTitle>
 
-<div class="page-header">
-    <div class="page-eyebrow">Historial competitivo</div>
-    <h1 class="page-title">Partidos jugados</h1>
-    <p class="page-subtitle">
-        Consultá los resultados cargados en fase de grupos y prepará la base para estadísticas y ranking.
-    </p>
-</div>
-
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-label">Partidos con resultado</div>
-        <div class="stat-value">@matches.Count</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Torneos con historial</div>
-        <div class="stat-value">@TournamentCount</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-label">Modo</div>
-        <div class="stat-value">Grupos</div>
-    </div>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="dashboard-hero player-page-hero">
     <div>
-        <h3 class="mb-1">Resultados registrados</h3>
-        <p class="text-muted mb-0">
+        <div class="page-eyebrow">Historial competitivo</div>
+        <h1 class="page-title">Partidos jugados</h1>
+        <p class="page-subtitle">
+            Consultá resultados cargados, filtrá por torneo o categoría y seguí el rendimiento competitivo.
+        </p>
+    </div>
+
+    <span class="badge bg-dark">@FilteredCount de @matches.Count</span>
+</div>
+
+<div class="metric-grid history-metric-grid">
+    <div class="metric-card">
+        <div class="metric-icon">PJ</div>
+        <div>
+            <div class="metric-label">Partidos con resultado</div>
+            <div class="metric-value">@matches.Count</div>
+            <div class="metric-trend">Fase de grupos</div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon">TR</div>
+        <div>
+            <div class="metric-label">Torneos con historial</div>
+            <div class="metric-value">@TournamentCount</div>
+            <div class="metric-trend">Con partidos jugados</div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon">CT</div>
+        <div>
+            <div class="metric-label">Categorías activas</div>
+            <div class="metric-value">@CategoryCount</div>
+            <div class="metric-trend">Con resultados</div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon">TOP</div>
+        <div>
+            <div class="metric-label">Más ganador</div>
+            <div class="metric-value metric-value-text">@TopWinnerName</div>
+            <div class="metric-trend positive">@TopWinnerCountLabel</div>
+        </div>
+    </div>
+</div>
+
+<div class="history-control-panel">
+    <div>
+        <div class="panel-kicker">Filtros</div>
+        <h2>Resultados registrados</h2>
+        <p>
             Cada partido completado queda listado con torneo, grupo, categoría, resultado y ganador.
         </p>
     </div>
 
-    <span class="badge bg-secondary">
-        @matches.Count total
-    </span>
+    <div class="history-filter-grid">
+        <div class="form-field history-search-field">
+            <span>Buscar partido</span>
+            <input class="form-control"
+                   placeholder="Torneo, pareja, ganador..."
+                   @bind="searchTerm"
+                   @bind:event="oninput"
+                   @bind:after="ResetHistoryPage" />
+        </div>
+
+        <div class="form-field">
+            <span>Torneo</span>
+            <select class="form-select"
+                    @bind="selectedTournamentId"
+                    @bind:after="ResetHistoryPage">
+                <option value="@AllFilterValue">Todos</option>
+                @foreach (MatchHistoryItem tournament in TournamentOptions)
+                {
+                    <option value="@tournament.TournamentId">@tournament.TournamentName</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-field">
+            <span>Categoría</span>
+            <select class="form-select"
+                    @bind="selectedCategory"
+                    @bind:after="ResetHistoryPage">
+                <option value="@AllFilterValue">Todas</option>
+                @foreach (string category in CategoryOptions)
+                {
+                    <option value="@category">@category</option>
+                }
+            </select>
+        </div>
+    </div>
 </div>
 
 @if (!matches.Any())
 {
-    <div class="empty-state">
+    <div class="empty-state history-empty">
         <div class="empty-state-title">Todavía no hay partidos con resultado.</div>
         <div>
             Cargá resultados en los grupos de un torneo para verlos aparecer acá.
         </div>
     </div>
 }
+else if (FilteredCount == 0)
+{
+    <div class="empty-state history-empty">
+        <div class="empty-state-title">No encontramos resultados con esos filtros.</div>
+        <div>
+            Probá cambiando el torneo, la categoría o el texto de búsqueda.
+        </div>
+    </div>
+}
 else
 {
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
+    <div class="history-result-strip">
+        <div>
+            <span>Mostrando</span>
+            <strong>@FirstVisiblePosition-@LastVisiblePosition</strong>
+            <small>de @FilteredCount resultados</small>
+        </div>
+
+        @if (TotalPages > 1)
+        {
+            <div class="pair-pagination history-pagination">
+                <button type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        disabled="@(historyPage == 1)"
+                        @onclick="PreviousHistoryPage">
+                    Anterior
+                </button>
+
+                <span>Página @historyPage de @TotalPages</span>
+
+                <button type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        disabled="@(historyPage == TotalPages)"
+                        @onclick="NextHistoryPage">
+                    Siguiente
+                </button>
+            </div>
+        }
+    </div>
+
+    <div class="table-responsive history-table-wrap">
+        <table class="table history-table align-middle">
             <thead>
                 <tr>
                     <th>Torneo</th>
@@ -68,35 +165,36 @@ else
             </thead>
 
             <tbody>
-                @foreach (MatchHistoryItem match in matches)
+                @foreach (MatchHistoryItem match in PagedMatches)
                 {
                     <tr>
                         <td>
-                            <strong>@match.TournamentName</strong>
+                            <strong class="history-tournament">@match.TournamentName</strong>
                         </td>
 
                         <td>
-                            <span class="badge bg-secondary">
-                                @match.CategoryLabel
-                            </span>
-                        </td>
-
-                        <td>@match.GroupName</td>
-
-                        <td>
-                            @match.PairOneName
-                            <span class="text-muted">vs</span>
-                            @match.PairTwoName
+                            <span class="badge bg-dark">@match.CategoryLabel</span>
                         </td>
 
                         <td>
-                            <span class="badge bg-primary">
-                                @match.Score
-                            </span>
+                            <span class="history-group">@match.GroupName</span>
                         </td>
 
                         <td>
-                            <strong>@match.WinnerName</strong>
+                            <div class="history-matchup">
+                                <span>@match.PairOneName</span>
+                                <strong>vs</strong>
+                                <span>@match.PairTwoName</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="history-score">@match.Score</span>
+                        </td>
+
+                        <td>
+                            <strong class="history-winner">@match.WinnerName</strong>
+                            <small>venció a @match.LoserName</small>
                         </td>
                     </tr>
                 }
@@ -106,12 +204,74 @@ else
 }
 
 @code {
+    private const string AllFilterValue = "all";
+    private const int HistoryPageSize = 12;
+
     private List<MatchHistoryItem> matches = new();
+    private string searchTerm = string.Empty;
+    private string selectedTournamentId = AllFilterValue;
+    private string selectedCategory = AllFilterValue;
+    private int historyPage = 1;
+
+    private List<MatchHistoryItem> FilteredMatches => matches
+        .Where(MatchesFilters)
+        .ToList();
+
+    private List<MatchHistoryItem> PagedMatches => FilteredMatches
+        .Skip((historyPage - 1) * HistoryPageSize)
+        .Take(HistoryPageSize)
+        .ToList();
+
+    private IEnumerable<MatchHistoryItem> TournamentOptions => matches
+        .GroupBy(match => match.TournamentId)
+        .Select(group => group.First())
+        .OrderBy(match => match.TournamentName);
+
+    private IEnumerable<string> CategoryOptions => matches
+        .Select(match => match.CategoryLabel)
+        .Distinct()
+        .OrderBy(category => category);
+
+    private int FilteredCount => FilteredMatches.Count;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredCount / (double)HistoryPageSize));
+
+    private int FirstVisiblePosition => FilteredCount == 0
+        ? 0
+        : ((historyPage - 1) * HistoryPageSize) + 1;
+
+    private int LastVisiblePosition => Math.Min(historyPage * HistoryPageSize, FilteredCount);
 
     private int TournamentCount => matches
         .Select(match => match.TournamentId)
         .Distinct()
         .Count();
+
+    private int CategoryCount => matches
+        .Select(match => match.CategoryLabel)
+        .Distinct()
+        .Count();
+
+    private string TopWinnerName => matches
+        .GroupBy(match => match.WinnerName)
+        .OrderByDescending(group => group.Count())
+        .ThenBy(group => group.Key)
+        .Select(group => group.Key)
+        .FirstOrDefault() ?? "Sin datos";
+
+    private string TopWinnerCountLabel
+    {
+        get
+        {
+            int wins = matches
+                .GroupBy(match => match.WinnerName)
+                .OrderByDescending(group => group.Count())
+                .Select(group => group.Count())
+                .FirstOrDefault();
+
+            return wins == 0 ? "Sin victorias" : $"{wins} victorias";
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -121,5 +281,54 @@ else
     private void LoadMatches()
     {
         matches = MatchHistoryService.GetCompletedGroupMatches();
+    }
+
+    private void ResetHistoryPage()
+    {
+        historyPage = 1;
+    }
+
+    private void PreviousHistoryPage()
+    {
+        if (historyPage > 1)
+            historyPage--;
+    }
+
+    private void NextHistoryPage()
+    {
+        if (historyPage < TotalPages)
+            historyPage++;
+    }
+
+    private bool MatchesFilters(MatchHistoryItem match)
+    {
+        if (selectedTournamentId != AllFilterValue &&
+            match.TournamentId.ToString() != selectedTournamentId)
+        {
+            return false;
+        }
+
+        if (selectedCategory != AllFilterValue &&
+            match.CategoryLabel != selectedCategory)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return true;
+
+        return ContainsSearch(match.TournamentName)
+            || ContainsSearch(match.GroupName)
+            || ContainsSearch(match.CategoryLabel)
+            || ContainsSearch(match.PairOneName)
+            || ContainsSearch(match.PairTwoName)
+            || ContainsSearch(match.WinnerName)
+            || ContainsSearch(match.LoserName)
+            || ContainsSearch(match.Score);
+    }
+
+    private bool ContainsSearch(string value)
+    {
+        return value.Contains(searchTerm.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 }
