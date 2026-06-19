@@ -1728,11 +1728,103 @@ a {
     align-items: start;
 }
 
+.group-control-panel {
+    display: grid;
+    gap: 1rem;
+    padding: 1.15rem;
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-lg);
+    background:
+        radial-gradient(circle at top right, rgba(22, 163, 74, 0.08), transparent 32%),
+        rgba(255, 255, 255, 0.96);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.group-control-panel h3,
+.group-panel-header h3 {
+    margin: 0.2rem 0 0;
+    color: var(--app-text);
+    font-size: 1.25rem;
+    font-weight: 950;
+    letter-spacing: 0;
+}
+
+.group-control-panel p,
+.group-panel-header p {
+    margin: 0.35rem 0 0;
+    color: var(--app-text-muted);
+    line-height: 1.5;
+    font-weight: 650;
+}
+
+.group-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.group-control-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.group-helper-text {
+    display: block;
+    color: var(--app-text-muted);
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.group-pair-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.group-pair-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem;
+    border: 1px solid var(--app-border);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.group-pair-row > div {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+}
+
+.group-pair-initials {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-size: 0.72rem;
+    font-weight: 950;
+}
+
+.group-pair-row strong {
+    color: var(--app-text);
+    line-height: 1.25;
+    font-weight: 900;
+}
+
 .group-generate-panel {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
+    margin: 1rem 0 1.5rem;
     padding: 1rem;
     border: 1px solid var(--app-border);
     border-radius: 16px;
@@ -3583,6 +3675,96 @@ a {
     gap: 0.75rem;
     flex-wrap: wrap;
     padding-top: 0.25rem;
+}
+
+.standings-table-wrap {
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--app-shadow-sm);
+}
+
+.standings-table {
+    min-width: 980px;
+    margin-bottom: 0;
+}
+
+.standings-table thead th {
+    white-space: nowrap;
+}
+
+.standings-table tbody tr {
+    transition: background 150ms ease;
+}
+
+.standings-table tbody tr:hover > * {
+    background: var(--app-primary-soft);
+}
+
+.standings-table tbody tr.is-qualified-row > * {
+    background: rgba(22, 163, 74, 0.09);
+}
+
+.standings-table td:nth-child(n + 3):not(:last-child),
+.standings-table th:nth-child(n + 3):not(:last-child) {
+    text-align: center;
+}
+
+.standing-position {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--app-surface-soft);
+    color: var(--app-text);
+    font-size: 0.82rem;
+    font-weight: 950;
+}
+
+.standing-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 950;
+    white-space: nowrap;
+}
+
+.standing-status.is-qualified {
+    background: var(--app-success-soft);
+    color: var(--app-success);
+}
+
+.standing-status.is-zone {
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+}
+
+.standing-status.is-alive {
+    background: var(--app-warning-soft);
+    color: #92400e;
+}
+
+.standing-status.is-eliminated {
+    background: var(--app-danger-soft);
+    color: var(--app-danger);
+}
+
+.standing-status.is-out,
+.standing-status.is-idle {
+    background: var(--app-surface-soft);
+    color: var(--app-text-muted);
+}
+
+.standings-legend {
+    margin-top: 0.75rem;
+    color: var(--app-text-muted);
+    font-weight: 700;
 }
 
 .knockout-hero {

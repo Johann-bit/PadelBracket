@@ -144,16 +144,16 @@ else
     </section>
 
     <div class="group-operations-grid">
-        <div class="card mb-4 shadow-sm group-detail-card">
-        <div class="card-body">
-            <h4 class="card-title mb-3">Agregar pareja confirmada</h4>
+        <section class="group-control-panel">
+            <div class="panel-kicker">Participantes</div>
+            <h3>Agregar pareja confirmada</h3>
 
-            <p class="text-muted mb-4">
+            <p>
                 Seleccioná una inscripción confirmada de este torneo y de esta categoría.
             </p>
 
-            <div class="mb-3">
-                <label class="form-label">Inscripción</label>
+            <div class="form-field">
+                <label>Inscripción</label>
 
                 <select class="form-select"
                         disabled="@group.Matches.Any()"
@@ -169,87 +169,89 @@ else
                 </select>
             </div>
 
-            <button class="btn btn-primary"
-                    disabled="@(group.Matches.Any() || !AvailableRegistrations.Any())"
-                    @onclick="AddPair">
-                Agregar pareja
-            </button>
+            <div class="group-control-actions">
+                <button class="btn btn-primary"
+                        disabled="@(group.Matches.Any() || !AvailableRegistrations.Any())"
+                        @onclick="AddPair">
+                    Agregar pareja
+                </button>
+            </div>
 
             @if (!tournament.Registrations.Any())
             {
-                <small class="text-muted ms-2">
+                <small class="group-helper-text">
                     Todavía no hay inscripciones en este torneo.
                 </small>
             }
             else if (!AvailableRegistrations.Any() && !group.Matches.Any())
             {
-                <small class="text-muted ms-2">
+                <small class="group-helper-text">
                     No hay inscripciones confirmadas disponibles para esta categoría.
                 </small>
             }
 
             @if (group.Matches.Any())
             {
-                <small class="text-muted ms-2">
+                <small class="group-helper-text">
                     No se pueden agregar ni eliminar parejas después de generar los partidos.
                 </small>
             }
-        </div>
-    </div>
+        </section>
 
-        <div class="card mb-4 shadow-sm group-detail-card">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <section class="group-control-panel">
+            <div class="group-panel-header">
                 <div>
-                    <h3 class="mb-1">Parejas</h3>
-                    <p class="text-muted mb-0">
+                    <div class="panel-kicker">Grupo</div>
+                    <h3>Parejas</h3>
+                    <p>
                         Gestioná las parejas antes de generar los partidos del grupo.
                     </p>
                 </div>
 
-                <span class="badge bg-secondary">
+                <span class="status-pill">
                     @group.Pairs.Count cargadas
                 </span>
             </div>
 
             @if (!group.Pairs.Any())
             {
-                <div class="alert alert-info mb-0">
-                    Todavía no hay parejas cargadas.
+                <div class="empty-state">
+                    <div class="empty-state-title">Todavía no hay parejas cargadas.</div>
+                    <div>
+                        Agregá al menos 3 parejas para poder generar los partidos.
+                    </div>
                 </div>
             }
             else
             {
-                <ul class="list-group">
+                <div class="group-pair-list">
                     @foreach (var pair in group.Pairs)
                     {
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center gap-3">
-                                <div>
-                                    <strong>@pair.DisplayName</strong>
-                                </div>
-
-                                @if (!group.Matches.Any())
-                                {
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            @onclick="() => RemovePair(pair.Id)">
-                                        Eliminar
-                                    </button>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-light text-dark">Pareja</span>
-                                }
+                        <div class="group-pair-row">
+                            <div>
+                                <span class="group-pair-initials">PR</span>
+                                <strong>@pair.DisplayName</strong>
                             </div>
-                        </li>
+
+                            @if (!group.Matches.Any())
+                            {
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => RemovePair(pair.Id)">
+                                    Eliminar
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="category-badge">Pareja</span>
+                            }
+                        </div>
                     }
-                </ul>
+                </div>
             }
-        </div>
-    </div>
+        </section>
     </div>
 
-    <div class="group-generate-panel mb-4">
+    <div class="group-generate-panel">
         <button class="btn btn-success"
                 disabled="@(group.Pairs.Count < 3 || group.Matches.Any())"
                 @onclick="GenerateMatches">
@@ -507,9 +509,9 @@ else
             </div>
         }
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-                <thead class="table-light">
+        <div class="table-responsive standings-table-wrap">
+            <table class="table align-middle standings-table">
+                <thead>
                     <tr>
                         <th>#</th>
                         <th>Pareja</th>
@@ -533,7 +535,7 @@ else
 
                         <tr class="@GetStandingRowClass(i)">
                             <td>
-                                <strong>@(i + 1)</strong>
+                                <span class="standing-position">@(i + 1)</span>
                             </td>
                             <td>
                                 <strong>@standing.Pair.DisplayName</strong>
@@ -555,19 +557,19 @@ else
                                 {
                                     var status = qualificationByPairId[standing.Pair.Id].Status;
 
-                                    <span class="badge @GetQualificationBadgeClass(status)">
+                                    <span class="@GetQualificationBadgeClass(status)">
                                         @GetQualificationLabel(status)
                                     </span>
                                 }
                                 else if (standing.Played > 0)
                                 {
-                                    <span class="badge bg-secondary">
+                                    <span class="standing-status is-out">
                                         Fuera de zona
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-light text-dark">
+                                    <span class="standing-status is-idle">
                                         Sin partidos
                                     </span>
                                 }
@@ -578,7 +580,7 @@ else
             </table>
         </div>
 
-        <div class="text-muted mt-2">
+        <div class="standings-legend">
             <small>
                 PJ: partidos jugados · PG: ganados · PP: perdidos · SF/SC: sets a favor/en contra · GF/GC: games a favor/en contra.
             </small>
@@ -1019,11 +1021,11 @@ else
     {
         return status switch
         {
-            QualificationStatus.MathematicallyQualified => "bg-success",
-            QualificationStatus.InQualificationZone => "bg-primary",
-            QualificationStatus.Alive => "bg-warning text-dark",
-            QualificationStatus.MathematicallyEliminated => "bg-danger",
-            _ => "bg-dark"
+            QualificationStatus.MathematicallyQualified => "standing-status is-qualified",
+            QualificationStatus.InQualificationZone => "standing-status is-zone",
+            QualificationStatus.Alive => "standing-status is-alive",
+            QualificationStatus.MathematicallyEliminated => "standing-status is-eliminated",
+            _ => "standing-status is-idle"
         };
     }
 
@@ -1032,7 +1034,7 @@ else
         if (!HasAnyResult)
             return string.Empty;
 
-        return index < QualifiedPairsCount ? "table-success" : string.Empty;
+        return index < QualifiedPairsCount ? "is-qualified-row" : string.Empty;
     }
 
     private class MatchInput
