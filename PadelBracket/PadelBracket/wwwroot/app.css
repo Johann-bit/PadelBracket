@@ -1037,6 +1037,62 @@ a {
     margin-top: 1.25rem;
 }
 
+.access-state {
+    min-height: 360px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 1.15rem;
+    padding: 1.5rem;
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-lg);
+    background:
+        radial-gradient(circle at top right, rgba(22, 163, 74, 0.11), transparent 34%),
+        #fff;
+    box-shadow: var(--app-shadow-md);
+}
+
+.access-state-icon {
+    width: 58px;
+    height: 58px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+    font-size: 0.9rem;
+    font-weight: 950;
+}
+
+.access-state h1 {
+    margin: 0.25rem 0 0;
+    color: var(--app-text);
+    font-size: 2.2rem;
+    line-height: 1;
+    font-weight: 950;
+    letter-spacing: 0;
+}
+
+.access-state p {
+    max-width: 620px;
+    margin: 0.85rem 0 0;
+    color: var(--app-text-muted);
+    line-height: 1.65;
+    font-weight: 650;
+}
+
+.access-state .btn,
+.access-state-actions {
+    margin-top: 1.15rem;
+}
+
+.access-state-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
 .text-muted {
     color: var(--app-text-muted) !important;
 }
@@ -4313,6 +4369,15 @@ a {
     }
 
     .error-content h1 {
+        font-size: 2rem;
+    }
+
+    .access-state {
+        min-height: auto;
+        grid-template-columns: 1fr;
+    }
+
+    .access-state h1 {
         font-size: 2rem;
     }
 
